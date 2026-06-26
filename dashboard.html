@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── DESKTOP LAYOUT ── */
+    .db { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 210px; flex-shrink: 0; background: #0C447C; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
+    .sb-logo-icon i { color: #fff; font-size: 18px; }
+    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
+    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .sb-item i { font-size: 18px; }
+    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
+    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
+    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    /* Main */
+    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #E8E6DF; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #042C53; }
+    .btn-new { background: #185FA5; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-new:hover { background: #0C447C; }
+    .btn-new i { font-size: 16px; }
+    .content { padding: 24px 28px; flex: 1; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; padding: 16px; }
+    .stat-label { font-size: 12px; color: #888780; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+    .stat-label i { font-size: 14px; }
+    .stat-value { font-size: 24px; font-weight: 600; color: #042C53; }
+    .stat-sub { font-size: 11px; color: #888780; margin-top: 4px; }
+    .stat-up { color: #1D9E75; }
+
+    /* Section */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #042C53; }
+    .btn-link { font-size: 13px; color: #185FA5; background: none; border: none; cursor: pointer; text-decoration: none; }
+
+    /* Invoice table */
+    .table-wrap { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #F8F7F3; }
+    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #888780; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E8E6DF; }
+    td { padding: 12px 16px; color: #1a1a1a; border-bottom: 1px solid #F1EFE8; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #F8F7F3; cursor: pointer; }
+    .inv-num { color: #185FA5; font-weight: 600; }
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+    .badge-paid { background: #E1F5EE; color: #0F6E56; }
+    .badge-unpaid { background: #FAEEDA; color: #854F0B; }
+    .badge-overdue { background: #FCEBEB; color: #A32D2D; }
+    .badge-draft { background: #F1EFE8; color: #5F5E5A; }
+
+    /* Bottom grid */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; padding: 18px; }
+    .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F1EFE8; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dot-green { background: #E1F5EE; } .dot-green i { color: #1D9E75; font-size: 15px; }
+    .dot-amber { background: #FAEEDA; } .dot-amber i { color: #854F0B; font-size: 15px; }
+    .dot-blue { background: #E6F1FB; } .dot-blue i { color: #185FA5; font-size: 15px; }
+    .activity-text p { font-size: 13px; color: #1a1a1a; line-height: 1.4; }
+    .activity-text span { font-size: 11px; color: #888780; }
+    .quick-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F1EFE8; cursor: pointer; text-decoration: none; }
+    .quick-item:last-child { border-bottom: none; }
+    .quick-item:hover .quick-label { color: #185FA5; }
+    .quick-left { display: flex; align-items: center; gap: 10px; }
+    .quick-icon { width: 32px; height: 32px; border-radius: 8px; background: #E6F1FB; display: flex; align-items: center; justify-content: center; }
+    .quick-icon i { color: #185FA5; font-size: 17px; }
+    .quick-label { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+    .quick-desc { font-size: 11px; color: #888780; }
+    .quick-arrow i { color: #B4B2A9; font-size: 16px; }
+
+    /* ── MOBILE ── */
+    .mobile-topbar { display: none; }
+    .bottom-nav { display: none; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .topbar { display: none; }
+
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0C447C; padding: 16px; }
+      .mob-logo { display: flex; align-items: center; gap: 7px; }
+      .mob-logo i { color: #5DCAA5; font-size: 22px; }
+      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
+      .mob-right { display: flex; align-items: center; gap: 12px; }
+      .mob-bell { color: rgba(255,255,255,0.8); font-size: 22px; }
+      .mob-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+
+      .hero-bar { background: #185FA5; padding: 18px 16px 22px; }
+      .hero-greet { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 3px; }
+      .hero-name { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 16px; }
+      .btn-new-mob { background: #fff; color: #185FA5; font-size: 15px; font-weight: 600; padding: 13px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; }
+      .btn-new-mob i { font-size: 19px; }
+
+      .content { padding: 16px; }
+      .stats { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+      .stat-value { font-size: 20px; }
+
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      .table-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
+      td { border-bottom: none; padding: 0; }
+      tr { border-bottom: 1px solid #F1EFE8; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+      tr:last-child { border-bottom: none; }
+      tr:hover { background: #F8F7F3; }
+      td.mob-main { flex: 1; min-width: 0; }
+      td.mob-amount { text-align: right; flex-shrink: 0; }
+      td.mob-hide { display: none; }
+      .mob-inv-name { font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .mob-inv-sub { font-size: 11px; color: #888780; }
+      .mob-avatar-sm { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+      .av-blue { background: #E6F1FB; color: #0C447C; }
+      .av-teal { background: #E1F5EE; color: #0F6E56; }
+      .av-amber { background: #FAEEDA; color: #854F0B; }
+      .av-coral { background: #FAECE7; color: #993C1D; }
+      .av-purple { background: #EEEDFE; color: #3C3489; }
+
+      .bottom-grid { grid-template-columns: 1fr; }
+
+      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E8E6DF; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item i { font-size: 23px; color: #B4B2A9; }
+      .nav-item span { font-size: 10px; color: #B4B2A9; }
+      .nav-item.active i { color: #185FA5; }
+      .nav-item.active span { color: #185FA5; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MOBILE TOP BAR -->
+  <div class="mobile-topbar">
+    <div class="mob-logo">
+      <i class="ti ti-file-invoice"></i>
+      <span>TradesBill</span>
+    </div>
+    <div class="mob-right">
+      <i class="ti ti-bell mob-bell"></i>
+      <div class="mob-avatar">DH</div>
+    </div>
+  </div>
+
+  <!-- MOBILE HERO -->
+  <div class="hero-bar" style="display:none" id="mob-hero">
+    <div class="hero-greet">Good morning,</div>
+    <div class="hero-name">Dave Hughes</div>
+    <a href="create-invoice.html" class="btn-new-mob">
+      <i class="ti ti-plus"></i> Create new invoice
+    </a>
+  </div>
+
+  <div class="db">
+    <!-- DESKTOP SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div>
+        <span class="sb-logo-text">TradesBill</span>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-section-label">Main</div>
+        <a href="dashboard.html" class="sb-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <div class="sb-section-label">Reports</div>
+        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-section-label">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom">
+        <div class="sb-user">
+          <div class="sb-avatar">DH</div>
+          <div>
+            <div class="sb-user-name">Dave Hughes</div>
+            <div class="sb-user-plan">Pro plan</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+      <div class="topbar">
+        <h1>Dashboard</h1>
+        <a href="create-invoice.html" class="btn-new"><i class="ti ti-plus"></i> New invoice</a>
+      </div>
+
+      <div class="content">
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label"><i class="ti ti-chart-bar"></i> Total earned</div>
+            <div class="stat-value">£14,280</div>
+            <div class="stat-sub"><span class="stat-up">↑ 12%</span> vs last month</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><i class="ti ti-clock"></i> Outstanding</div>
+            <div class="stat-value">£3,450</div>
+            <div class="stat-sub">4 unpaid invoices</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><i class="ti ti-file-invoice"></i> Invoices sent</div>
+            <div class="stat-value">38</div>
+            <div class="stat-sub">This month: 7</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><i class="ti ti-circle-check"></i> Avg. paid in</div>
+            <div class="stat-value">18 hrs</div>
+            <div class="stat-sub"><span class="stat-up">↑ faster</span> than last month</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <span class="section-title">Recent invoices</span>
+          <a href="invoices.html" class="btn-link">View all →</a>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Job</th>
+                <th>Amount</th>
+                <th>Sent</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="window.location.href='invoices.html'">
+                <td class="mob-hide"><span class="inv-num">#INV-038</span></td>
+                <td class="mob-main">
+                  <div class="mob-avatar-sm av-blue" style="display:none">MT</div>
+                  <div class="mob-inv-name">Mark Taylor</div>
+                  <div class="mob-inv-sub">#INV-038 · Bathroom refit</div>
+                </td>
+                <td class="mob-hide">Bathroom refit</td>
+                <td class="mob-amount"><strong>£1,850</strong><br><span class="badge badge-unpaid">Unpaid</span></td>
+                <td class="mob-hide">Today</td>
+                <td class="mob-hide"><span class="badge badge-unpaid">Unpaid</span></td>
+              </tr>
+              <tr onclick="window.location.href='invoices.html'">
+                <td class="mob-hide"><span class="inv-num">#INV-037</span></td>
+                <td class="mob-main">
+                  <div class="mob-inv-name">Sarah Collins</div>
+                  <div class="mob-inv-sub">#INV-037 · Boiler installation</div>
+                </td>
+                <td class="mob-hide">Boiler installation</td>
+                <td class="mob-amount"><strong>£2,400</strong><br><span class="badge badge-paid">Paid</span></td>
+                <td class="mob-hide">2 days ago</td>
+                <td class="mob-hide"><span class="badge badge-paid">Paid</span></td>
+              </tr>
+              <tr onclick="window.location.href='invoices.html'">
+                <td class="mob-hide"><span class="inv-num">#INV-036</span></td>
+                <td class="mob-main">
+                  <div class="mob-inv-name">Riverside Homes</div>
+                  <div class="mob-inv-sub">#INV-036 · Electrical rewire</div>
+                </td>
+                <td class="mob-hide">Electrical rewire</td>
+                <td class="mob-amount"><strong>£3,200</strong><br><span class="badge badge-overdue">Overdue</span></td>
+                <td class="mob-hide">5 days ago</td>
+                <td class="mob-hide"><span class="badge badge-overdue">Overdue</span></td>
+              </tr>
+              <tr onclick="window.location.href='invoices.html'">
+                <td class="mob-hide"><span class="inv-num">#INV-035</span></td>
+                <td class="mob-main">
+                  <div class="mob-inv-name">Pete Lawson</div>
+                  <div class="mob-inv-sub">#INV-035 · Kitchen plumbing</div>
+                </td>
+                <td class="mob-hide">Kitchen plumbing</td>
+                <td class="mob-amount"><strong>£640</strong><br><span class="badge badge-paid">Paid</span></td>
+                <td class="mob-hide">1 week ago</td>
+                <td class="mob-hide"><span class="badge badge-paid">Paid</span></td>
+              </tr>
+              <tr onclick="window.location.href='invoices.html'">
+                <td class="mob-hide"><span class="inv-num">#INV-034</span></td>
+                <td class="mob-main">
+                  <div class="mob-inv-name">J&amp;B Builders Ltd</div>
+                  <div class="mob-inv-sub">#INV-034 · Site drainage</div>
+                </td>
+                <td class="mob-hide">Site drainage</td>
+                <td class="mob-amount"><strong>£5,100</strong><br><span class="badge badge-paid">Paid</span></td>
+                <td class="mob-hide">2 weeks ago</td>
+                <td class="mob-hide"><span class="badge badge-paid">Paid</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="card">
+            <div class="section-header" style="margin-bottom:10px">
+              <span class="section-title">Recent activity</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot dot-green"><i class="ti ti-circle-check"></i></div>
+              <div class="activity-text"><p>Sarah Collins paid <strong>£2,400</strong></p><span>2 hours ago via Stripe</span></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot dot-amber"><i class="ti ti-bell"></i></div>
+              <div class="activity-text"><p>Reminder sent to Riverside Homes</p><span>Yesterday</span></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot dot-blue"><i class="ti ti-send"></i></div>
+              <div class="activity-text"><p>Invoice #INV-038 sent to Mark Taylor</p><span>Today at 9:14am</span></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot dot-green"><i class="ti ti-circle-check"></i></div>
+              <div class="activity-text"><p>Pete Lawson paid <strong>£640</strong></p><span>1 week ago via Stripe</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-header" style="margin-bottom:10px">
+              <span class="section-title">Quick actions</span>
+            </div>
+            <a href="create-invoice.html" class="quick-item">
+              <div class="quick-left"><div class="quick-icon"><i class="ti ti-file-plus"></i></div><div><div class="quick-label">New invoice</div><div class="quick-desc">Bill a customer now</div></div></div>
+              <div class="quick-arrow"><i class="ti ti-chevron-right"></i></div>
+            </a>
+            <a href="customers.html" class="quick-item">
+              <div class="quick-left"><div class="quick-icon"><i class="ti ti-user-plus"></i></div><div><div class="quick-label">Add customer</div><div class="quick-desc">Save their details</div></div></div>
+              <div class="quick-arrow"><i class="ti ti-chevron-right"></i></div>
+            </a>
+            <a href="quotes.html" class="quick-item">
+              <div class="quick-left"><div class="quick-icon"><i class="ti ti-file-text"></i></div><div><div class="quick-label">Send a quote</div><div class="quick-desc">Convert to invoice later</div></div></div>
+              <div class="quick-arrow"><i class="ti ti-chevron-right"></i></div>
+            </a>
+            <a href="settings.html" class="quick-item">
+              <div class="quick-left"><div class="quick-icon"><i class="ti ti-settings"></i></div><div><div class="quick-label">Account settings</div><div class="quick-desc">Logo, bank details, VAT</div></div></div>
+              <div class="quick-arrow"><i class="ti ti-chevron-right"></i></div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE BOTTOM NAV -->
+      <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active"><i class="ti ti-layout-dashboard"></i><span>Home</span></a>
+        <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+        <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
+        <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+        <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Settings</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    if (window.innerWidth <= 768) {
+      document.getElementById('mob-hero').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
