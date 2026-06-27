@@ -358,8 +358,6 @@
       if (el) el.style.display = 'none';
     }
 
-    function keysSet() {
-
     async function handleGoogleSignup() {
       if (!keysSet()) return;
       const { error } = await supabase.auth.signInWithOAuth({
