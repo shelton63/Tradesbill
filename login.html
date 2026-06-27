@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // 270fFe0f PASTE YOUR TWO SUPABASE KEYS HERE - get them from Supabase 2192 Settings 2192 API
-    const SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,8 +21,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* NAV */
     .nav {
       background: #0C447C;
       padding: 14px 40px;
@@ -40,14 +38,8 @@
       text-decoration: none;
     }
     .nav-logo i { color: #5DCAA5; }
-    .nav-signup {
-      font-size: 14px;
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-    }
+    .nav-signup { font-size: 14px; color: rgba(255,255,255,0.8); text-decoration: none; }
     .nav-signup:hover { color: #fff; }
-
-    /* PAGE */
     .page {
       flex: 1;
       display: flex;
@@ -55,8 +47,6 @@
       justify-content: center;
       padding: 40px 20px;
     }
-
-    /* CARD */
     .card {
       background: #fff;
       border-radius: 16px;
@@ -65,8 +55,6 @@
       max-width: 420px;
       overflow: hidden;
     }
-
-    /* CARD HEADER */
     .card-header {
       background: #185FA5;
       padding: 32px 36px 28px;
@@ -92,11 +80,20 @@
     .logo-text { font-size: 20px; font-weight: 600; color: #fff; }
     .card-header h1 { font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 6px; }
     .card-header p { font-size: 14px; color: rgba(255,255,255,0.78); }
-
-    /* CARD BODY */
     .card-body { padding: 28px 36px 32px; }
-
-    /* GOOGLE BTN */
+    .error-banner {
+      background: #FCEBEB;
+      border: 1px solid #F09595;
+      color: #A32D2D;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-banner i { font-size: 17px; flex-shrink: 0; }
     .btn-google {
       width: 100%;
       padding: 11px;
@@ -115,8 +112,6 @@
     }
     .btn-google:hover { background: #F1EFE8; }
     .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
-
-    /* DIVIDER */
     .divider {
       display: flex;
       align-items: center;
@@ -130,26 +125,11 @@
       background: #E8E6DF;
     }
     .divider span { font-size: 12px; color: #888780; white-space: nowrap; }
-
-    /* FORM */
     .field { margin-bottom: 16px; }
-    .field-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .field label {
-      font-size: 13px;
-      font-weight: 500;
-      color: #5F5E5A;
-    }
-    .forgot {
-      font-size: 12px;
-      color: #185FA5;
-      text-decoration: none;
-      font-weight: 500;
-    }
+    .field:last-child { margin-bottom: 0; }
+    .field-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .field label { font-size: 13px; font-weight: 600; color: #5F5E5A; }
+    .forgot { font-size: 12px; color: #185FA5; text-decoration: none; font-weight: 600; }
     .forgot:hover { text-decoration: underline; }
     .input-wrap { position: relative; }
     .input-wrap i {
@@ -161,6 +141,8 @@
       color: #888780;
       pointer-events: none;
     }
+    .input-wrap input[type="email"],
+    .input-wrap input[type="password"] { padding-left: 42px; }
     input[type="email"],
     input[type="password"] {
       width: 100%;
@@ -172,16 +154,13 @@
       background: #fff;
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
     }
-    .input-wrap input[type="email"],
-    .input-wrap input[type="password"] { padding-left: 42px; }
     input:focus {
       border-color: #185FA5;
       box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
     }
     input::placeholder { color: #B4B2A9; }
-
-    /* SUBMIT */
     .btn-submit {
       width: 100%;
       padding: 12px;
@@ -194,10 +173,10 @@
       color: #fff;
       margin-top: 4px;
       transition: background 0.15s;
+      font-family: inherit;
     }
     .btn-submit:hover { background: #0C447C; }
-
-    /* TRUST */
+    .btn-submit:disabled { background: #7AADD4; cursor: not-allowed; }
     .trust-row {
       display: flex;
       gap: 14px;
@@ -207,45 +186,12 @@
       justify-content: center;
       flex-wrap: wrap;
     }
-    .trust-pill {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: #888780;
-    }
+    .trust-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #888780; }
     .trust-pill i { font-size: 14px; color: #1D9E75; }
-
-    /* FOOTER LINK */
-    .card-footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #5F5E5A;
-    }
-    .card-footer a { color: #185FA5; text-decoration: none; font-weight: 500; }
-    .card-footer a:hover { text-decoration: underline; }
-
-    /* ERROR MESSAGE */
-    .error-msg {
-      background: #FCEBEB;
-      border: 1px solid #F09595;
-      color: #A32D2D;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    /* PAGE FOOTER */
-    .footer {
-      background: #042C53;
-      padding: 18px 40px;
-      text-align: center;
-    }
+    .card-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #5F5E5A; }
+    .card-footer a { color: #185FA5; text-decoration: none; font-weight: 600; }
+    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
     .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
-
     @media (max-width: 480px) {
       .nav { padding: 14px 20px; }
       .card-header { padding: 24px 24px 20px; }
@@ -275,9 +221,10 @@
         </div>
 
         <div class="card-body">
-          <div class="error-msg" id="error-msg">
-            <i class="ti ti-alert-circle" style="vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>
-            Incorrect email or password. Please try again.
+
+          <div class="error-banner" id="error-banner">
+            <i class="ti ti-alert-circle"></i>
+            <span id="error-text">Incorrect email or password. Please try again.</span>
           </div>
 
           <button class="btn-google" type="button" onclick="handleGoogleLogin()">
@@ -295,7 +242,7 @@
           <div class="field">
             <label for="email">Email address</label>
             <div class="input-wrap">
-              <i class="ti ti-mail" aria-hidden="true"></i>
+              <i class="ti ti-mail"></i>
               <input type="email" id="email" placeholder="dave@example.com" autocomplete="email" />
             </div>
           </div>
@@ -303,10 +250,10 @@
           <div class="field" style="margin-bottom:0">
             <div class="field-header">
               <label for="password">Password</label>
-              <a href="forgot-password.html" class="forgot">Forgot password?</a>
+              <a href="#" class="forgot">Forgot password?</a>
             </div>
             <div class="input-wrap">
-              <i class="ti ti-lock" aria-hidden="true"></i>
+              <i class="ti ti-lock"></i>
               <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
             </div>
           </div>
@@ -316,9 +263,9 @@
           </button>
 
           <div class="trust-row">
-            <div class="trust-pill"><i class="ti ti-shield-check" aria-hidden="true"></i> Secure login</div>
-            <div class="trust-pill"><i class="ti ti-lock" aria-hidden="true"></i> Data encrypted</div>
-            <div class="trust-pill"><i class="ti ti-star" aria-hidden="true"></i> 4.9 / 5 rating</div>
+            <div class="trust-pill"><i class="ti ti-shield-check"></i> Secure login</div>
+            <div class="trust-pill"><i class="ti ti-lock"></i> Data encrypted</div>
+            <div class="trust-pill"><i class="ti ti-star"></i> 4.9 / 5 rating</div>
           </div>
         </div>
       </div>
@@ -335,41 +282,48 @@
 
   <script>
     function showError(msg) {
-      const el = document.getElementById('error-msg');
-      el.innerHTML = '<i class="ti ti-alert-circle" style="font-size:17px;vertical-align:-2px;margin-right:6px"></i>' + msg;
-      el.style.display = 'block';
+      document.getElementById('error-text').textContent = msg;
+      document.getElementById('error-banner').style.display = 'flex';
     }
-    function hideError() { document.getElementById('error-msg').style.display = 'none'; }
-    
+    function hideError() {
+      document.getElementById('error-banner').style.display = 'none';
     }
+
     async function handleGoogleLogin() {
-      if (!keysSet()) return;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin + '/dashboard.html' }
       });
       if (error) showError(error.message);
     }
+
     async function handleLogin() {
       hideError();
-      if (!keysSet()) return;
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const btn = document.querySelector('.btn-submit');
+
       if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
       if (!password) { showError('Please enter your password.'); return; }
+
       btn.textContent = 'Logging in...';
       btn.disabled = true;
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
       if (error) {
         showError('Incorrect email or password. Please try again.');
         btn.textContent = 'Log in →';
         btn.disabled = false;
         return;
       }
+
       window.location.href = 'dashboard.html';
     }
-    document.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
   </script>
 
 </body>
