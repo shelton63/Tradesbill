@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -324,27 +324,54 @@
     async function handleForgotPassword() {
       const email = document.getElementById('email').value.trim();
       if (!email || !email.includes('@')) {
-        showError('Please enter your email address above first, then click Forgot password.');
+        showError('Enter your email address above first, then click Forgot password.');
         return;
       }
-      const btn = document.querySelector('.btn-submit');
-      btn.textContent = 'Sending reset email...';
+
+      // Show a dedicated forgot password UI
+      document.querySelector('.card-body').innerHTML = `
+        <div style="text-align:center;padding:10px 0">
+          <div style="width:56px;height:56px;background:#E6F1FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <i class="ti ti-mail" style="font-size:26px;color:#185FA5"></i>
+          </div>
+          <h2 style="font-size:17px;font-weight:600;color:#042C53;margin-bottom:8px">Reset your password</h2>
+          <p style="font-size:14px;color:#5F5E5A;line-height:1.6;margin-bottom:20px">
+            We'll send a reset link to <strong>${email}</strong>
+          </p>
+          <div id="reset-msg" style="display:none;background:#E1F5EE;border:1px solid #9FE1CB;color:#085041;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;text-align:left">
+            <i class="ti ti-circle-check" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>
+            Reset email sent! Check your inbox and spam folder.
+          </div>
+          <div id="reset-err" style="display:none;background:#FCEBEB;border:1px solid #F09595;color:#A32D2D;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;text-align:left">
+            <i class="ti ti-alert-circle" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>
+            <span id="reset-err-text"></span>
+          </div>
+          <button id="send-reset-btn" onclick="sendReset('${email}')" style="width:100%;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#185FA5;color:#fff;font-family:inherit;margin-bottom:10px">
+            Send reset link
+          </button>
+          <a href="login.html" style="font-size:14px;color:#185FA5;text-decoration:none;font-weight:600">← Back to login</a>
+        </div>`;
+    }
+
+    async function sendReset(email) {
+      const btn = document.getElementById('send-reset-btn');
+      btn.textContent = 'Sending...';
       btn.disabled = true;
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password.html'
       });
+
       if (error) {
-        showError(error.message);
+        document.getElementById('reset-err-text').textContent = error.message;
+        document.getElementById('reset-err').style.display = 'block';
+        btn.textContent = 'Try again';
+        btn.disabled = false;
       } else {
-        hideError();
-        document.getElementById('error-banner').style.background = '#E1F5EE';
-        document.getElementById('error-banner').style.border = '1px solid #9FE1CB';
-        document.getElementById('error-banner').style.color = '#085041';
-        document.getElementById('error-banner').style.display = 'flex';
-        document.getElementById('error-text').textContent = 'Password reset email sent! Check your inbox.';
+        document.getElementById('reset-msg').style.display = 'block';
+        btn.textContent = 'Sent!';
+        btn.style.background = '#1D9E75';
       }
-      btn.textContent = 'Log in →';
-      btn.disabled = false;
     }
 
     document.addEventListener('keydown', function(e) {
