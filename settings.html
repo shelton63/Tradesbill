@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
     .db { display: flex; min-height: 100vh; }
-    .sidebar { width: 210px; flex-shrink: 0; background: #0C447C; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
@@ -26,39 +26,39 @@
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
     .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; }
-    .topbar { background: #fff; border-bottom: 1px solid #E8E6DF; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #042C53; }
-    .btn-save { background: #185FA5; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; }
-    .btn-save:hover { background: #0C447C; }
+    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
+    .btn-save { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-save:hover { background: #0A2540; }
     .content { padding: 24px 28px; }
     .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; padding: 22px; }
+    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 22px; }
     .card-full { grid-column: 1 / -1; }
-    .card-title { font-size: 14px; font-weight: 600; color: #042C53; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-    .card-title i { font-size: 18px; color: #185FA5; }
-    .card-desc { font-size: 12px; color: #888780; margin-bottom: 18px; }
-    .logo-upload { border: 1.5px dashed #D3D1C7; border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; background: #F8F7F3; transition: all 0.15s; }
-    .logo-upload:hover { border-color: #185FA5; background: #E6F1FB; }
-    .logo-preview { width: 80px; height: 80px; border-radius: 10px; background: #E6F1FB; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; overflow: hidden; }
-    .logo-preview i { font-size: 32px; color: #185FA5; }
+    .card-title { font-size: 14px; font-weight: 600; color: #061A30; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .card-title i { font-size: 18px; color: #0A2540; }
+    .card-desc { font-size: 12px; color: #8B8A84; margin-bottom: 18px; }
+    .logo-upload { border: 1.5px dashed #E5E3DC; border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; background: #F8F7F3; transition: all 0.15s; }
+    .logo-upload:hover { border-color: #0A2540; background: #EEF3F8; }
+    .logo-preview { width: 80px; height: 80px; border-radius: 10px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; overflow: hidden; }
+    .logo-preview i { font-size: 32px; color: #0A2540; }
     .logo-preview img { width: 80px; height: 80px; object-fit: contain; display: none; }
-    .logo-upload p { font-size: 13px; color: #5F5E5A; margin-bottom: 4px; }
-    .logo-upload span { font-size: 11px; color: #888780; }
-    .upload-btn { display: inline-flex; align-items: center; gap: 6px; background: #185FA5; color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; margin-top: 12px; }
-    .upload-btn:hover { background: #0C447C; }
+    .logo-upload p { font-size: 13px; color: #6B6A65; margin-bottom: 4px; }
+    .logo-upload span { font-size: 11px; color: #8B8A84; }
+    .upload-btn { display: inline-flex; align-items: center; gap: 6px; background: #0A2540; color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; margin-top: 12px; }
+    .upload-btn:hover { background: #0A2540; }
     .field { margin-bottom: 14px; }
     .field:last-child { margin-bottom: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 600; color: #5F5E5A; margin-bottom: 5px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 13px; color: #1a1a1a; background: #fff; outline: none; font-family: inherit; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #185FA5; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
     .field textarea { resize: vertical; min-height: 72px; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #F1EFE8; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #FAFAF8; }
     .toggle-row:last-child { border-bottom: none; }
-    .toggle-label p { font-size: 13px; color: #1a1a1a; }
-    .toggle-label span { font-size: 11px; color: #888780; }
-    .toggle { width: 42px; height: 24px; border-radius: 12px; background: #185FA5; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
-    .toggle.off { background: #D3D1C7; }
+    .toggle-label p { font-size: 13px; color: #1A1A18; }
+    .toggle-label span { font-size: 11px; color: #8B8A84; }
+    .toggle { width: 42px; height: 24px; border-radius: 14px; background: #0A2540; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
+    .toggle.off { background: #E5E3DC; }
     .toggle-dot { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; right: 3px; transition: right 0.15s, left 0.15s; }
     .toggle.off .toggle-dot { right: auto; left: 3px; }
     .stripe-connected { display: flex; align-items: center; gap: 10px; background: #E1F5EE; border: 1px solid #9FE1CB; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
@@ -66,7 +66,7 @@
     .stripe-connected p { font-size: 13px; font-weight: 600; color: #085041; }
     .stripe-connected span { font-size: 11px; color: #0F6E56; }
     .danger-card { border-color: #F09595; }
-    .btn-danger { background: transparent; color: #A32D2D; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid #F09595; cursor: pointer; }
+    .btn-danger { background: transparent; color: #D14343; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid #F09595; cursor: pointer; }
     .btn-danger:hover { background: #FCEBEB; }
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
@@ -74,7 +74,7 @@
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0C447C; padding: 16px; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
@@ -83,12 +83,12 @@
       .settings-grid { grid-template-columns: 1fr; }
       .card-full { grid-column: 1; }
       .field-row { grid-template-columns: 1fr; }
-      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E8E6DF; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
+      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E5E3DC; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
-      .nav-item i { font-size: 23px; color: #B4B2A9; }
-      .nav-item span { font-size: 10px; color: #B4B2A9; }
-      .nav-item.active i { color: #185FA5; }
-      .nav-item.active span { color: #185FA5; }
+      .nav-item i { font-size: 23px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; }
+      .nav-item.active i { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; }
     }
   </style>
 </head>
@@ -192,7 +192,7 @@
           </div>
 
           <div class="card card-full danger-card">
-            <div class="card-title"><i class="ti ti-alert-triangle" style="color:#A32D2D"></i> Danger zone</div>
+            <div class="card-title"><i class="ti ti-alert-triangle" style="color:#D14343"></i> Danger zone</div>
             <div class="card-desc">These actions are permanent and cannot be undone</div>
             <button class="btn-danger">Delete my account and all data</button>
           </div>
@@ -228,7 +228,7 @@
       const btns = document.querySelectorAll('.btn-save, .mob-save');
       btns.forEach(b => { b.textContent = 'Saved!'; b.style.background = '#1D9E75'; });
       setTimeout(() => {
-        document.querySelectorAll('.btn-save').forEach(b => { b.textContent = 'Save changes'; b.style.background = '#185FA5'; });
+        document.querySelectorAll('.btn-save').forEach(b => { b.textContent = 'Save changes'; b.style.background = '#0A2540'; });
         document.querySelectorAll('.mob-save').forEach(b => { b.textContent = 'Save'; b.style.background = ''; });
       }, 2000);
     }

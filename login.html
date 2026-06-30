@@ -8,21 +8,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #F1EFE8;
+      background: #FAFAF8;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
     .nav {
-      background: #0C447C;
+      background: #0A2540;
       padding: 14px 40px;
       display: flex;
       align-items: center;
@@ -50,13 +50,13 @@
     .card {
       background: #fff;
       border-radius: 16px;
-      border: 1px solid #D3D1C7;
+      border: 1px solid #E5E3DC;
       width: 100%;
       max-width: 420px;
       overflow: hidden;
     }
     .card-header {
-      background: #185FA5;
+      background: #0A2540;
       padding: 32px 36px 28px;
       text-align: center;
     }
@@ -84,7 +84,7 @@
     .error-banner {
       background: #FCEBEB;
       border: 1px solid #F09595;
-      color: #A32D2D;
+      color: #D14343;
       border-radius: 8px;
       padding: 11px 14px;
       font-size: 13px;
@@ -101,16 +101,16 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      border: 1px solid #D3D1C7;
+      border: 1px solid #E5E3DC;
       background: #fff;
-      color: #1a1a1a;
+      color: #1A1A18;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 9px;
       transition: background 0.15s;
     }
-    .btn-google:hover { background: #F1EFE8; }
+    .btn-google:hover { background: #FAFAF8; }
     .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
     .divider {
       display: flex;
@@ -122,14 +122,14 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: #E8E6DF;
+      background: #E5E3DC;
     }
-    .divider span { font-size: 12px; color: #888780; white-space: nowrap; }
+    .divider span { font-size: 12px; color: #8B8A84; white-space: nowrap; }
     .field { margin-bottom: 16px; }
     .field:last-child { margin-bottom: 0; }
     .field-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .field label { font-size: 13px; font-weight: 600; color: #5F5E5A; }
-    .forgot { font-size: 12px; color: #185FA5; text-decoration: none; font-weight: 600; }
+    .field label { font-size: 13px; font-weight: 600; color: #6B6A65; }
+    .forgot { font-size: 12px; color: #0A2540; text-decoration: none; font-weight: 600; }
     .forgot:hover { text-decoration: underline; }
     .input-wrap { position: relative; }
     .input-wrap i {
@@ -138,7 +138,7 @@
       top: 50%;
       transform: translateY(-50%);
       font-size: 16px;
-      color: #888780;
+      color: #8B8A84;
       pointer-events: none;
     }
     .input-wrap input[type="email"],
@@ -147,20 +147,20 @@
     input[type="password"] {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #D3D1C7;
+      border: 1px solid #E5E3DC;
       border-radius: 8px;
       font-size: 14px;
-      color: #1a1a1a;
+      color: #1A1A18;
       background: #fff;
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       font-family: inherit;
     }
     input:focus {
-      border-color: #185FA5;
+      border-color: #0A2540;
       box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
     }
-    input::placeholder { color: #B4B2A9; }
+    input::placeholder { color: #A3A29C; }
     .btn-submit {
       width: 100%;
       padding: 12px;
@@ -169,28 +169,28 @@
       font-weight: 600;
       cursor: pointer;
       border: none;
-      background: #185FA5;
+      background: #0A2540;
       color: #fff;
       margin-top: 4px;
       transition: background 0.15s;
       font-family: inherit;
     }
-    .btn-submit:hover { background: #0C447C; }
+    .btn-submit:hover { background: #0A2540; }
     .btn-submit:disabled { background: #7AADD4; cursor: not-allowed; }
     .trust-row {
       display: flex;
       gap: 14px;
       margin-top: 20px;
       padding-top: 18px;
-      border-top: 1px solid #F1EFE8;
+      border-top: 1px solid #FAFAF8;
       justify-content: center;
       flex-wrap: wrap;
     }
-    .trust-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #888780; }
+    .trust-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #8B8A84; }
     .trust-pill i { font-size: 14px; color: #1D9E75; }
-    .card-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #5F5E5A; }
-    .card-footer a { color: #185FA5; text-decoration: none; font-weight: 600; }
-    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
+    .card-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #6B6A65; }
+    .card-footer a { color: #0A2540; text-decoration: none; font-weight: 600; }
+    .footer { background: #061A30; padding: 18px 40px; text-align: center; }
     .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
     @media (max-width: 480px) {
       .nav { padding: 14px 20px; }
@@ -331,25 +331,25 @@
       // Show a dedicated forgot password UI
       document.querySelector('.card-body').innerHTML = `
         <div style="text-align:center;padding:10px 0">
-          <div style="width:56px;height:56px;background:#E6F1FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-            <i class="ti ti-mail" style="font-size:26px;color:#185FA5"></i>
+          <div style="width:56px;height:56px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <i class="ti ti-mail" style="font-size:26px;color:#0A2540"></i>
           </div>
-          <h2 style="font-size:17px;font-weight:600;color:#042C53;margin-bottom:8px">Reset your password</h2>
-          <p style="font-size:14px;color:#5F5E5A;line-height:1.6;margin-bottom:20px">
+          <h2 style="font-size:17px;font-weight:600;color:#061A30;margin-bottom:8px">Reset your password</h2>
+          <p style="font-size:14px;color:#6B6A65;line-height:1.6;margin-bottom:20px">
             We'll send a reset link to <strong>${email}</strong>
           </p>
           <div id="reset-msg" style="display:none;background:#E1F5EE;border:1px solid #9FE1CB;color:#085041;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;text-align:left">
             <i class="ti ti-circle-check" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>
             Reset email sent! Check your inbox and spam folder.
           </div>
-          <div id="reset-err" style="display:none;background:#FCEBEB;border:1px solid #F09595;color:#A32D2D;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;text-align:left">
+          <div id="reset-err" style="display:none;background:#FCEBEB;border:1px solid #F09595;color:#D14343;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:16px;text-align:left">
             <i class="ti ti-alert-circle" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>
             <span id="reset-err-text"></span>
           </div>
-          <button id="send-reset-btn" onclick="sendReset('${email}')" style="width:100%;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#185FA5;color:#fff;font-family:inherit;margin-bottom:10px">
+          <button id="send-reset-btn" onclick="sendReset('${email}')" style="width:100%;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#0A2540;color:#fff;font-family:inherit;margin-bottom:10px">
             Send reset link
           </button>
-          <a href="login.html" style="font-size:14px;color:#185FA5;text-decoration:none;font-weight:600">← Back to login</a>
+          <a href="login.html" style="font-size:14px;color:#0A2540;text-decoration:none;font-weight:600">← Back to login</a>
         </div>`;
     }
 

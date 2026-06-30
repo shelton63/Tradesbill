@@ -14,13 +14,13 @@
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
 
     /* ── DESKTOP LAYOUT ── */
     .db { display: flex; min-height: 100vh; }
 
     /* Sidebar */
-    .sidebar { width: 210px; flex-shrink: 0; background: #0C447C; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
@@ -40,62 +40,62 @@
 
     /* Main */
     .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
-    .topbar { background: #fff; border-bottom: 1px solid #E8E6DF; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #042C53; }
-    .btn-new { background: #185FA5; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
-    .btn-new:hover { background: #0C447C; }
+    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
+    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-new:hover { background: #0A2540; }
     .btn-new i { font-size: 16px; }
     .content { padding: 24px 28px; flex: 1; }
 
     /* Stats */
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-    .stat { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; padding: 16px; }
-    .stat-label { font-size: 12px; color: #888780; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
+    .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
     .stat-label i { font-size: 14px; }
-    .stat-value { font-size: 24px; font-weight: 600; color: #042C53; }
-    .stat-sub { font-size: 11px; color: #888780; margin-top: 4px; }
-    .stat-up { color: #1D9E75; }
+    .stat-value { font-size: 24px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
+    .stat-sub { font-size: 11px; color: #8B8A84; margin-top: 4px; }
+    .stat-up { display: inline-flex; align-items: center; background: #E1F5EE; color: #0F6E56; font-weight: 700; padding: 1px 6px; border-radius: 5px; }
 
     /* Section */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .section-title { font-size: 14px; font-weight: 600; color: #042C53; }
-    .btn-link { font-size: 13px; color: #185FA5; background: none; border: none; cursor: pointer; text-decoration: none; }
+    .section-title { font-size: 14px; font-weight: 600; color: #061A30; }
+    .btn-link { font-size: 13px; color: #0A2540; background: none; border: none; cursor: pointer; text-decoration: none; }
 
     /* Invoice table */
-    .table-wrap { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+    .table-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; margin-bottom: 24px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead { background: #F8F7F3; }
-    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #888780; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E8E6DF; }
-    td { padding: 12px 16px; color: #1a1a1a; border-bottom: 1px solid #F1EFE8; }
+    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #8B8A84; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E5E3DC; }
+    td { padding: 12px 16px; color: #1A1A18; border-bottom: 1px solid #FAFAF8; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #F8F7F3; cursor: pointer; }
-    .inv-num { color: #185FA5; font-weight: 600; }
+    .inv-num { color: #0A2540; font-weight: 600; }
     .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
     .badge-paid { background: #E1F5EE; color: #0F6E56; }
-    .badge-unpaid { background: #FAEEDA; color: #854F0B; }
-    .badge-overdue { background: #FCEBEB; color: #A32D2D; }
-    .badge-draft { background: #F1EFE8; color: #5F5E5A; }
+    .badge-unpaid { background: #FBF3E3; color: #C28A1E; }
+    .badge-overdue { background: #FCEBEB; color: #D14343; }
+    .badge-draft { background: #FAFAF8; color: #6B6A65; }
 
     /* Bottom grid */
     .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; padding: 18px; }
-    .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F1EFE8; }
+    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 18px; }
+    .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #FAFAF8; }
     .activity-item:last-child { border-bottom: none; }
     .activity-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .dot-green { background: #E1F5EE; } .dot-green i { color: #1D9E75; font-size: 15px; }
-    .dot-amber { background: #FAEEDA; } .dot-amber i { color: #854F0B; font-size: 15px; }
-    .dot-blue { background: #E6F1FB; } .dot-blue i { color: #185FA5; font-size: 15px; }
-    .activity-text p { font-size: 13px; color: #1a1a1a; line-height: 1.4; }
-    .activity-text span { font-size: 11px; color: #888780; }
-    .quick-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F1EFE8; cursor: pointer; text-decoration: none; }
+    .dot-amber { background: #FBF3E3; } .dot-amber i { color: #C28A1E; font-size: 15px; }
+    .dot-blue { background: #EEF3F8; } .dot-blue i { color: #0A2540; font-size: 15px; }
+    .activity-text p { font-size: 13px; color: #1A1A18; line-height: 1.4; }
+    .activity-text span { font-size: 11px; color: #8B8A84; }
+    .quick-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #FAFAF8; cursor: pointer; text-decoration: none; }
     .quick-item:last-child { border-bottom: none; }
-    .quick-item:hover .quick-label { color: #185FA5; }
+    .quick-item:hover .quick-label { color: #0A2540; }
     .quick-left { display: flex; align-items: center; gap: 10px; }
-    .quick-icon { width: 32px; height: 32px; border-radius: 8px; background: #E6F1FB; display: flex; align-items: center; justify-content: center; }
-    .quick-icon i { color: #185FA5; font-size: 17px; }
-    .quick-label { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-    .quick-desc { font-size: 11px; color: #888780; }
-    .quick-arrow i { color: #B4B2A9; font-size: 16px; }
+    .quick-icon { width: 32px; height: 32px; border-radius: 8px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+    .quick-icon i { color: #0A2540; font-size: 17px; }
+    .quick-label { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    .quick-desc { font-size: 11px; color: #8B8A84; }
+    .quick-arrow i { color: #A3A29C; font-size: 16px; }
 
     /* ── MOBILE ── */
     .mobile-topbar { display: none; }
@@ -106,7 +106,7 @@
       .main { margin-left: 0; }
       .topbar { display: none; }
 
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0C447C; padding: 16px; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
@@ -114,10 +114,10 @@
       .mob-bell { color: rgba(255,255,255,0.8); font-size: 22px; }
       .mob-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
 
-      .hero-bar { background: #185FA5; padding: 18px 16px 22px; }
+      .hero-bar { background: #0A2540; padding: 18px 16px 22px; }
       .hero-greet { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 3px; }
       .hero-name { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 16px; }
-      .btn-new-mob { background: #fff; color: #185FA5; font-size: 15px; font-weight: 600; padding: 13px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; }
+      .btn-new-mob { background: #fff; color: #0A2540; font-size: 15px; font-weight: 600; padding: 13px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; }
       .btn-new-mob i { font-size: 19px; }
 
       .content { padding: 16px; }
@@ -126,46 +126,46 @@
 
       table, thead, tbody, th, td, tr { display: block; }
       thead { display: none; }
-      .table-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
+      .table-wrap { border-radius: 14px; overflow: hidden; margin-bottom: 18px; }
       td { border-bottom: none; padding: 0; }
-      tr { border-bottom: 1px solid #F1EFE8; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+      tr { border-bottom: 1px solid #FAFAF8; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
       tr:last-child { border-bottom: none; }
       tr:hover { background: #F8F7F3; }
       td.mob-main { flex: 1; min-width: 0; }
       td.mob-amount { text-align: right; flex-shrink: 0; }
       td.mob-hide { display: none; }
-      .mob-inv-name { font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .mob-inv-sub { font-size: 11px; color: #888780; }
+      .mob-inv-name { font-size: 13px; font-weight: 600; color: #1A1A18; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .mob-inv-sub { font-size: 11px; color: #8B8A84; }
       .mob-avatar-sm { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-      .av-blue { background: #E6F1FB; color: #0C447C; }
+      .av-blue { background: #EEF3F8; color: #0A2540; }
       .av-teal { background: #E1F5EE; color: #0F6E56; }
-      .av-amber { background: #FAEEDA; color: #854F0B; }
+      .av-amber { background: #FBF3E3; color: #C28A1E; }
       .av-coral { background: #FAECE7; color: #993C1D; }
       .av-purple { background: #EEEDFE; color: #3C3489; }
 
       .bottom-grid { grid-template-columns: 1fr; }
 
-      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E8E6DF; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
+      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E5E3DC; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
-      .nav-item i { font-size: 23px; color: #B4B2A9; }
-      .nav-item span { font-size: 10px; color: #B4B2A9; }
-      .nav-item.active i { color: #185FA5; }
-      .nav-item.active span { color: #185FA5; }
+      .nav-item i { font-size: 23px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; }
+      .nav-item.active i { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; }
     }
     /* Notifications */
-    .notif-dot { position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; background: #E04848; border-radius: 50%; border: 1.5px solid #0C447C; display: none; }
+    .notif-dot { position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; background: #E04848; border-radius: 50%; border: 1.5px solid #0A2540; display: none; }
     .topbar .notif-dot { border-color: #fff; }
-    .notif-dropdown { display: none; position: absolute; top: 32px; right: 0; width: 300px; max-height: 360px; overflow-y: auto; background: #fff; border: 1px solid #E8E6DF; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 200; }
+    .notif-dropdown { display: none; position: absolute; top: 32px; right: 0; width: 300px; max-height: 360px; overflow-y: auto; background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 200; }
     .notif-dropdown.open { display: block; }
-    .notif-header { padding: 12px 14px; font-size: 13px; font-weight: 600; color: #042C53; border-bottom: 1px solid #F1EFE8; }
-    .notif-item { display: flex; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #F1EFE8; cursor: pointer; }
+    .notif-header { padding: 12px 14px; font-size: 13px; font-weight: 600; color: #061A30; border-bottom: 1px solid #FAFAF8; }
+    .notif-item { display: flex; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #FAFAF8; cursor: pointer; }
     .notif-item:last-child { border-bottom: none; }
     .notif-item:hover { background: #F8F7F3; }
     .notif-icon { width: 30px; height: 30px; border-radius: 50%; background: #E1F5EE; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .notif-icon i { color: #1D9E75; font-size: 15px; }
-    .notif-text p { font-size: 12.5px; color: #1a1a1a; line-height: 1.4; }
-    .notif-text span { font-size: 11px; color: #888780; }
-    .notif-empty { padding: 24px 14px; text-align: center; font-size: 13px; color: #888780; }
+    .notif-text p { font-size: 12.5px; color: #1A1A18; line-height: 1.4; }
+    .notif-text span { font-size: 11px; color: #8B8A84; }
+    .notif-empty { padding: 24px 14px; text-align: center; font-size: 13px; color: #8B8A84; }
   </style>
 </head>
 <body>
@@ -231,7 +231,7 @@
         <h1>Dashboard</h1>
         <div style="display:flex;align-items:center;gap:14px">
           <div style="position:relative">
-            <i class="ti ti-bell" onclick="toggleNotifs(event)" style="cursor:pointer;font-size:21px;color:#5F5E5A"></i>
+            <i class="ti ti-bell" onclick="toggleNotifs(event)" style="cursor:pointer;font-size:21px;color:#6B6A65"></i>
             <span class="notif-dot" id="desk-notif-dot"></span>
             <div class="notif-dropdown" id="notif-dropdown-desk"></div>
           </div>
@@ -491,7 +491,7 @@
             </div>`;
           } else {
             html += `<div class="notif-item" onclick="window.location.href='invoices.html'">
-              <div class="notif-icon" style="background:#FAEEDA"><i class="ti ti-bell" style="color:#854F0B"></i></div>
+              <div class="notif-icon" style="background:#FBF3E3"><i class="ti ti-bell" style="color:#C28A1E"></i></div>
               <div class="notif-text"><p>Reminder sent to <strong>${n.name}</strong></p><span>${n.time}</span></div>
             </div>`;
           }

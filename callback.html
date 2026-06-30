@@ -6,15 +6,15 @@
   <title>Confirming your account — TradesBill</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #185FA5;
+      background: #0A2540;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -38,16 +38,16 @@
       margin: 0 auto 20px;
       font-size: 30px;
     }
-    .icon-loading { background: #E6F1FB; animation: pulse 1.2s ease-in-out infinite; }
+    .icon-loading { background: #EEF3F8; animation: pulse 1.2s ease-in-out infinite; }
     .icon-success { background: #E1F5EE; }
     .icon-error { background: #FCEBEB; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-    h2 { font-size: 20px; font-weight: 600; color: #042C53; margin-bottom: 8px; }
-    p { font-size: 14px; color: #5F5E5A; line-height: 1.6; }
+    h2 { font-size: 20px; font-weight: 600; color: #061A30; margin-bottom: 8px; }
+    p { font-size: 14px; color: #6B6A65; line-height: 1.6; }
     .spinner {
       width: 32px; height: 32px;
       border: 3px solid #B5D4F4;
-      border-top-color: #185FA5;
+      border-top-color: #0A2540;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -56,7 +56,7 @@
       display: inline-block;
       margin-top: 20px;
       padding: 12px 24px;
-      background: #185FA5;
+      background: #0A2540;
       color: #fff;
       border-radius: 8px;
       text-decoration: none;
@@ -77,6 +77,9 @@
   <script>
     async function handleCallback() {
       try {
+        if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE' || SUPABASE_KEY === 'YOUR_ANON_KEY_HERE') {
+          throw new Error('Supabase keys not set in callback.html. Open the file on GitHub and paste your Project URL and Anon Key near the top.');
+        }
         // Exchange the code/token in the URL for a session
         const { data, error } = await supabase.auth.getSession();
 

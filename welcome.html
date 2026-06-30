@@ -13,42 +13,42 @@
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
 
-    .nav { background: #0C447C; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .nav { background: #0A2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
     .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
     .nav-logo i { color: #5DCAA5; }
     .nav-skip { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
     .nav-skip:hover { color: #fff; }
 
     .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-    .card { background: #fff; border-radius: 18px; border: 1px solid #D3D1C7; width: 100%; max-width: 480px; padding: 48px 40px; text-align: center; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E3DC; width: 100%; max-width: 480px; padding: 48px 40px; text-align: center; }
 
     .icon-stack { position: relative; width: 100px; height: 100px; margin: 0 auto 28px; }
-    .icon-circle { width: 100px; height: 100px; border-radius: 50%; background: #E6F1FB; display: flex; align-items: center; justify-content: center; }
-    .icon-circle i { font-size: 46px; color: #185FA5; }
+    .icon-circle { width: 100px; height: 100px; border-radius: 50%; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+    .icon-circle i { font-size: 46px; color: #0A2540; }
     .icon-badge { position: absolute; bottom: -2px; right: -2px; width: 34px; height: 34px; border-radius: 50%; background: #5DCAA5; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
-    .icon-badge i { font-size: 16px; color: #042C53; }
+    .icon-badge i { font-size: 16px; color: #061A30; }
 
-    h1 { font-size: 26px; font-weight: 700; color: #042C53; margin-bottom: 10px; }
-    .subtitle { font-size: 15px; color: #5F5E5A; line-height: 1.6; margin-bottom: 8px; }
-    .name-highlight { color: #185FA5; font-weight: 600; }
+    h1 { font-size: 26px; font-weight: 700; color: #061A30; margin-bottom: 10px; }
+    .subtitle { font-size: 15px; color: #6B6A65; line-height: 1.6; margin-bottom: 8px; }
+    .name-highlight { color: #0A2540; font-weight: 600; }
 
     .timeline { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 28px 0 32px; flex-wrap: wrap; }
-    .time-pill { display: flex; align-items: center; gap: 6px; background: #F1EFE8; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #5F5E5A; font-weight: 600; }
-    .time-pill i { font-size: 14px; color: #185FA5; }
+    .time-pill { display: flex; align-items: center; gap: 6px; background: #FAFAF8; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #6B6A65; font-weight: 600; }
+    .time-pill i { font-size: 14px; color: #0A2540; }
 
     .steps-preview { text-align: left; margin-bottom: 32px; }
     .step-row { display: flex; align-items: center; gap: 14px; padding: 11px 0; }
-    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #F1EFE8; color: #888780; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .step-text { font-size: 14px; color: #5F5E5A; font-weight: 600; }
-    .step-text span { display: block; font-size: 12px; color: #888780; font-weight: 400; margin-top: 1px; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #FAFAF8; color: #8B8A84; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-text { font-size: 14px; color: #6B6A65; font-weight: 600; }
+    .step-text span { display: block; font-size: 12px; color: #8B8A84; font-weight: 400; margin-top: 1px; }
 
-    .btn-start { width: 100%; padding: 15px; background: #185FA5; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-start:hover { background: #0C447C; }
+    .btn-start { width: 100%; padding: 15px; background: #0A2540; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-start:hover { background: #0A2540; }
     .btn-start i { font-size: 19px; }
 
-    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
+    .footer { background: #061A30; padding: 18px 40px; text-align: center; }
     .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
 
     @media (max-width: 480px) {
