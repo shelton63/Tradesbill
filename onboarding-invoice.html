@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create your first invoice — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .nav { background: #0C447C; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .nav-logo i { color: #5DCAA5; }
+    .nav-skip { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+    .nav-skip:hover { color: #fff; }
+
+    .progress-bar { background: #185FA5; padding: 14px 40px; }
+    .progress-track { max-width: 480px; margin: 0 auto; display: flex; align-items: center; }
+    .pstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .pdot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .pdot.done { background: #5DCAA5; color: #042C53; }
+    .pdot.active { background: #fff; color: #185FA5; }
+    .pdot.todo { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+    .pline { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-top: -18px; }
+    .pline.done { background: #5DCAA5; }
+
+    .page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #D3D1C7; width: 100%; max-width: 480px; padding: 36px; }
+
+    h1 { font-size: 21px; font-weight: 700; color: #042C53; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #5F5E5A; margin-bottom: 24px; line-height: 1.5; }
+
+    .error-banner { background: #FCEBEB; border: 1px solid #F09595; color: #A32D2D; border-radius: 8px; padding: 11px 14px; font-size: 13px; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
+    .error-banner i { font-size: 17px; flex-shrink: 0; }
+
+    .field { margin-bottom: 16px; }
+    .field:last-of-type { margin-bottom: 0; }
+    .field label { display: block; font-size: 13px; font-weight: 700; color: #5F5E5A; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 11px 13px; border: 1px solid #D3D1C7; border-radius: 9px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; font-family: inherit; }
+    .field input:focus { border-color: #185FA5; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+
+    .line-item { background: #F8F7F3; border-radius: 10px; padding: 13px; margin-bottom: 10px; }
+    .line-desc { width: 100%; padding: 10px 12px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; margin-bottom: 9px; font-family: inherit; }
+    .line-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; }
+    .line-input { width: 100%; padding: 10px 11px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; font-family: inherit; }
+
+    .total-card { background: #185FA5; border-radius: 12px; padding: 16px; margin: 18px 0; display: flex; justify-content: space-between; align-items: center; }
+    .total-card span:first-child { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 700; }
+    .total-card span:last-child { font-size: 22px; color: #fff; font-weight: 700; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+    .btn-back { flex: 0 0 auto; padding: 13px 18px; background: transparent; color: #5F5E5A; border: 1px solid #D3D1C7; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-back:hover { background: #F1EFE8; }
+    .btn-next { flex: 1; padding: 13px; background: #185FA5; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-next:hover { background: #0C447C; }
+    .btn-next:disabled { background: #7AADD4; cursor: not-allowed; }
+
+    .helper-tip { display: flex; gap: 9px; background: #E6F1FB; border-radius: 10px; padding: 11px 13px; margin-bottom: 20px; }
+    .helper-tip i { color: #185FA5; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .helper-tip p { font-size: 12.5px; color: #0C447C; line-height: 1.5; }
+
+    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    @media (max-width: 480px) {
+      .nav, .progress-bar { padding: 14px 20px; }
+      .card { padding: 26px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</div>
+    <a href="dashboard.html?skip_onboarding=true" class="nav-skip">Skip for now</a>
+  </nav>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot active">3</div></div>
+      <div class="pline"></div>
+      <div class="pstep"><div class="pdot todo">4</div></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <h1>Create your first invoice</h1>
+      <p class="subtitle">Just the basics — you can add more detail later. Let's keep it simple.</p>
+
+      <div class="error-banner" id="error-banner">
+        <i class="ti ti-alert-circle"></i>
+        <span id="error-text"></span>
+      </div>
+
+      <div class="helper-tip">
+        <i class="ti ti-bulb"></i>
+        <p>Tip: use a recent job you've completed — this makes it easy to invoice a real customer straight away.</p>
+      </div>
+
+      <div class="field">
+        <label for="cust-name">Customer name</label>
+        <input type="text" id="cust-name" placeholder="e.g. Mark Taylor" />
+      </div>
+
+      <div class="field">
+        <label for="cust-email">Customer email</label>
+        <input type="email" id="cust-email" placeholder="mark@example.com" />
+      </div>
+
+      <div class="field">
+        <label for="job-desc">What did you do?</label>
+        <input type="text" id="job-desc" placeholder="e.g. Bathroom refit" />
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label>Amount to charge</label>
+        <div class="line-row">
+          <div></div>
+          <input class="line-input" type="number" id="amount" placeholder="£ 0.00" min="0" step="1" oninput="updateTotal()" />
+        </div>
+      </div>
+
+      <div class="total-card">
+        <span>Invoice total</span>
+        <span id="total-display">£0.00</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" onclick="window.location.href='onboarding-payments.html'"><i class="ti ti-arrow-left"></i></button>
+        <button class="btn-next" id="next-btn" onclick="createFirstInvoice()">Continue <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 TradesBill &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
+  </footer>
+
+  <script>
+    async function checkUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        window.location.href = 'login.html';
+      }
+    }
+    checkUser();
+
+    function fmt(n) { return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+    function updateTotal() {
+      const amt = parseFloat(document.getElementById('amount').value) || 0;
+      document.getElementById('total-display').textContent = fmt(amt);
+    }
+
+    function showError(msg) {
+      document.getElementById('error-text').textContent = msg;
+      document.getElementById('error-banner').style.display = 'flex';
+    }
+    function hideError() {
+      document.getElementById('error-banner').style.display = 'none';
+    }
+
+    async function createFirstInvoice() {
+      hideError();
+      const custName = document.getElementById('cust-name').value.trim();
+      const custEmail = document.getElementById('cust-email').value.trim();
+      const jobDesc = document.getElementById('job-desc').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      const btn = document.getElementById('next-btn');
+
+      if (!custName) { showError('Please enter your customer\'s name.'); return; }
+      if (!custEmail || !custEmail.includes('@')) { showError('Please enter a valid customer email.'); return; }
+      if (!jobDesc) { showError('Please describe the job.'); return; }
+      if (amount <= 0) { showError('Please enter an amount to charge.'); return; }
+
+      btn.textContent = 'Saving...';
+      btn.disabled = true;
+
+      // Store draft invoice data in user metadata to carry through to the send step
+      // In production this would create a row in a Supabase "invoices" table instead
+      await supabase.auth.updateUser({
+        data: {
+          onboarding_step: 'first_invoice_drafted',
+          first_invoice_customer: custName,
+          first_invoice_email: custEmail,
+          first_invoice_job: jobDesc,
+          first_invoice_amount: amount
+        }
+      });
+
+      window.location.href = 'onboarding-send.html';
+    }
+  </script>
+
+</body>
+</html>

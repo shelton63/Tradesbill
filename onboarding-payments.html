@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect payments — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::as { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .nav { background: #0C447C; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .nav-logo i { color: #5DCAA5; }
+    .nav-skip { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+    .nav-skip:hover { color: #fff; }
+
+    .progress-bar { background: #185FA5; padding: 14px 40px; }
+    .progress-track { max-width: 480px; margin: 0 auto; display: flex; align-items: center; }
+    .pstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .pdot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .pdot.done { background: #5DCAA5; color: #042C53; }
+    .pdot.active { background: #fff; color: #185FA5; }
+    .pdot.todo { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+    .pline { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-top: -18px; }
+    .pline.done { background: #5DCAA5; }
+
+    .page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #D3D1C7; width: 100%; max-width: 480px; padding: 36px; }
+
+    h1 { font-size: 21px; font-weight: 700; color: #042C53; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #5F5E5A; margin-bottom: 26px; line-height: 1.5; }
+
+    .pay-option { border: 1.5px solid #D3D1C7; border-radius: 14px; padding: 18px; margin-bottom: 14px; cursor: pointer; transition: all 0.15s; }
+    .pay-option:hover { border-color: #185FA5; background: #F8FAFD; }
+    .pay-option.connected { border-color: #1D9E75; background: #F0FAF6; }
+    .pay-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .pay-icon { width: 42px; height: 42px; border-radius: 10px; background: #635BFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pay-icon i { color: #fff; font-size: 22px; }
+    .pay-icon.bank { background: #185FA5; }
+    .pay-title { font-size: 15px; font-weight: 700; color: #042C53; }
+    .pay-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; margin-left: 8px; background: #FAEEDA; color: #854F0B; }
+    .pay-badge.done { background: #E1F5EE; color: #0F6E56; }
+    .pay-desc { font-size: 13px; color: #5F5E5A; line-height: 1.5; margin-bottom: 12px; }
+    .pay-btn { width: 100%; padding: 11px; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
+    .pay-btn.stripe { background: #635BFF; color: #fff; }
+    .pay-btn.stripe:hover { background: #514ad6; }
+    .pay-btn.connected { background: #E1F5EE; color: #0F6E56; cursor: default; }
+
+    .info-box { display: flex; gap: 10px; background: #E6F1FB; border-radius: 10px; padding: 12px 14px; margin-bottom: 22px; }
+    .info-box i { color: #185FA5; font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .info-box p { font-size: 13px; color: #0C447C; line-height: 1.5; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+    .btn-back { flex: 0 0 auto; padding: 13px 18px; background: transparent; color: #5F5E5A; border: 1px solid #D3D1C7; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-back:hover { background: #F1EFE8; }
+    .btn-next { flex: 1; padding: 13px; background: #185FA5; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-next:hover { background: #0C447C; }
+
+    .skip-link { text-align: center; margin-top: 14px; }
+    .skip-link a { font-size: 13px; color: #888780; text-decoration: none; }
+    .skip-link a:hover { color: #185FA5; }
+
+    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    @media (max-width: 480px) {
+      .nav, .progress-bar { padding: 14px 20px; }
+      .card { padding: 26px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</div>
+    <a href="dashboard.html?skip_onboarding=true" class="nav-skip">Skip for now</a>
+  </nav>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot active">2</div></div>
+      <div class="pline"></div>
+      <div class="pstep"><div class="pdot todo">3</div></div>
+      <div class="pline"></div>
+      <div class="pstep"><div class="pdot todo">4</div></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <h1>Connect payments</h1>
+      <p class="subtitle">Connect Stripe so your customers can pay you directly — money lands straight in your bank account.</p>
+
+      <div class="pay-option" id="stripe-option">
+        <div class="pay-header">
+          <div class="pay-icon"><i class="ti ti-brand-stripe"></i></div>
+          <div>
+            <div class="pay-title">Stripe <span class="pay-badge" id="stripe-badge">Not connected</span></div>
+          </div>
+        </div>
+        <p class="pay-desc">Accept card payments, Apple Pay, and Google Pay. Industry-standard security, trusted by millions of businesses.</p>
+        <button class="pay-btn stripe" id="stripe-btn" onclick="connectStripe()">Connect Stripe →</button>
+      </div>
+
+      <div class="pay-option" id="bank-option">
+        <div class="pay-header">
+          <div class="pay-icon bank"><i class="ti ti-building-bank"></i></div>
+          <div>
+            <div class="pay-title">Bank transfer <span class="pay-badge" id="bank-badge">Optional</span></div>
+          </div>
+        </div>
+        <p class="pay-desc">Let customers pay you directly via bank transfer as an alternative to card payments.</p>
+        <button class="pay-btn" style="background:#F1EFE8;color:#042C53" onclick="toggleBankDetails()">Add bank details →</button>
+        <div id="bank-details" style="display:none;margin-top:14px">
+          <div style="margin-bottom:10px">
+            <label style="display:block;font-size:12px;font-weight:700;color:#5F5E5A;margin-bottom:5px">Account name</label>
+            <input type="text" id="acc-name" placeholder="Hughes Plumbing Ltd" style="width:100%;padding:10px 12px;border:1px solid #D3D1C7;border-radius:8px;font-size:14px;font-family:inherit" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:700;color:#5F5E5A;margin-bottom:5px">Sort code</label>
+              <input type="text" id="sort-code" placeholder="12-34-56" style="width:100%;padding:10px 12px;border:1px solid #D3D1C7;border-radius:8px;font-size:14px;font-family:inherit" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:700;color:#5F5E5A;margin-bottom:5px">Account number</label>
+              <input type="text" id="acc-number" placeholder="12345678" style="width:100%;padding:10px 12px;border:1px solid #D3D1C7;border-radius:8px;font-size:14px;font-family:inherit" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <i class="ti ti-info-circle"></i>
+        <p>You can always connect or change payment methods later in Settings. Stripe is recommended — it's the fastest way to get paid.</p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" onclick="window.location.href='onboarding-business.html'"><i class="ti ti-arrow-left"></i></button>
+        <button class="btn-next" onclick="saveAndContinue()">Continue <i class="ti ti-arrow-right"></i></button>
+      </div>
+
+      <div class="skip-link">
+        <a href="#" onclick="saveAndContinue(); return false;">I'll connect payments later</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 TradesBill &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
+  </footer>
+
+  <script>
+    let stripeConnected = false;
+
+    async function checkUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        window.location.href = 'login.html';
+      }
+    }
+    checkUser();
+
+    function toggleBankDetails() {
+      const el = document.getElementById('bank-details');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function connectStripe() {
+      // TODO: In production this calls your backend (Vercel serverless function)
+      // which creates a Stripe Connect onboarding link and redirects the user there.
+      // Example:
+      // const res = await fetch('/api/create-stripe-account', { method: 'POST' });
+      // const { url } = await res.json();
+      // window.location.href = url;
+
+      const btn = document.getElementById('stripe-btn');
+      btn.textContent = 'Connecting...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        stripeConnected = true;
+        document.getElementById('stripe-option').classList.add('connected');
+        document.getElementById('stripe-badge').textContent = 'Connected';
+        document.getElementById('stripe-badge').classList.add('done');
+        btn.textContent = 'Stripe connected ✓';
+        btn.classList.add('connected');
+        btn.disabled = true;
+      }, 1200);
+    }
+
+    async function saveAndContinue() {
+      const updateData = {
+        stripe_connected: stripeConnected,
+        onboarding_step: 'payments_complete'
+      };
+
+      const accName = document.getElementById('acc-name');
+      if (accName && accName.value.trim()) {
+        updateData.bank_account_name = accName.value.trim();
+        updateData.bank_sort_code = document.getElementById('sort-code').value.trim();
+        updateData.bank_account_number = document.getElementById('acc-number').value.trim();
+      }
+
+      await supabase.auth.updateUser({ data: updateData });
+      window.location.href = 'onboarding-invoice.html';
+    }
+  </script>
+
+</body>
+</html>

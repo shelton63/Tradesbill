@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Send your first invoice — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1EFE8; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .nav { background: #0C447C; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .nav-logo i { color: #5DCAA5; }
+
+    .progress-bar { background: #185FA5; padding: 14px 40px; }
+    .progress-track { max-width: 480px; margin: 0 auto; display: flex; align-items: center; }
+    .pstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .pdot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .pdot.done { background: #5DCAA5; color: #042C53; }
+    .pdot.active { background: #fff; color: #185FA5; }
+    .pline { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-top: -18px; }
+    .pline.done { background: #5DCAA5; }
+
+    .page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #D3D1C7; width: 100%; max-width: 480px; padding: 36px; }
+
+    h1 { font-size: 21px; font-weight: 700; color: #042C53; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #5F5E5A; margin-bottom: 24px; line-height: 1.5; }
+
+    .invoice-preview { background: #F8F7F3; border: 1px solid #E8E6DF; border-radius: 12px; padding: 18px; margin-bottom: 22px; }
+    .preview-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; }
+    .preview-row span:first-child { color: #888780; }
+    .preview-row span:last-child { color: #1a1a1a; font-weight: 600; text-align: right; }
+    .preview-divider { border: none; border-top: 1px solid #E8E6DF; margin: 8px 0; }
+    .preview-total { display: flex; justify-content: space-between; padding-top: 4px; }
+    .preview-total span:first-child { font-size: 14px; font-weight: 700; color: #042C53; }
+    .preview-total span:last-child { font-size: 18px; font-weight: 700; color: #185FA5; }
+
+    .btn-send { width: 100%; padding: 15px; background: #185FA5; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .btn-send:hover { background: #0C447C; }
+    .btn-send:disabled { background: #7AADD4; cursor: not-allowed; }
+
+    .skip-link { text-align: center; }
+    .skip-link a { font-size: 13px; color: #888780; text-decoration: none; }
+    .skip-link a:hover { color: #185FA5; }
+
+    /* Success state */
+    .success-wrap { display: none; text-align: center; }
+    .success-icon { width: 80px; height: 80px; border-radius: 50%; background: #E1F5EE; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .success-icon i { font-size: 38px; color: #1D9E75; }
+    .success-wrap h1 { margin-bottom: 10px; }
+    .success-stats { display: flex; gap: 10px; justify-content: center; margin: 22px 0; }
+    .success-stat { background: #F8F7F3; border-radius: 10px; padding: 12px 16px; text-align: center; flex: 1; }
+    .success-stat-value { font-size: 18px; font-weight: 700; color: #042C53; }
+    .success-stat-label { font-size: 11px; color: #888780; margin-top: 2px; }
+    .btn-dashboard { width: 100%; padding: 15px; background: #185FA5; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-dashboard:hover { background: #0C447C; }
+
+    .footer { background: #042C53; padding: 18px 40px; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    @media (max-width: 480px) {
+      .nav, .progress-bar { padding: 14px 20px; }
+      .card { padding: 26px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</div>
+  </nav>
+
+  <div class="progress-bar" id="progress-bar">
+    <div class="progress-track">
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
+      <div class="pline done"></div>
+      <div class="pstep"><div class="pdot active">4</div></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+
+      <div id="send-wrap">
+        <h1>Send your first invoice</h1>
+        <p class="subtitle">Here's a quick look — once you're happy, send it straight to your customer.</p>
+
+        <div class="invoice-preview">
+          <div class="preview-row"><span>Customer</span><span id="prev-name">—</span></div>
+          <div class="preview-row"><span>Email</span><span id="prev-email">—</span></div>
+          <div class="preview-row"><span>Job</span><span id="prev-job">—</span></div>
+          <hr class="preview-divider" />
+          <div class="preview-total"><span>Total due</span><span id="prev-amount">£0.00</span></div>
+        </div>
+
+        <button class="btn-send" id="send-btn" onclick="sendFirstInvoice()">
+          <i class="ti ti-send"></i> Send invoice
+        </button>
+
+        <div class="skip-link">
+          <a href="dashboard.html?skip_onboarding=true">I'll send this later</a>
+        </div>
+      </div>
+
+      <div class="success-wrap" id="success-wrap">
+        <div class="success-icon"><i class="ti ti-confetti"></i></div>
+        <h1>You're all set!</h1>
+        <p class="subtitle">Your first invoice is on its way. You'll get notified the moment it's paid.</p>
+
+        <div class="success-stats">
+          <div class="success-stat">
+            <div class="success-stat-value">1</div>
+            <div class="success-stat-label">Invoice sent</div>
+          </div>
+          <div class="success-stat">
+            <div class="success-stat-value">4</div>
+            <div class="success-stat-label">Free invoices left</div>
+          </div>
+        </div>
+
+        <button class="btn-dashboard" onclick="window.location.href='dashboard.html'">
+          Go to my dashboard <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 TradesBill &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
+  </footer>
+
+  <script>
+    function fmt(n) { return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+    async function loadDraft() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const meta = data.user.user_metadata || {};
+      document.getElementById('prev-name').textContent = meta.first_invoice_customer || '—';
+      document.getElementById('prev-email').textContent = meta.first_invoice_email || '—';
+      document.getElementById('prev-job').textContent = meta.first_invoice_job || '—';
+      document.getElementById('prev-amount').textContent = fmt(meta.first_invoice_amount || 0);
+    }
+    loadDraft();
+
+    async function sendFirstInvoice() {
+      const btn = document.getElementById('send-btn');
+      btn.innerHTML = 'Sending...';
+      btn.disabled = true;
+
+      // TODO: In production this creates a real invoice row in Supabase and
+      // triggers a Stripe Payment Link + email send via your backend function.
+      // For now we mark onboarding complete so the dashboard shows real-data mode.
+
+      await supabase.auth.updateUser({
+        data: {
+          onboarding_step: 'complete',
+          onboarding_complete: true,
+          invoices_sent_count: 1
+        }
+      });
+
+      setTimeout(() => {
+        document.getElementById('send-wrap').style.display = 'none';
+        document.getElementById('progress-bar').style.display = 'none';
+        document.getElementById('success-wrap').style.display = 'block';
+      }, 800);
+    }
+  </script>
+
+</body>
+</html>
