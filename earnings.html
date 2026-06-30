@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earnings — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
+    .db { display: flex; min-height: 100vh; }
+
+    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
+    .sb-logo-icon i { color: #fff; font-size: 18px; }
+    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
+    .sb-nav { padding: 16px 10px; flex: 1; }
+    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .sb-item i { font-size: 18px; }
+    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
+    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
+    .content { padding: 24px 28px; }
+
+    .range-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; }
+    .range-pill { flex-shrink: 0; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
+    .range-pill.active { background: #0A2540; color: #fff; border-color: #0A2540; }
+    .range-pill:hover:not(.active) { background: #F0EFEA; }
+
+    .top-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 20px; align-items: stretch; }
+    .stat-hero { background: #0A2540; border-radius: 16px; padding: 26px; display: flex; flex-direction: column; justify-content: center; }
+    .stat-hero-label { font-size: 13px; color: #8FA8C2; margin-bottom: 8px; font-weight: 600; }
+    .stat-hero-value { font-size: 38px; font-weight: 600; color: #fff; margin-bottom: 10px; letter-spacing: -0.02em; }
+    .stat-hero-compare { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .compare-pill { display: flex; align-items: center; gap: 3px; background: rgba(93,202,165,0.15); color: #6FDDB5; padding: 4px 9px; border-radius: 7px; font-weight: 700; }
+    .compare-pill.down { background: rgba(240,153,123,0.15); color: #F0997B; }
+    .compare-pill i { font-size: 13px; }
+    .compare-vs { color: #6B85A1; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
+    .stat-card-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .stat-card-label i { font-size: 15px; color: #A3A29C; }
+    .stat-card-value { font-size: 21px; font-weight: 600; color: #1A1A18; letter-spacing: -0.01em; }
+
+    .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 20px; }
+    .card-title { font-size: 14px; font-weight: 600; color: #061A30; margin-bottom: 16px; }
+
+    .chart-wrap { height: 200px; display: flex; align-items: flex-end; gap: 6px; padding-top: 10px; }
+    .chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .chart-bar { width: 100%; background: #EEF3F8; border-radius: 5px 5px 0 0; position: relative; min-height: 4px; }
+    .chart-bar.active { background: #0A2540; }
+    .chart-bar:hover { background: #0A2540; cursor: pointer; }
+    .chart-label { font-size: 10px; color: #A3A29C; font-weight: 600; }
+
+    .owing-list { display: flex; flex-direction: column; }
+    .owing-item { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid #F0EFEA; }
+    .owing-item:last-child { border-bottom: none; }
+    .owing-avatar { width: 34px; height: 34px; border-radius: 50%; background: #FBF3E3; color: #C28A1E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .owing-info { flex: 1; min-width: 0; }
+    .owing-name { font-size: 13.5px; font-weight: 600; color: #1A1A18; margin-bottom: 2px; }
+    .owing-status { display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.overdue { background: #D14343; }
+    .status-dot.upcoming { background: #C28A1E; }
+    .owing-days { font-size: 12px; font-weight: 600; }
+    .owing-days.overdue { color: #D14343; }
+    .owing-days.upcoming { color: #C28A1E; }
+    .owing-amount { font-size: 14px; font-weight: 600; color: #1A1A18; flex-shrink: 0; }
+
+    .custom-range-popup { display: none; background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 16px; margin-bottom: 20px; gap: 12px; align-items: end; }
+    .custom-range-popup.open { display: flex; }
+    .cr-field label { display: block; font-size: 11px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
+    .cr-field input { padding: 8px 10px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; font-family: inherit; }
+    .cr-apply { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .mobile-topbar { display: none; }
+    .bottom-nav { display: none; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .topbar { display: none; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
+      .mob-logo { display: flex; align-items: center; gap: 7px; }
+      .mob-logo i { color: #5DCAA5; font-size: 22px; }
+      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
+      .content { padding: 14px 16px; }
+      .top-grid { grid-template-columns: 1fr; }
+      .stat-hero { padding: 20px; }
+      .stat-hero-value { font-size: 32px; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item i { font-size: 22px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
+      .nav-item.active i { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus i { font-size: 23px; color: #fff; }
+      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
+      .plus-menu.open { display: block; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item:last-child { border-bottom: none; }
+      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
+      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-topbar">
+    <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
+    <i class="ti ti-calendar" style="color:#fff;font-size:20px"></i>
+  </div>
+
+  <div class="db">
+    <nav class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></div>
+      <div class="sb-nav">
+        <div class="sb-section-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <div class="sb-section-label">Reports</div>
+        <a href="earnings.html" class="sb-item active"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-section-label">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name">Loading...</div><div class="sb-user-plan">Free trial</div></div></a></div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar"><h1>Earnings</h1></div>
+
+      <div class="content">
+        <div class="range-scroll" id="range-scroll">
+          <div class="range-pill" data-range="today">Today</div>
+          <div class="range-pill" data-range="yesterday">Yesterday</div>
+          <div class="range-pill active" data-range="7d">7 days</div>
+          <div class="range-pill" data-range="14d">14 days</div>
+          <div class="range-pill" data-range="30d">30 days</div>
+          <div class="range-pill" data-range="lastmonth">Last month</div>
+          <div class="range-pill" data-range="3m">3 months</div>
+          <div class="range-pill" data-range="6m">6 months</div>
+          <div class="range-pill" data-range="1y">1 year</div>
+          <div class="range-pill" data-range="custom"><i class="ti ti-calendar" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Custom</div>
+        </div>
+
+        <div class="custom-range-popup" id="custom-popup">
+          <div class="cr-field"><label>From</label><input type="date" id="cr-from" /></div>
+          <div class="cr-field"><label>To</label><input type="date" id="cr-to" /></div>
+          <button class="cr-apply" onclick="applyCustomRange()">Apply</button>
+        </div>
+
+        <div class="top-grid">
+          <div class="stat-hero">
+            <div class="stat-hero-label" id="hero-label">Total earned · last 7 days</div>
+            <div class="stat-hero-value" id="hero-value">£3,240</div>
+            <div class="stat-hero-compare">
+              <span class="compare-pill" id="hero-compare-pill"><i class="ti ti-arrow-up-right"></i>18%</span>
+              <span class="compare-vs" id="hero-compare-text">vs previous 7 days</span>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-clock"></i> Outstanding</div><div class="stat-card-value" id="stat-outstanding">£1,890</div></div>
+            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-file-invoice"></i> Invoices sent</div><div class="stat-card-value" id="stat-invoices">9</div></div>
+            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-receipt"></i> Avg. order value</div><div class="stat-card-value" id="stat-aov">£360</div></div>
+            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-circle-check"></i> Avg. paid in</div><div class="stat-card-value" id="stat-paidtime">16 hrs</div></div>
+          </div>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="card">
+            <div class="card-title">Earnings over time</div>
+            <div class="chart-wrap" id="chart-wrap"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Customers who owe you</div>
+            <div class="owing-list" id="owing-list">
+              <div class="owing-item">
+                <div class="owing-avatar">RH</div>
+                <div class="owing-info"><div class="owing-name">Riverside Homes</div><div class="owing-status"><span class="status-dot overdue"></span><span class="owing-days overdue">5 days overdue</span></div></div>
+                <div class="owing-amount">£3,200</div>
+              </div>
+              <div class="owing-item">
+                <div class="owing-avatar">MT</div>
+                <div class="owing-info"><div class="owing-name">Mark Taylor</div><div class="owing-status"><span class="status-dot upcoming"></span><span class="owing-days upcoming">Due in 2 days</span></div></div>
+                <div class="owing-amount">£1,850</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+        <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+        <div class="nav-plus-wrap">
+          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+          <div class="plus-menu" id="plus-menu">
+            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+            <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+          </div>
+        </div>
+        <a href="earnings.html" class="nav-item active"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    function initials(first, last, email) {
+      const f = (first || '').trim().charAt(0).toUpperCase();
+      const l = (last || '').trim().charAt(0).toUpperCase();
+      if (f && l) return f + l;
+      if (f) return f;
+      if (email) return email.charAt(0).toUpperCase();
+      return '?';
+    }
+
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
+      const meta = data.user.user_metadata || {};
+      const first = meta.first_name || meta.given_name || '';
+      const last = meta.last_name || meta.family_name || '';
+      const fullName = (first || last) ? `${first} ${last}`.trim() : (data.user.email ? data.user.email.split('@')[0] : 'there');
+      const sbAvatar = document.getElementById('sb-avatar');
+      const sbName = document.getElementById('sb-user-name');
+      if (sbAvatar) sbAvatar.textContent = initials(first, last, data.user.email);
+      if (sbName) sbName.textContent = fullName;
+    }
+    loadUser();
+
+    function fmt(n) { return '£' + n.toLocaleString('en-GB', { maximumFractionDigits: 0 }); }
+
+    // Demo dataset per range — in production this would query a Supabase
+    // "invoices" table filtered by date and aggregated server-side.
+    const rangeData = {
+      today:      { label: 'today', total: 480, compare: 'vs yesterday', pct: 12, up: true, outstanding: 1890, invoices: 1, aov: 480, paidtime: '—', bars: [480] },
+      yesterday:  { label: 'yesterday', total: 640, compare: 'vs day before', pct: 4, up: false, outstanding: 1890, invoices: 2, aov: 320, paidtime: '12 hrs', bars: [640] },
+      '7d':       { label: 'last 7 days', total: 3240, compare: 'vs previous 7 days', pct: 18, up: true, outstanding: 1890, invoices: 9, aov: 360, paidtime: '16 hrs', bars: [320,480,210,640,580,490,520] },
+      '14d':      { label: 'last 14 days', total: 5980, compare: 'vs previous 14 days', pct: 9, up: true, outstanding: 2640, invoices: 16, aov: 374, paidtime: '17 hrs', bars: [320,480,210,640,580,490,520,290,610,440,380,520,470,540] },
+      '30d':      { label: 'last 30 days', total: 14280, compare: 'vs previous 30 days', pct: 12, up: true, outstanding: 3450, invoices: 38, aov: 376, paidtime: '18 hrs', bars: [320,480,210,640,580,490,520,290,610,440,380,520,470,540,610,290,480,520,640,380,470,540,610,290,480,520,640,380,470,540] },
+      lastmonth:  { label: 'last month', total: 12640, compare: 'vs month before', pct: 6, up: true, outstanding: 2980, invoices: 34, aov: 372, paidtime: '19 hrs', bars: [400,480,520,610] },
+      '3m':       { label: 'last 3 months', total: 38400, compare: 'vs previous 3 months', pct: 22, up: true, outstanding: 4200, invoices: 102, aov: 376, paidtime: '17 hrs', bars: [12640,14280,11480] },
+      '6m':       { label: 'last 6 months', total: 71200, compare: 'vs previous 6 months', pct: 15, up: true, outstanding: 4200, invoices: 189, aov: 377, paidtime: '18 hrs', bars: [10200,11400,12640,14280,11480,11200] },
+      '1y':       { label: 'last year', total: 142800, compare: 'vs year before', pct: 27, up: true, outstanding: 4200, invoices: 378, aov: 378, paidtime: '18 hrs', bars: [9800,10400,11200,12100,10900,11400,12640,14280,11480,11200,13900,13500] }
+    };
+
+    function renderRange(key) {
+      const d = rangeData[key];
+      if (!d) return;
+      document.getElementById('hero-label').textContent = 'Total earned · ' + d.label;
+      document.getElementById('hero-value').textContent = fmt(d.total);
+      document.getElementById('hero-compare-text').textContent = d.compare;
+      const pillEl = document.getElementById('hero-compare-pill');
+      pillEl.className = 'compare-pill' + (d.up ? '' : ' down');
+      pillEl.innerHTML = `<i class="ti ti-arrow-${d.up ? 'up' : 'down'}-right"></i>${d.pct}%`;
+      document.getElementById('stat-outstanding').textContent = fmt(d.outstanding);
+      document.getElementById('stat-invoices').textContent = d.invoices;
+      document.getElementById('stat-aov').textContent = fmt(d.aov);
+      document.getElementById('stat-paidtime').textContent = d.paidtime;
+
+      const max = Math.max(...d.bars);
+      const wrap = document.getElementById('chart-wrap');
+      wrap.innerHTML = d.bars.map((v, i) => {
+        const h = Math.max(4, Math.round((v / max) * 160));
+        const isLast = i === d.bars.length - 1;
+        return `<div class="chart-bar-col"><div class="chart-bar${isLast ? ' active' : ''}" style="height:${h}px" title="${fmt(v)}"></div></div>`;
+      }).join('');
+    }
+
+    document.getElementById('range-scroll').addEventListener('click', function(e) {
+      const pill = e.target.closest('.range-pill');
+      if (!pill) return;
+      const range = pill.dataset.range;
+      if (range === 'custom') {
+        document.getElementById('custom-popup').classList.toggle('open');
+        document.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        return;
+      }
+      document.getElementById('custom-popup').classList.remove('open');
+      document.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      renderRange(range);
+    });
+
+    function applyCustomRange() {
+      const from = document.getElementById('cr-from').value;
+      const to = document.getElementById('cr-to').value;
+      if (!from || !to) return;
+      document.getElementById('hero-label').textContent = `Total earned · ${from} to ${to}`;
+      // TODO: in production, query Supabase invoices between these dates
+      renderRange('30d');
+      document.getElementById('hero-label').textContent = `Total earned · ${from} to ${to}`;
+      document.getElementById('custom-popup').classList.remove('open');
+    }
+
+    renderRange('7d');
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) {
+        const m = document.getElementById('plus-menu');
+        if (m) m.classList.remove('open');
+      }
+    });
+  </script>
+
+</body>
+</html>
