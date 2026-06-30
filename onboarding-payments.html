@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -129,11 +129,11 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div>
               <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Sort code</label>
-              <input type="text" id="sort-code" placeholder="12-34-56" style="width:100%;padding:10px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit" />
+              <input type="text" id="sort-code" placeholder="12-34-56" maxlength="8" inputmode="numeric" oninput="formatSortCode(this)" style="width:100%;padding:10px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit" />
             </div>
             <div>
               <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Account number</label>
-              <input type="text" id="acc-number" placeholder="12345678" style="width:100%;padding:10px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit" />
+              <input type="text" id="acc-number" placeholder="12345678" maxlength="8" inputmode="numeric" oninput="formatAccNumber(this)" style="width:100%;padding:10px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit" />
             </div>
           </div>
         </div>
@@ -169,6 +169,27 @@
       }
     }
     checkUser();
+
+    function formatSortCode(input) {
+      const cursorPos = input.selectionStart;
+      const beforeDashCount = (input.value.slice(0, cursorPos).match(/-/g) || []).length;
+
+      let digits = input.value.replace(/\D/g, '').slice(0, 6);
+      let formatted = digits.match(/.{1,2}/g);
+      input.value = formatted ? formatted.join('-') : digits;
+
+      const afterDashCount = (input.value.slice(0, cursorPos).match(/-/g) || []).length;
+      const newPos = cursorPos + (afterDashCount - beforeDashCount);
+      input.setSelectionRange(newPos, newPos);
+
+      if (digits.length === 6) {
+        document.getElementById('acc-number').focus();
+      }
+    }
+
+    function formatAccNumber(input) {
+      input.value = input.value.replace(/\D/g, '').slice(0, 8);
+    }
 
     function toggleBankDetails() {
       const el = document.getElementById('bank-details');
