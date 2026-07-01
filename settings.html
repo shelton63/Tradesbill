@@ -123,7 +123,7 @@
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item active"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><div class="sb-user"><div class="sb-avatar">DH</div><div><div class="sb-user-name">Dave Hughes</div><div class="sb-user-plan">Pro plan</div></div></div></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user" style="text-decoration:none"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan" id="sb-user-plan">Free plan</div></div></a></div>
     </nav>
 
     <div class="main">
@@ -248,6 +248,32 @@
         document.querySelectorAll('.mob-save').forEach(b => { b.textContent = 'Save'; b.style.background = ''; });
       }, 2000);
     }
+
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
+      const meta = data.user.user_metadata || {};
+      const first = meta.first_name || meta.given_name || '';
+      const last = meta.last_name || meta.family_name || '';
+      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
+      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
+      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
+      const plan = document.getElementById('sb-user-plan');
+      if (plan) plan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
+      // Pre-fill settings form with real user data
+      if (meta.business_name) { const el = document.querySelector('#business-name, input[placeholder="Hughes Plumbing Ltd"]'); if (el) el.value = meta.business_name; }
+      if (meta.trade_type) { const el = document.querySelector('#trade, select'); if (el) el.value = meta.trade_type; }
+      if (meta.phone) { const el = document.querySelector('input[type="tel"]'); if (el) el.value = meta.phone; }
+      if (meta.vat_number) { const el = document.querySelector('input[placeholder="GB 123 456 789"]'); if (el) el.value = meta.vat_number; }
+      if (meta.business_address) { const el = document.querySelector('textarea'); if (el) el.value = meta.business_address; }
+      if (meta.logo_url) {
+        const icon = document.getElementById('logo-icon'); if (icon) icon.style.display = 'none';
+        const img = document.getElementById('logo-img'); if (img) { img.src = meta.logo_url; img.style.display = 'block'; }
+        const txt = document.getElementById('logo-text'); if (txt) txt.textContent = 'Logo added — click to change';
+      }
+    }
+    loadUser();
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.nav-plus-wrap')) {
