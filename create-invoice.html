@@ -119,6 +119,7 @@
     @media (max-width: 768px) {
       .desktop-right { display: none; }
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -394,15 +395,103 @@
       document.getElementById('cust-select-wrap').style.display = 'none';
     }
 
-    function sendInvoice() {
+    async function sendInvoice() {
       const name = document.getElementById('cust-name').textContent;
-      const total = document.getElementById('total').textContent;
+      const email = document.getElementById('cust-email').textContent;
       const num = document.getElementById('inv-num').value;
-      alert(`Invoice ${num} for ${total} will be sent to ${name} with a Stripe payment link.\n\n(Connect Supabase + Stripe to make this live)`);
+      const job = document.getElementById('job-desc').value.trim();
+      const totalText = document.getElementById('total').textContent;
+      const totalPounds = parseFloat(totalText.replace('£', '').replace(',', '')) || 0;
+      const totalPence = Math.round(totalPounds * 100);
+      const btn = document.getElementById('send-btn');
+
+      if (!email || !email.includes('@')) {
+        showSendError('Please select a customer with a valid email address.');
+        return;
+      }
+      if (!job) {
+        showSendError('Please add a job description.');
+        return;
+      }
+      if (totalPence < 50) {
+        showSendError('Invoice total must be at least £0.50.');
+        return;
+      }
+
+      btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite"></i> Creating payment link...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/api/create-payment-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerName: name,
+            customerEmail: email,
+            jobDescription: job,
+            amount: totalPence,
+            invoiceNumber: num
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to create payment link');
+        }
+
+        // Success — show the payment link
+        showSendSuccess(data.paymentUrl, name, totalText, email);
+
+      } catch (err) {
+        showSendError(err.message || 'Something went wrong. Please try again.');
+        btn.innerHTML = `<i class="ti ti-send"></i> Send invoice — ${totalText}`;
+        btn.disabled = false;
+      }
+    }
+
+    function showSendError(msg) {
+      let el = document.getElementById('send-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'send-error';
+        el.style.cssText = 'background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;';
+        document.getElementById('send-btn').before(el);
+      }
+      el.innerHTML = `<i class="ti ti-alert-circle" style="font-size:17px;flex-shrink:0"></i><span>${msg}</span>`;
+      el.style.display = 'flex';
+    }
+
+    function showSendSuccess(paymentUrl, name, total, email) {
+      const btn = document.getElementById('send-btn');
+      btn.parentElement.innerHTML = `
+        <div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:14px;padding:22px;text-align:center">
+          <div style="width:52px;height:52px;background:#1D9E75;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <i class="ti ti-check" style="font-size:26px;color:#fff"></i>
+          </div>
+          <h3 style="font-size:17px;font-weight:700;color:#042C53;margin-bottom:6px">Payment link created!</h3>
+          <p style="font-size:13px;color:#0F6E56;margin-bottom:18px;line-height:1.5">
+            Share this link with <strong>${name}</strong> to collect <strong>${total}</strong>.<br>
+            You can also send it by email or copy it to paste into WhatsApp or text.
+          </p>
+          <div style="background:#fff;border:1px solid #9FE1CB;border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;text-align:left">
+            <i class="ti ti-link" style="font-size:17px;color:#1D9E75;flex-shrink:0"></i>
+            <span style="font-size:12px;color:#0F6E56;word-break:break-all;flex:1">${paymentUrl}</span>
+            <button onclick="navigator.clipboard.writeText('${paymentUrl}').then(()=>this.textContent='Copied!')" style="background:#1D9E75;color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Copy</button>
+          </div>
+          <div style="display:flex;gap:10px">
+            <a href="mailto:${email}?subject=Invoice ${document.getElementById('inv-num').value} — Payment Link&body=Hi ${name},%0D%0A%0D%0APlease find your payment link below:%0D%0A%0D%0A${paymentUrl}%0D%0A%0D%0ATotal: ${total}%0D%0A%0D%0AThank you!" style="flex:1;background:#0A2540;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:block">
+              <i class="ti ti-mail" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>Send by email
+            </a>
+            <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:block">
+              View invoices
+            </a>
+          </div>
+        </div>`;
     }
 
     function saveDraft() {
-      alert('Invoice saved as draft. (Connect Supabase to make this live)');
+      alert('Invoice saved as draft.');
     }
 
     document.getElementById('inv-notes').addEventListener('input', updatePreview);

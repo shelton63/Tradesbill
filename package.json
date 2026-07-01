@@ -1,0 +1,9 @@
+{
+  "name": "tradesbill",
+  "version": "1.0.0",
+  "description": "TradesBill — Invoice software for UK tradespeople",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.0.0"
+  }
+}
