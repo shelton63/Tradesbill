@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -145,12 +145,22 @@
 
       .bottom-grid { grid-template-columns: 1fr; }
 
-      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E5E3DC; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
+      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
-      .nav-item i { font-size: 23px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; }
+      .nav-item i { font-size: 22px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
       .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus i { font-size: 23px; color: #fff; }
+      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
+      .plus-menu.open { display: block; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item:last-child { border-bottom: none; }
+      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
+      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
     /* Notifications */
     .notif-dot { position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; background: #E04848; border-radius: 50%; border: 1.5px solid #0A2540; display: none; }
@@ -390,11 +400,17 @@
 
       <!-- MOBILE BOTTOM NAV -->
       <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ti ti-layout-dashboard"></i><span>Home</span></a>
+        <a href="dashboard.html" class="nav-item active"><i class="ti ti-home"></i><span>Home</span></a>
         <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
-        <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
+        <div class="nav-plus-wrap">
+          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+          <div class="plus-menu" id="plus-menu">
+            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+            <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+          </div>
+        </div>
         <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Settings</span></a>
+        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
       </nav>
     </div>
   </div>
@@ -434,8 +450,7 @@
       const user = data.user;
       const meta = user.user_metadata || {};
 
-      // Redirect new/incomplete accounts into onboarding,
-      // unless they've explicitly chosen to skip it for this visit
+      // Redirect new/incomplete accounts into onboarding
       const urlParams = new URLSearchParams(window.location.search);
       const skipRequested = urlParams.get('skip_onboarding') === 'true';
       if (!meta.onboarding_complete && !skipRequested) {
@@ -447,21 +462,98 @@
       const last = meta.last_name || meta.family_name || '';
       const fullName = (first || last) ? `${first} ${last}`.trim() : (user.email ? user.email.split('@')[0] : 'there');
       const initialsText = initials(first, last, user.email);
+      const businessName = meta.business_name || 'your business';
 
+      // Update name/avatar everywhere
       const sbAvatar = document.getElementById('sb-avatar');
       const sbName = document.getElementById('sb-user-name');
       if (sbAvatar) sbAvatar.textContent = initialsText;
       if (sbName) sbName.textContent = fullName;
-
       const mobAvatar = document.getElementById('mob-avatar');
       const heroName = document.getElementById('hero-name');
       const heroGreet = document.getElementById('hero-greet');
       if (mobAvatar) mobAvatar.textContent = initialsText;
       if (heroName) heroName.textContent = first || fullName;
       if (heroGreet) heroGreet.textContent = greeting();
+
+      // Check if user has any invoices yet
+      // invoices_sent_count is set during onboarding when first invoice is sent
+      const invoiceCount = meta.invoices_sent_count || 0;
+      const hasActivity = invoiceCount > 0;
+
+      if (!hasActivity) {
+        // Show empty state — hide dummy data and replace with blank canvas
+        showEmptyDashboard(first || fullName, businessName);
+      } else {
+        // They have activity — show the real dashboard
+        // TODO: replace dummy stats with real Supabase query once invoices table is set up
+        showDummyBanner();
+      }
+    }
+
+    function showEmptyDashboard(name, business) {
+      // Hide stats, table, and activity
+      const content = document.querySelector('.content');
+      if (!content) return;
+      content.innerHTML = `
+        <div style="max-width:520px;margin:60px auto;text-align:center;padding:0 20px">
+          <div style="width:72px;height:72px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+            <i class="ti ti-file-invoice" style="font-size:32px;color:#0A2540"></i>
+          </div>
+          <h2 style="font-size:20px;font-weight:700;color:#061A30;margin-bottom:8px">Welcome to your dashboard, ${name}!</h2>
+          <p style="font-size:14px;color:#6B6A65;line-height:1.7;margin-bottom:32px">
+            Your dashboard will show your earnings, invoices, and activity once you start sending invoices. Create your first one now to get started.
+          </p>
+          <a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px 28px;border-radius:11px;font-size:15px;font-weight:700;margin-bottom:16px">
+            <i class="ti ti-plus" style="font-size:18px"></i> Create your first invoice
+          </a>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+            <a href="customers.html" style="display:inline-flex;align-items:center;gap:6px;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:700">
+              <i class="ti ti-users" style="font-size:16px"></i> Add a customer
+            </a>
+            <a href="settings.html" style="display:inline-flex;align-items:center;gap:6px;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:700">
+              <i class="ti ti-settings" style="font-size:16px"></i> Set up your profile
+            </a>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:40px">
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
+              <i class="ti ti-circle-check" style="font-size:20px;color:#1D9E75;margin-bottom:8px;display:block"></i>
+              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Account created</div>
+              <div style="font-size:11px;color:#8B8A84">You're all set up</div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
+              <i class="ti ti-brand-stripe" style="font-size:20px;color:${meta && meta.stripe_connected ? '#1D9E75' : '#A3A29C'};margin-bottom:8px;display:block"></i>
+              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Stripe payments</div>
+              <div style="font-size:11px;color:${meta && meta.stripe_connected ? '#1D9E75' : '#8B8A84'}">${meta && meta.stripe_connected ? 'Connected' : 'Not connected'}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
+              <i class="ti ti-file-invoice" style="font-size:20px;color:#A3A29C;margin-bottom:8px;display:block"></i>
+              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">First invoice</div>
+              <div style="font-size:11px;color:#8B8A84">Not sent yet</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function showDummyBanner() {
+      // Show a small banner reminding that stats will be real once Supabase invoices table is set up
+      const statsSection = document.querySelector('.stats');
+      if (statsSection) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#EEF3F8;border:1px solid #B5CCE0;border-radius:10px;padding:10px 14px;font-size:12px;color:#0A2540;display:flex;align-items:center;gap:8px;margin-bottom:14px';
+        banner.innerHTML = '<i class="ti ti-info-circle" style="font-size:15px;flex-shrink:0"></i> Stats shown are demo data. Connect your invoices database to see real figures.';
+        statsSection.before(banner);
+      }
     }
 
     loadUser();
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) {
+        const m = document.getElementById('plus-menu');
+        if (m) m.classList.remove('open');
+      }
+    });
 
     // ── Notifications ──
     // In production this would come from a Supabase table (e.g. "notifications")

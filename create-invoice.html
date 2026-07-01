@@ -118,6 +118,22 @@
     }
     @media (max-width: 768px) {
       .desktop-right { display: none; }
+      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item i { font-size: 22px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
+      .nav-item.active i { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus i { font-size: 23px; color: #fff; }
+      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
+      .plus-menu.open { display: block; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
+      .plus-menu-item:last-child { border-bottom: none; }
+      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
+      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
@@ -495,6 +511,33 @@
     }
 
     document.getElementById('inv-notes').addEventListener('input', updatePreview);
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) {
+        const m = document.getElementById('plus-menu');
+        if (m) m.classList.remove('open');
+      }
+    });
+  </script>
+
+  <nav class="bottom-nav" style="display:none" id="mob-bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+    <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+    <div class="nav-plus-wrap">
+      <a href="#" class="nav-plus active" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+      <div class="plus-menu" id="plus-menu">
+        <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+        <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+      </div>
+    </div>
+    <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+  </nav>
+
+  <script>
+    if (window.innerWidth <= 768) {
+      document.getElementById('mob-bottom-nav').style.display = 'flex';
+    }
   </script>
 
 </body>
