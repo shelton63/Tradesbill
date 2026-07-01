@@ -199,7 +199,7 @@
   <!-- MOBILE HERO -->
   <div class="hero-bar" style="display:none" id="mob-hero">
     <div class="hero-greet" id="hero-greet">Good morning,</div>
-    <div class="hero-name" id="hero-name">Loading...</div>
+    <div class="hero-name" id="hero-name"></div>
     <a href="create-invoice.html" class="btn-new-mob">
       <i class="ti ti-plus"></i> Create new invoice
     </a>
@@ -228,7 +228,7 @@
         <a href="settings.html" class="sb-user" style="text-decoration:none;cursor:pointer">
           <div class="sb-avatar" id="sb-avatar">..</div>
           <div>
-            <div class="sb-user-name" id="sb-user-name">Loading...</div>
+            <div class="sb-user-name" id="sb-user-name"></div>
             <div class="sb-user-plan" id="sb-user-plan">Free trial</div>
           </div>
         </a>
@@ -469,6 +469,8 @@
       const sbName = document.getElementById('sb-user-name');
       if (sbAvatar) sbAvatar.textContent = initialsText;
       if (sbName) sbName.textContent = fullName;
+      const sbPlan = document.getElementById('sb-user-plan');
+      if (sbPlan) sbPlan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
       const mobAvatar = document.getElementById('mob-avatar');
       const heroName = document.getElementById('hero-name');
       const heroGreet = document.getElementById('hero-greet');
@@ -477,24 +479,22 @@
       if (heroGreet) heroGreet.textContent = greeting();
 
       // Check if user has any invoices yet
-      // invoices_sent_count is set during onboarding when first invoice is sent
-      const invoiceCount = meta.invoices_sent_count || 0;
-      const hasActivity = invoiceCount > 0;
+      // Until the Supabase invoices table is connected, always show empty state
+      // so new users never see someone else's dummy data.
+      // Once real invoices exist in the DB, replace this with a real query.
+      const hasRealInvoices = false; // TODO: set to true once invoices table is queried
 
-      if (!hasActivity) {
-        // Show empty state — hide dummy data and replace with blank canvas
-        showEmptyDashboard(first || fullName, businessName);
+      if (!hasRealInvoices) {
+        showEmptyDashboard(first || fullName, meta);
       } else {
-        // They have activity — show the real dashboard
-        // TODO: replace dummy stats with real Supabase query once invoices table is set up
         showDummyBanner();
       }
     }
 
-    function showEmptyDashboard(name, business) {
-      // Hide stats, table, and activity
+    function showEmptyDashboard(name, meta) {
       const content = document.querySelector('.content');
       if (!content) return;
+      const stripeConnected = meta && meta.stripe_connected;
       content.innerHTML = `
         <div style="max-width:520px;margin:60px auto;text-align:center;padding:0 20px">
           <div style="width:72px;height:72px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
@@ -519,12 +519,12 @@
             <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
               <i class="ti ti-circle-check" style="font-size:20px;color:#1D9E75;margin-bottom:8px;display:block"></i>
               <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Account created</div>
-              <div style="font-size:11px;color:#8B8A84">You're all set up</div>
+              <div style="font-size:11px;color:#1D9E75">You're all set up</div>
             </div>
             <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
-              <i class="ti ti-brand-stripe" style="font-size:20px;color:${meta && meta.stripe_connected ? '#1D9E75' : '#A3A29C'};margin-bottom:8px;display:block"></i>
+              <i class="ti ti-brand-stripe" style="font-size:20px;color:${stripeConnected ? '#1D9E75' : '#A3A29C'};margin-bottom:8px;display:block"></i>
               <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Stripe payments</div>
-              <div style="font-size:11px;color:${meta && meta.stripe_connected ? '#1D9E75' : '#8B8A84'}">${meta && meta.stripe_connected ? 'Connected' : 'Not connected'}</div>
+              <div style="font-size:11px;color:${stripeConnected ? '#1D9E75' : '#8B8A84'}">${stripeConnected ? 'Connected' : 'Not connected'}</div>
             </div>
             <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
               <i class="ti ti-file-invoice" style="font-size:20px;color:#A3A29C;margin-bottom:8px;display:block"></i>
