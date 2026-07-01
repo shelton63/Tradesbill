@@ -79,12 +79,22 @@
       .stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
       .stat-value { font-size: 18px; }
       th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { display: none; }
-      .bottom-nav { display: flex; background: #fff; border-top: 1px solid #E5E3DC; padding: 10px 0 18px; position: sticky; bottom: 0; z-index: 100; }
+      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
-      .nav-item i { font-size: 23px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; }
+      .nav-item i { font-size: 22px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
       .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; }
+      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus i { font-size: 23px; color: #fff; }
+      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
+      .plus-menu.open { display: block; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item:last-child { border-bottom: none; }
+      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
+      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
   </style>
 </head>
@@ -122,9 +132,9 @@
       </div>
       <div class="content">
         <div class="stats">
-          <div class="stat"><div class="stat-label">Total customers</div><div class="stat-value">24</div></div>
-          <div class="stat"><div class="stat-label">Active this month</div><div class="stat-value">9</div></div>
-          <div class="stat"><div class="stat-label">Avg. spend</div><div class="stat-value">£595</div></div>
+          <div class="stat"><div class="stat-label">Total customers</div><div class="stat-value">0</div></div>
+          <div class="stat"><div class="stat-label">Active this month</div><div class="stat-value">0</div></div>
+          <div class="stat"><div class="stat-label">Avg. spend</div><div class="stat-value">—</div></div>
         </div>
         <div class="toolbar">
           <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search customers..." oninput="filterCustomers(this.value)" /></div>
@@ -134,24 +144,22 @@
         <div class="table-wrap">
           <table>
             <thead><tr><th style="width:32%">Customer</th><th style="width:18%">Phone</th><th style="width:10%">Invoices</th><th style="width:14%">Total spent</th><th style="width:12%">Status</th><th style="width:14%">Actions</th></tr></thead>
-            <tbody id="cust-body">
-              <tr><td><div class="cust-cell"><div class="avatar av-blue">MT</div><div><div class="cust-name-text">Mark Taylor</div><div class="cust-email">mark@taylorbuilds.co.uk</div></div></div></td><td>07700 900123</td><td>6</td><td>£8,240</td><td><span class="badge badge-overdue">Overdue</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-teal">SC</div><div><div class="cust-name-text">Sarah Collins</div><div class="cust-email">sarah@collinshomes.co.uk</div></div></div></td><td>07700 900456</td><td>4</td><td>£5,900</td><td><span class="badge badge-active">Active</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-amber">RH</div><div><div class="cust-name-text">Riverside Homes</div><div class="cust-email">accounts@riversidehomes.co.uk</div></div></div></td><td>0161 900 7890</td><td>11</td><td>£22,400</td><td><span class="badge badge-overdue">Overdue</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-coral">PL</div><div><div class="cust-name-text">Pete Lawson</div><div class="cust-email">pete.lawson@gmail.com</div></div></div></td><td>07700 900789</td><td>3</td><td>£1,840</td><td><span class="badge badge-active">Active</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-purple">JB</div><div><div class="cust-name-text">J&amp;B Builders Ltd</div><div class="cust-email">finance@jbbuilders.co.uk</div></div></div></td><td>0113 900 1234</td><td>8</td><td>£14,600</td><td><span class="badge badge-active">Active</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-blue">TW</div><div><div class="cust-name-text">Tom Walsh</div><div class="cust-email">tomwalsh@hotmail.com</div></div></div></td><td>07700 900321</td><td>1</td><td>£480</td><td><span class="badge badge-new">New</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-              <tr><td><div class="cust-cell"><div class="avatar av-teal">GP</div><div><div class="cust-name-text">GreenLeaf Properties</div><div class="cust-email">info@greenleafprop.co.uk</div></div></div></td><td>0121 900 5678</td><td>5</td><td>£9,150</td><td><span class="badge badge-active">Active</span></td><td><div class="action-btns"><a href="create-invoice.html" class="icon-btn"><i class="ti ti-file-plus"></i></a><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a></div></td></tr>
-            </tbody>
+            <tbody id="cust-body"></tbody>
           </table>
         </div>
       </div>
       <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-layout-dashboard"></i><span>Home</span></a>
-        <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
-        <a href="customers.html" class="nav-item active"><i class="ti ti-users"></i><span>Customers</span></a>
+        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+        <a href="invoices.html" class="nav-item active"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+        <div class="nav-plus-wrap">
+          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+          <div class="plus-menu" id="plus-menu">
+            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+            <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+          </div>
+        </div>
         <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-settings"></i><span>Settings</span></a>
+        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
       </nav>
     </div>
   </div>
@@ -162,6 +170,42 @@
         r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     }
+
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
+      const meta = data.user.user_metadata || {};
+      const first = meta.first_name || meta.given_name || '';
+      const last = meta.last_name || meta.family_name || '';
+      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
+      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
+      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
+      showEmpty();
+    }
+
+    function showEmpty() {
+      const tbody = document.getElementById('cust-body');
+      if (tbody && tbody.children.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:52px 20px">
+          <div style="width:52px;height:52px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+            <i class="ti ti-users" style="font-size:24px;color:#0A2540"></i>
+          </div>
+          <div style="font-size:15px;font-weight:700;color:#061A30;margin-bottom:6px">No customers yet</div>
+          <div style="font-size:13px;color:#6B6A65;margin-bottom:18px">Add your first customer to get started</div>
+          <a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:6px;background:#0A2540;color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700">
+            <i class="ti ti-plus"></i> Create invoice
+          </a></td></tr>`;
+      }
+    }
+    loadUser();
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) {
+        const m = document.getElementById('plus-menu');
+        if (m) m.classList.remove('open');
+      }
+    });
   </script>
 </body>
 </html>
