@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New Invoice — TradesBill</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
@@ -170,107 +176,92 @@
     </div>
   </div>
 
-  <div class="page-content">
+  <div class="page-content" autocomplete="off">
     <div class="desktop-grid">
       <div class="desktop-left">
 
         <div class="card">
           <div class="card-title"><i class="ti ti-user"></i> Customer</div>
-          <div class="customer-display">
-            <div class="cust-avatar" id="cust-avatar">MT</div>
-            <div>
-              <div class="cust-name" id="cust-name">Mark Taylor</div>
-              <div class="cust-email" id="cust-email">mark@taylorbuilds.co.uk</div>
-            </div>
-            <button class="btn-change" onclick="changeCustomer()">Change</button>
+          <div class="field">
+            <label>Customer name <span style="color:#D14343">*</span></label>
+            <input type="text" id="cust-name" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="updatePreview()" />
           </div>
-          <div class="field" style="margin-top:14px;margin-bottom:0;display:none" id="cust-select-wrap">
-            <label>Select customer</label>
-            <select onchange="selectCustomer(this)">
-              <option value="">Choose...</option>
-              <option value="MT|Mark Taylor|mark@taylorbuilds.co.uk">Mark Taylor</option>
-              <option value="SC|Sarah Collins|sarah@collinshomes.co.uk">Sarah Collins</option>
-              <option value="RH|Riverside Homes|accounts@riversidehomes.co.uk">Riverside Homes</option>
-              <option value="PL|Pete Lawson|pete.lawson@gmail.com">Pete Lawson</option>
-              <option value="JB|J&B Builders Ltd|finance@jbbuilders.co.uk">J&amp;B Builders Ltd</option>
-            </select>
+          <div class="field">
+            <label>Email address <span style="color:#D14343">*</span></label>
+            <div style="position:relative">
+              <i class="ti ti-mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:#8B8A84;pointer-events:none"></i>
+              <input type="email" id="cust-email" placeholder="customer@email.com" autocomplete="off" style="padding-left:38px" oninput="updatePreview()" />
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Address <span style="font-size:11px;color:#8B8A84;font-weight:400">(optional)</span></label>
+            <textarea id="cust-address" autocomplete="off" placeholder="e.g. 14 Elm Street, Manchester, M1 4BT" style="min-height:56px;resize:none;width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;color:#1A1A18;background:#fff;outline:none" oninput="updatePreview()"></textarea>
           </div>
         </div>
 
         <div class="card">
           <div class="card-title"><i class="ti ti-briefcase"></i> Job details</div>
           <div class="field">
-            <label>Job description</label>
-            <input type="text" id="job-desc" placeholder="e.g. Bathroom refit" value="Bathroom refit" oninput="updatePreview()" />
+            <label>Job description <span style="color:#D14343">*</span></label>
+            <input type="text" id="job-desc" placeholder="e.g. Bathroom refit" autocomplete="off", boiler installation..." oninput="updatePreview()" />
           </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Invoice number</label>
-              <input type="text" id="inv-num" value="INV-039" oninput="updatePreview()" />
-            </div>
-            <div class="field">
-              <label>Due date</label>
-              <input type="date" id="due-date" value="2026-07-11" oninput="updatePreview()" />
-            </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Invoice number</label>
+            <input type="text" id="inv-num" placeholder="e.g. INV-001" autocomplete="off" oninput="updatePreview()" />
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><i class="ti ti-list"></i> Line items</div>
-          <div id="lines">
-            <div class="line-item">
-              <input class="line-desc" type="text" placeholder="What did you do?" value="Labour — bathroom refit" oninput="calcAll()" />
-              <div class="line-row">
-                <input class="line-input" type="number" placeholder="Qty" value="1" min="0" step="0.5" oninput="calcAll()" style="text-align:center" />
-                <input class="line-input" type="number" placeholder="£ Price" value="800" min="0" step="1" oninput="calcAll()" />
-                <button class="btn-rm" onclick="rmLine(this)" aria-label="Remove line"><i class="ti ti-trash"></i></button>
-              </div>
-              <div class="line-total-row">
-                <span class="line-total-label">Line total</span>
-                <span class="line-total-val">£800.00</span>
-              </div>
-            </div>
-            <div class="line-item">
-              <input class="line-desc" type="text" placeholder="What did you do?" value="Tiles and bathroom suite" oninput="calcAll()" />
-              <div class="line-row">
-                <input class="line-input" type="number" placeholder="Qty" value="1" min="0" step="0.5" oninput="calcAll()" style="text-align:center" />
-                <input class="line-input" type="number" placeholder="£ Price" value="900" min="0" step="1" oninput="calcAll()" />
-                <button class="btn-rm" onclick="rmLine(this)" aria-label="Remove line"><i class="ti ti-trash"></i></button>
-              </div>
-              <div class="line-total-row">
-                <span class="line-total-label">Line total</span>
-                <span class="line-total-val">£900.00</span>
-              </div>
-            </div>
-          </div>
-          <button class="btn-add" onclick="addLine()"><i class="ti ti-plus"></i> Add item</button>
+          <div class="card-title"><i class="ti ti-list"></i> Jobs & items</div>
+          <div id="lines"></div>
+          <button class="btn-add" onclick="addLine()" id="add-job-btn">
+            <i class="ti ti-plus"></i> Add job
+          </button>
         </div>
 
         <div class="card">
           <div class="card-title"><i class="ti ti-notes"></i> Notes (optional)</div>
           <div class="field" style="margin-bottom:0">
-            <textarea id="inv-notes" placeholder="e.g. Thank you for your business! Payment due within 14 days.">Thank you for choosing Hughes Plumbing. Payment due within 14 days.</textarea>
+            <textarea id="inv-notes" placeholder="e.g. Thank you for your business!"></textarea>
           </div>
         </div>
 
         <div class="totals-card">
-          <div class="tot-row"><span>Subtotal</span><span id="sub">£1,700.00</span></div>
+          <div class="tot-row"><span>Subtotal</span><span id="sub">£0.00</span></div>
           <div class="tot-row" style="margin-top:4px">
             <span>VAT
               <select class="vat-select" id="vat" onchange="calcAll()">
-                <option value="0">0%</option>
+                <option value="0" selected>0%</option>
                 <option value="5">5%</option>
-                <option value="20" selected>20%</option>
+                <option value="20">20%</option>
               </select>
             </span>
-            <span id="vatamt">£340.00</span>
+            <span id="vatamt">£0.00</span>
           </div>
           <hr class="tot-divider" />
-          <div class="tot-final"><span>Total due</span><span id="total">£2,040.00</span></div>
+          <div class="tot-final"><span>Total due</span><span id="total">£0.00</span></div>
+        </div>
+
+        <div id="stripe-prompt" style="display:none;background:#0A2540;border-radius:14px;padding:18px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="width:42px;height:42px;border-radius:10px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="ti ti-brand-stripe" style="color:#fff;font-size:22px"></i>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid directly into your bank</div>
+              <div style="font-size:12px;color:#8FA8C2;line-height:1.4">TradesBill partners with Stripe so your customers can pay by card, Apple Pay or bank transfer — and the money lands straight in your account.</div>
+            </div>
+          </div>
+          <a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:8px">
+            <i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it's free
+          </a>
+          <button onclick="document.getElementById('stripe-prompt').style.display='none'" style="width:100%;background:transparent;color:rgba(255,255,255,0.5);border:none;font-size:12px;cursor:pointer;padding:4px;font-family:inherit">
+            I'll do this later
+          </button>
         </div>
 
         <button class="btn-send-main" id="send-btn" onclick="sendInvoice()">
-          <i class="ti ti-send"></i> Send invoice — £2,040.00
+          <i class="ti ti-send"></i> Send invoice
         </button>
         <button class="btn-draft" onclick="saveDraft()">Save as draft</button>
         <div class="powered"><i class="ti ti-credit-card"></i> Payments powered by Stripe</div>
@@ -284,29 +275,26 @@
           <div class="prev-top">
             <div class="prev-logo"><i class="ti ti-building"></i></div>
             <div>
-              <div class="prev-num" id="prev-num">INV-039</div>
-              <div class="prev-due" id="prev-due">Due 11 Jul 2026</div>
+              <div class="prev-num" id="prev-num">INV-001</div>
+              
             </div>
           </div>
           <div class="prev-biz">Hughes Plumbing Ltd</div>
           <div class="prev-biz-sub">14 Elm Street, Manchester<br>07700 900123 · VAT: GB 123 456 789</div>
           <hr class="prev-div" />
           <div class="prev-bill">
-            <div><p>Bill to</p><div id="prev-cust">Mark Taylor<br>mark@taylorbuilds.co.uk</div></div>
-            <div><p>Job</p><div id="prev-job">Bathroom refit</div></div>
+            <div><p>Bill to</p><div id="prev-cust">—</div></div>
+            <div><p>Job</p><div id="prev-job">—</div></div>
           </div>
           <table class="prev-table">
             <thead><tr><th style="width:48%">Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
-            <tbody id="prev-items">
-              <tr><td>Labour — bathroom refit</td><td style="text-align:center">1</td><td style="text-align:right">£800.00</td><td style="text-align:right">£800.00</td></tr>
-              <tr><td>Tiles and bathroom suite</td><td style="text-align:center">1</td><td style="text-align:right">£900.00</td><td style="text-align:right">£900.00</td></tr>
-            </tbody>
+            <tbody id="prev-items"></tbody>
           </table>
-          <div class="prev-totals-row"><span>Subtotal</span><span id="prev-sub">£1,700.00</span></div>
-          <div class="prev-totals-row"><span id="prev-vat-label">VAT (20%)</span><span id="prev-vat">£340.00</span></div>
-          <div class="prev-grand"><span>Total due</span><span id="prev-grand">£2,040.00</span></div>
+          <div class="prev-totals-row"><span>Subtotal</span><span id="prev-sub">£0.00</span></div>
+          <div class="prev-totals-row"><span id="prev-vat-label">VAT (20%)</span><span id="prev-vat">£0.00</span></div>
+          <div class="prev-grand"><span>Total due</span><span id="prev-grand">£0.00</span></div>
           <div class="prev-footer">
-            <span id="prev-notes">Thank you for choosing Hughes Plumbing. Payment due within 14 days.</span>
+            <span id="prev-notes"></span>
             <br/><span class="stripe-pill"><i class="ti ti-credit-card"></i> Pay securely with Stripe</span>
           </div>
         </div>
@@ -361,26 +349,31 @@
     function updatePreview() {
       const num = document.getElementById('inv-num').value;
       const job = document.getElementById('job-desc').value;
+      const name = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
       const notes = document.getElementById('inv-notes') ? document.getElementById('inv-notes').value : '';
       if (document.getElementById('prev-num')) document.getElementById('prev-num').textContent = num || 'INV-001';
       if (document.getElementById('prev-job')) document.getElementById('prev-job').textContent = job || '—';
       if (document.getElementById('prev-notes')) document.getElementById('prev-notes').textContent = notes;
-      const due = document.getElementById('due-date').value;
-      if (due && document.getElementById('prev-due')) {
-        const d = new Date(due);
-        document.getElementById('prev-due').textContent = 'Due ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      if (document.getElementById('prev-cust')) {
+        let custHtml = name || '—';
+        if (email) custHtml += '<br>' + email;
+        if (address) custHtml += '<br>' + address.replace(/\n/g, ', ');
+        document.getElementById('prev-cust').innerHTML = custHtml;
       }
+      updatePreviewItems();
     }
 
     function addLine() {
       const d = document.createElement('div');
       d.className = 'line-item';
       d.innerHTML = `
-        <input class="line-desc" type="text" placeholder="What did you do?" oninput="calcAll()" />
+        <input class="line-desc" type="text" placeholder="Describe the job or item..." oninput="calcAll()" />
         <div class="line-row">
           <input class="line-input" type="number" placeholder="Qty" value="1" min="0" step="0.5" oninput="calcAll()" style="text-align:center" />
           <input class="line-input" type="number" placeholder="£ Price" value="" min="0" step="1" oninput="calcAll()" />
-          <button class="btn-rm" onclick="rmLine(this)" aria-label="Remove line"><i class="ti ti-trash"></i></button>
+          <button class="btn-rm" onclick="rmLine(this)" aria-label="Remove"><i class="ti ti-trash"></i></button>
         </div>
         <div class="line-total-row"><span class="line-total-label">Line total</span><span class="line-total-val">£0.00</span></div>`;
       document.getElementById('lines').appendChild(d);
@@ -388,51 +381,28 @@
     }
 
     function rmLine(btn) {
-      if (document.querySelectorAll('#lines .line-item').length > 1) {
+      const items = document.querySelectorAll('#lines .line-item');
+      if (items.length > 1) {
         btn.closest('.line-item').remove();
         calcAll();
       }
     }
 
-    function changeCustomer() {
-      const wrap = document.getElementById('cust-select-wrap');
-      wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function selectCustomer(sel) {
-      const parts = sel.value.split('|');
-      if (parts.length < 3) return;
-      document.getElementById('cust-avatar').textContent = parts[0];
-      document.getElementById('cust-name').textContent = parts[1];
-      document.getElementById('cust-email').textContent = parts[2];
-      if (document.getElementById('prev-cust')) {
-        document.getElementById('prev-cust').innerHTML = parts[1] + '<br>' + parts[2];
-      }
-      document.getElementById('cust-select-wrap').style.display = 'none';
-    }
-
     async function sendInvoice() {
-      const name = document.getElementById('cust-name').textContent;
-      const email = document.getElementById('cust-email').textContent;
-      const num = document.getElementById('inv-num').value;
+      const name = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const num = document.getElementById('inv-num').value.trim();
       const job = document.getElementById('job-desc').value.trim();
       const totalText = document.getElementById('total').textContent;
       const totalPounds = parseFloat(totalText.replace('£', '').replace(',', '')) || 0;
       const totalPence = Math.round(totalPounds * 100);
       const btn = document.getElementById('send-btn');
 
-      if (!email || !email.includes('@')) {
-        showSendError('Please select a customer with a valid email address.');
-        return;
-      }
-      if (!job) {
-        showSendError('Please add a job description.');
-        return;
-      }
-      if (totalPence < 50) {
-        showSendError('Invoice total must be at least £0.50.');
-        return;
-      }
+      if (!name) { showSendError('Please enter the customer\'s name.'); return; }
+      if (!email || !email.includes('@')) { showSendError('Please enter a valid customer email address.'); return; }
+      if (!job) { showSendError('Please add a job description.'); return; }
+      if (document.querySelectorAll('#lines .line-item').length === 0) { showSendError('Please add at least one job or item.'); return; }
+      if (totalPence < 50) { showSendError('Invoice total must be at least £0.50.'); return; }
 
       btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite"></i> Creating payment link...';
       btn.disabled = true;
@@ -511,6 +481,19 @@
     }
 
     document.getElementById('inv-notes').addEventListener('input', updatePreview);
+
+    // Check Stripe connection on load
+    async function checkStripe() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data || !data.user) return;
+        const meta = data.user.user_metadata || {};
+        if (!meta.stripe_connected) {
+          document.getElementById('stripe-prompt').style.display = 'block';
+        }
+      } catch(e) {}
+    }
+    checkStripe();
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.nav-plus-wrap')) {
