@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -495,44 +495,141 @@
       const content = document.querySelector('.content');
       if (!content) return;
       const stripeConnected = meta && meta.stripe_connected;
+      const hasLogo = meta && meta.logo_url;
+      const hasBusiness = meta && meta.business_name;
+
+      // Calculate completed steps
+      let done = 1; // account always done
+      if (hasBusiness) done++;
+      if (stripeConnected) done++;
+      const total = 7;
+      const pct = Math.round((done / total) * 100);
+
       content.innerHTML = `
-        <div style="max-width:520px;margin:60px auto;text-align:center;padding:0 20px">
-          <div style="width:72px;height:72px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
-            <i class="ti ti-file-invoice" style="font-size:32px;color:#0A2540"></i>
+        <div style="max-width:600px;margin:0 auto;padding:20px 0 40px">
+
+          <div style="margin-bottom:28px">
+            <h2 style="font-size:20px;font-weight:700;color:#061A30;margin-bottom:4px">Welcome, ${name}!</h2>
+            <p style="font-size:14px;color:#6B6A65">Complete these steps to start getting paid. Takes about 3 minutes.</p>
           </div>
-          <h2 style="font-size:20px;font-weight:700;color:#061A30;margin-bottom:8px">Welcome to your dashboard, ${name}!</h2>
-          <p style="font-size:14px;color:#6B6A65;line-height:1.7;margin-bottom:32px">
-            Your dashboard will show your earnings, invoices, and activity once you start sending invoices. Create your first one now to get started.
-          </p>
-          <a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px 28px;border-radius:11px;font-size:15px;font-weight:700;margin-bottom:16px">
-            <i class="ti ti-plus" style="font-size:18px"></i> Create your first invoice
-          </a>
-          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px">
-            <a href="customers.html" style="display:inline-flex;align-items:center;gap:6px;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:700">
-              <i class="ti ti-users" style="font-size:16px"></i> Add a customer
-            </a>
-            <a href="settings.html" style="display:inline-flex;align-items:center;gap:6px;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:10px 18px;border-radius:9px;font-size:13px;font-weight:700">
-              <i class="ti ti-settings" style="font-size:16px"></i> Set up your profile
-            </a>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:40px">
-            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
-              <i class="ti ti-circle-check" style="font-size:20px;color:#1D9E75;margin-bottom:8px;display:block"></i>
-              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Account created</div>
-              <div style="font-size:11px;color:#1D9E75">You're all set up</div>
-            </div>
-            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
-              <i class="ti ti-brand-stripe" style="font-size:20px;color:${stripeConnected ? '#1D9E75' : '#A3A29C'};margin-bottom:8px;display:block"></i>
-              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">Stripe payments</div>
-              <div style="font-size:11px;color:${stripeConnected ? '#1D9E75' : '#8B8A84'}">${stripeConnected ? 'Connected' : 'Not connected'}</div>
-            </div>
-            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px;text-align:left">
-              <i class="ti ti-file-invoice" style="font-size:20px;color:#A3A29C;margin-bottom:8px;display:block"></i>
-              <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:3px">First invoice</div>
-              <div style="font-size:11px;color:#8B8A84">Not sent yet</div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:600;color:#061A30">${done} of ${total} complete</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:140px;height:5px;background:#E5E3DC;border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:#0A2540;border-radius:3px;transition:width 0.4s"></div>
+              </div>
+              <div style="font-size:12px;color:#8B8A84">${pct}%</div>
             </div>
           </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px" id="ob-steps">
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:0.5px solid #E5E3DC;border-radius:12px;opacity:0.65">
+              <div style="width:28px;height:28px;border-radius:50%;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-check" style="color:#fff;font-size:14px"></i>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:600;color:#6B6A65;text-decoration:line-through">Create your account</div>
+                <div style="font-size:12px;color:#8B8A84">You're in — welcome to TradesBill.</div>
+              </div>
+              <div style="font-size:12px;color:#1D9E75;font-weight:600;display:flex;align-items:center;gap:4px;flex-shrink:0">
+                <i class="ti ti-circle-check" style="font-size:14px"></i> Done
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:${hasBusiness ? '0.5px solid #E5E3DC;opacity:0.65' : '1.5px solid #0A2540'};border-radius:12px" id="ob-business">
+              <div style="width:28px;height:28px;border-radius:50%;background:${hasBusiness ? '#0A2540' : '#EEF3F8'};border:${hasBusiness ? 'none' : '1.5px solid #0A2540'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-${hasBusiness ? 'check' : 'building'}" style="color:${hasBusiness ? '#fff' : '#0A2540'};font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:${hasBusiness ? '#6B6A65' : '#061A30'};${hasBusiness ? 'text-decoration:line-through' : ''}">Add your business details</div>
+                <div style="font-size:12px;color:#8B8A84">Name, logo, trade type — appears on every invoice.</div>
+              </div>
+              <div style="flex-shrink:0">
+                ${hasBusiness
+                  ? '<div style="font-size:12px;color:#1D9E75;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-circle-check" style="font-size:14px"></i> Done</div>'
+                  : '<a href="settings.html" style="display:inline-flex;align-items:center;gap:5px;background:#0A2540;color:#fff;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600">Set up <i class="ti ti-arrow-right" style="font-size:13px"></i></a>'
+                }
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:${stripeConnected ? '0.5px solid #E5E3DC;opacity:0.65' : '0.5px solid #E5E3DC'};border-radius:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:${stripeConnected ? '#0A2540' : '#EEF3F8'};border:${stripeConnected ? 'none' : '1.5px solid #E5E3DC'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-${stripeConnected ? 'check' : 'brand-stripe'}" style="color:${stripeConnected ? '#fff' : '#8B8A84'};font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:${stripeConnected ? '#6B6A65' : '#061A30'};${stripeConnected ? 'text-decoration:line-through' : ''}">Connect Stripe</div>
+                <div style="font-size:12px;color:#8B8A84">Get paid by card or Apple Pay — direct to your bank.</div>
+              </div>
+              <div style="flex-shrink:0">
+                ${stripeConnected
+                  ? '<div style="font-size:12px;color:#1D9E75;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-circle-check" style="font-size:14px"></i> Done</div>'
+                  : '<a href="onboarding-payments.html" style="display:inline-flex;align-items:center;gap:5px;background:#635BFF;color:#fff;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600">Connect <i class="ti ti-arrow-right" style="font-size:13px"></i></a>'
+                }
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:0.5px solid #E5E3DC;border-radius:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#EEF3F8;border:1.5px solid #E5E3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-file-plus" style="color:#8B8A84;font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:#061A30">Send your first invoice</div>
+                <div style="font-size:12px;color:#8B8A84">Add a customer, describe the job, set the amount — 60 seconds.</div>
+              </div>
+              <a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:5px;background:#0A2540;color:#fff;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0">
+                Create <i class="ti ti-arrow-right" style="font-size:13px"></i>
+              </a>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:0.5px solid #E5E3DC;border-radius:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#EEF3F8;border:1.5px solid #E5E3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-user-plus" style="color:#8B8A84;font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:#061A30">Add your first customer</div>
+                <div style="font-size:12px;color:#8B8A84">Save their details so invoicing them next time takes seconds.</div>
+              </div>
+              <a href="customers.html" style="display:inline-flex;align-items:center;gap:5px;background:#FAFAF8;color:#0A2540;border:1px solid #E5E3DC;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0">
+                Add <i class="ti ti-arrow-right" style="font-size:13px"></i>
+              </a>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:0.5px solid #E5E3DC;border-radius:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#EEF3F8;border:1.5px solid #E5E3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-photo" style="color:#8B8A84;font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:#061A30">Upload your logo</div>
+                <div style="font-size:12px;color:#8B8A84">Make your invoices look professional with your branding.</div>
+              </div>
+              <a href="settings.html" style="display:inline-flex;align-items:center;gap:5px;background:#FAFAF8;color:#0A2540;border:1px solid #E5E3DC;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0">
+                Upload <i class="ti ti-arrow-right" style="font-size:13px"></i>
+              </a>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:0.5px solid #E5E3DC;border-radius:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#EEF3F8;border:1.5px solid #E5E3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-share" style="color:#8B8A84;font-size:14px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:#061A30">Refer a tradesperson</div>
+                <div style="font-size:12px;color:#8B8A84">Know a builder or plumber who'd benefit? Pass it on.</div>
+              </div>
+              <a href="settings.html" style="display:inline-flex;align-items:center;gap:5px;background:#FAFAF8;color:#0A2540;border:1px solid #E5E3DC;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600;flex-shrink:0">
+                Share <i class="ti ti-arrow-right" style="font-size:13px"></i>
+              </a>
+            </div>
+
+          </div>
+
+          <div style="text-align:center;margin-top:20px">
+            <a href="dashboard.html?skip_onboarding=true" style="font-size:12px;color:#8B8A84;text-decoration:none">I know what I'm doing — hide this checklist</a>
+          </div>
+
         </div>`;
+    }
     }
 
     function showDummyBanner() {
