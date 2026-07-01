@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -302,22 +302,36 @@
     }
 
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
+      // Fallback: if still loading after 5 seconds show error
+      const timeout = setTimeout(() => {
+        const el = document.getElementById('main-content');
+        if (el && el.innerHTML.includes('Loading') || el.innerHTML.includes('Setting up')) {
+          el.innerHTML = `<div style="max-width:480px;margin:40px auto;background:#FDEDED;border:1px solid #F09595;border-radius:12px;padding:24px">
+            <div style="font-size:15px;font-weight:700;color:#D14343;margin-bottom:8px">Connection issue</div>
+            <div style="font-size:13px;color:#D14343;margin-bottom:16px">Could not load your dashboard. This is usually a Supabase key issue.</div>
+            <div style="font-size:12px;color:#A32D2D;background:#FCEBEB;border-radius:8px;padding:10px;font-family:monospace">Check that your SUPABASE_URL and SUPABASE_KEY are correct in dashboard.html lines 11-12</div>
+            <button onclick="window.location.reload()" style="margin-top:14px;background:#D14343;color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Try again</button>
+          </div>`;
+        }
+      }, 5000);
 
-      if (error || !data || !data.user) {
-        window.location.href = 'login.html';
-        return;
-      }
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        clearTimeout(timeout);
+
+        if (error || !data || !data.user) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+      // Show something immediately so it never looks stuck
+      document.getElementById('main-content').innerHTML = '<div style="text-align:center;padding:40px 20px;color:#8B8A84;font-size:14px">Setting up your dashboard...</div>';
 
       const user = data.user;
       const meta = user.user_metadata || {};
 
-      // Redirect incomplete users to onboarding (unless skipping)
-      const params = new URLSearchParams(window.location.search);
-      if (!meta.onboarding_complete && params.get('skip') !== 'true') {
-        window.location.href = 'welcome.html';
-        return;
-      }
+      // Onboarding redirect disabled — checklist on dashboard handles this instead
+      // Users who skip onboarding see the checklist on their dashboard
 
       // Name and initials
       const first = meta.first_name || meta.given_name || '';
@@ -339,6 +353,16 @@
 
       // Always show checklist (no dummy data)
       renderChecklist(first || fullName, meta);
+    }
+
+      } catch(e) {
+        clearTimeout(timeout);
+        document.getElementById('main-content').innerHTML = `<div style="max-width:480px;margin:40px auto;background:#FDEDED;border:1px solid #F09595;border-radius:12px;padding:24px">
+          <div style="font-size:15px;font-weight:700;color:#D14343;margin-bottom:8px">Something went wrong</div>
+          <div style="font-size:13px;color:#D14343;margin-bottom:8px">${e.message}</div>
+          <button onclick="window.location.reload()" style="margin-top:8px;background:#D14343;color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Try again</button>
+        </div>`;
+      }
     }
 
     loadUser();
