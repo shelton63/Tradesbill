@@ -138,17 +138,17 @@
             <div class="card-title"><i class="ti ti-building"></i> Business details</div>
             <div class="card-desc">This appears on all your invoices and quotes</div>
             <div class="field-row">
-              <div class="field"><label>Business name</label><input type="text" value="Hughes Plumbing Ltd" /></div>
+              <div class="field"><label>Business name</label><input type="text" id="field-business" placeholder="e.g. Hughes Plumbing Ltd" /></div>
               <div class="field"><label>Trade type</label><select><option>Plumber</option><option>Builder</option><option>Electrician</option><option>Roofer</option><option>Carpenter</option><option>Other</option></select></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Email address</label><input type="email" value="dave@hughesplumbing.co.uk" /></div>
-              <div class="field"><label>Phone number</label><input type="tel" value="07700 900123" /></div>
+              <div class="field"><label>Email address</label><input type="email" id="field-email" placeholder="your@email.com" /></div>
+              <div class="field"><label>Phone number</label><input type="tel" id="field-phone" placeholder="e.g. 07700 900123" /></div>
             </div>
-            <div class="field"><label>Business address</label><textarea>14 Elm Street, Manchester, M1 4BT</textarea></div>
+            <div class="field"><label>Business address</label><textarea id="field-address" placeholder="Your business address"></textarea></div>
             <div class="field-row">
-              <div class="field"><label>VAT number</label><input type="text" value="GB 123 456 789" /></div>
-              <div class="field"><label>Company number</label><input type="text" value="12345678" /></div>
+              <div class="field"><label>VAT number</label><input type="text" id="field-vat" placeholder="GB 123 456 789 (optional)" /></div>
+              <div class="field"><label>Company number</label><input type="text" id="field-company-num" placeholder="12345678 (optional)" /></div>
             </div>
           </div>
 
@@ -171,32 +171,38 @@
             <div class="card-title"><i class="ti ti-file-invoice"></i> Invoice preferences</div>
             <div class="card-desc">Default settings applied to every new invoice</div>
             <div class="field"><label>Invoice prefix</label><input type="text" value="INV-" /></div>
-            <div class="field"><label>Payment due</label><select><option>7 days</option><option selected>14 days</option><option>30 days</option><option>60 days</option></select></div>
+            
             <div class="field"><label>Default VAT rate</label><select><option>0%</option><option selected>20% (Standard)</option><option>5% (Reduced)</option></select></div>
-            <div class="field"><label>Invoice footer note</label><textarea>Thank you for choosing Hughes Plumbing.</textarea></div>
+            <div class="field"><label>Invoice footer note</label><textarea id="field-footer" placeholder="e.g. Thank you for your business! We appreciate your payment."></textarea></div>
           </div>
 
           <div class="card card-full">
             <div class="card-title"><i class="ti ti-bell"></i> Notifications & reminders</div>
             <div class="card-desc">Automate your chasing so you never have to send an awkward text</div>
             <div class="toggle-row"><div class="toggle-label"><p>Email me when an invoice is paid</p><span>Get notified the moment money lands</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
-            <div class="toggle-row"><div class="toggle-label"><p>Auto-remind customers before due date</p><span>Sends a friendly reminder 2 days before</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
-            <div class="toggle-row"><div class="toggle-label"><p>Auto-remind when overdue</p><span>Sends a follow-up 1 day after due date</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
+            
+            
             <div class="toggle-row"><div class="toggle-label"><p>Weekly earnings summary</p><span>Email every Monday with your week's numbers</span></div><div class="toggle off" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
           </div>
 
           <div class="card">
             <div class="card-title"><i class="ti ti-credit-card"></i> Stripe payments</div>
-            <div class="card-desc">Accept card payments from your customers</div>
-            <div class="stripe-connected"><i class="ti ti-circle-check"></i><div><p>Stripe connected</p><span>Payments go straight to your bank</span></div></div>
-            <div class="toggle-row"><div class="toggle-label"><p>Accept Apple Pay & Google Pay</p><span>Faster checkout for customers</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
-            <div class="toggle-row"><div class="toggle-label"><p>Pass Stripe fee to customer</p><span>Adds ~1.5% to invoice total</span></div><div class="toggle off" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
+            <div class="card-desc">Accept card payments directly into your bank account</div>
+
+            <div id="stripe-status-wrap">
+              <!-- Populated by loadUser() based on real Supabase metadata -->
+            </div>
+
+            <div id="stripe-toggles" style="display:none">
+              <div class="toggle-row"><div class="toggle-label"><p>Accept Apple Pay & Google Pay</p><span>Faster checkout for customers</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
+              <div class="toggle-row"><div class="toggle-label"><p>Pass Stripe fee to customer</p><span>Adds ~1.5% to invoice total</span></div><div class="toggle off" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
+            </div>
           </div>
 
           <div class="card">
             <div class="card-title"><i class="ti ti-lock"></i> Account & security</div>
             <div class="card-desc">Manage your login and password</div>
-            <div class="field"><label>Email address</label><input type="email" value="dave@hughesplumbing.co.uk" /></div>
+            <div class="field"><label>Email address</label><input type="email" id="field-account-email" placeholder="your@email.com" /></div>
             <div class="field"><label>New password</label><input type="password" placeholder="Leave blank to keep current" /></div>
             <div class="field"><label>Confirm new password</label><input type="password" placeholder="Repeat new password" /></div>
           </div>
@@ -252,25 +258,81 @@
     async function loadUser() {
       const { data, error } = await supabase.auth.getUser();
       if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
+
+      const user = data.user;
+      const meta = user.user_metadata || {};
       const first = meta.first_name || meta.given_name || '';
       const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
-      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
+      const fullName = (first || last) ? (first + ' ' + last).trim() : (user.email ? user.email.split('@')[0] : '');
+      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (user.email ? user.email.charAt(0).toUpperCase() : '?');
+
+      // Sidebar
       const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
       const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
       const plan = document.getElementById('sb-user-plan');
       if (plan) plan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
-      // Pre-fill settings form with real user data
-      if (meta.business_name) { const el = document.querySelector('#business-name, input[placeholder="Hughes Plumbing Ltd"]'); if (el) el.value = meta.business_name; }
-      if (meta.trade_type) { const el = document.querySelector('#trade, select'); if (el) el.value = meta.trade_type; }
-      if (meta.phone) { const el = document.querySelector('input[type="tel"]'); if (el) el.value = meta.phone; }
-      if (meta.vat_number) { const el = document.querySelector('input[placeholder="GB 123 456 789"]'); if (el) el.value = meta.vat_number; }
-      if (meta.business_address) { const el = document.querySelector('textarea'); if (el) el.value = meta.business_address; }
+
+      // Business details — pull from onboarding metadata
+      function fill(id, value) { const el = document.getElementById(id); if (el && value) el.value = value; }
+      fill('field-business', meta.business_name);
+      fill('field-email', user.email);
+      fill('field-phone', meta.phone);
+      fill('field-vat', meta.vat_number);
+      fill('field-company-num', meta.company_number);
+      fill('field-account-email', user.email);
+      if (meta.business_address) {
+        const el = document.getElementById('field-address');
+        if (el) el.value = meta.business_address;
+      }
+
+      // Trade type select
+      if (meta.trade_type) {
+        const sel = document.querySelector('select');
+        if (sel) sel.value = meta.trade_type;
+      }
+
+      // Logo
       if (meta.logo_url) {
         const icon = document.getElementById('logo-icon'); if (icon) icon.style.display = 'none';
         const img = document.getElementById('logo-img'); if (img) { img.src = meta.logo_url; img.style.display = 'block'; }
         const txt = document.getElementById('logo-text'); if (txt) txt.textContent = 'Logo added — click to change';
+      }
+
+      // Stripe status — render correct card based on real metadata
+      const stripeWrap = document.getElementById('stripe-status-wrap');
+      const stripeToggles = document.getElementById('stripe-toggles');
+      if (stripeWrap) {
+        if (meta.stripe_connected) {
+          // Connected — show green card and toggles
+          stripeWrap.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:13px 14px;margin-bottom:14px">
+              <i class="ti ti-circle-check" style="color:#1D9E75;font-size:22px;flex-shrink:0"></i>
+              <div>
+                <p style="font-size:13px;font-weight:700;color:#085041">Stripe connected</p>
+                <span style="font-size:12px;color:#0F6E56">Payments go straight to your bank</span>
+              </div>
+              <a href="onboarding-payments.html" style="margin-left:auto;font-size:12px;color:#0F6E56;font-weight:700;text-decoration:none;white-space:nowrap">Manage →</a>
+            </div>`;
+          if (stripeToggles) stripeToggles.style.display = 'block';
+        } else {
+          // Not connected — show the TradesBill × Stripe prompt
+          stripeWrap.innerHTML = `
+            <div style="background:#0A2540;border-radius:12px;padding:18px;margin-bottom:4px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <div style="width:38px;height:38px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <i class="ti ti-brand-stripe" style="color:#fff;font-size:20px"></i>
+                </div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid into your bank</div>
+                  <div style="font-size:12px;color:#8FA8C2;line-height:1.4">TradesBill partners with Stripe so your customers can pay by card, Apple Pay or bank transfer — and the money lands straight in your account.</div>
+                </div>
+              </div>
+              <a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:700">
+                <i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it's free
+              </a>
+            </div>`;
+          if (stripeToggles) stripeToggles.style.display = 'none';
+        }
       }
     }
     loadUser();
