@@ -7,13 +7,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
+    html { overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; overflow-x: hidden; }
     .db { display: flex; min-height: 100vh; }
 
     .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
@@ -21,14 +22,15 @@
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
     .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
     .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
     .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
@@ -36,7 +38,7 @@
     .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; font-family: inherit; }
     .btn-new:hover { background: #061A30; }
     .content { padding: 24px 28px; }
 
@@ -45,12 +47,12 @@
     .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; }
     .stat-value { font-size: 22px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
 
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
     .search-wrap { position: relative; flex: 1; min-width: 200px; }
     .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; }
-    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; }
+    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
     .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
     .filter-tab { padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
     .filter-tab.active { background: #0A2540; color: #fff; border-color: #0A2540; }
     .filter-tab:hover:not(.active) { background: #F0EFEA; }
@@ -74,7 +76,8 @@
     .badge-pending { background: #FBF3E3; color: #C28A1E; }
     .badge-declined { background: #FDEDED; color: #D14343; }
     .badge-draft { background: #F0EFEA; color: #6B6A65; }
-    .badge i { font-size: 12px; }
+    .badge-partial { background: #FBF3E3; color: #C28A1E; }
+    .badge i { font-size: 11px; }
 
     .action-btns { display: flex; gap: 6px; }
     .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8B8A84; text-decoration: none; }
@@ -85,19 +88,36 @@
     .info-banner i { color: #0A2540; font-size: 18px; flex-shrink: 0; }
     .info-banner p { font-size: 13px; color: #0A2540; line-height: 1.5; }
 
+    /* Payment modal */
+    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
+    .pay-modal-overlay.open { display:flex; }
+    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
+    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
+    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
+    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
+    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; }
+    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
+    .pay-status-opt.selected { border-color:var(--c); background:var(--bg); }
+    .pay-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .pay-status-label { font-size:14px; font-weight:600; color:#061A30; }
+    .pay-status-desc { font-size:12px; color:#8B8A84; }
+    .pay-method-row { margin-bottom:14px; }
+    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
+    .pay-method-btn { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:4px; }
+    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
+    .pay-partial-row { margin-bottom:14px; display:none; }
+    .pay-partial-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-partial-row input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
+    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
+    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
 
     @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
@@ -105,42 +125,32 @@
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; }
       .content { padding: 14px 16px; }
       .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .stat-value { font-size: 18px; }
       th:nth-child(3), td:nth-child(3) { display: none; }
+      .table-wrap { overflow-x: auto; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
       .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
       .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
       .plus-menu-item:last-child { border-bottom: none; }
       .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
   </style>
 </head>
 <body>
 
   <div class="mobile-topbar">
     <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
-    <a href="#" class="mob-add-btn"><i class="ti ti-plus"></i> New</a>
   </div>
 
   <div class="db">
@@ -152,58 +162,99 @@
         <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
         <a href="quotes.html" class="sb-item active"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
         <div class="sb-section-label">Reports</div>
         <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
         <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name">Loading...</div><div class="sb-user-plan">Free trial</div></div></a></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
     </nav>
 
     <div class="main">
       <div class="topbar">
         <h1>Quotes</h1>
-        <a href="#" class="btn-new"><i class="ti ti-plus"></i> New quote</a>
+        <button class="btn-new"><i class="ti ti-plus"></i> New quote</button>
       </div>
 
       <div class="content">
-        <div class="info-banner">
-          <i class="ti ti-info-circle"></i>
-          <p>Quotes let you give customers a price upfront. Once accepted, convert them into an invoice in one click.</p>
+        <div id="quotes-intro">
+          <div style="max-width:480px;margin:0 auto;padding:20px 0 40px;text-align:center">
+            <div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-file-text" style="font-size:28px;color:#0A2540"></i></div>
+            <div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Win more jobs with quotes</div>
+            <div style="font-size:13px;color:#6B6A65;line-height:1.6;margin-bottom:24px">Send a professional quote before the job starts. Once accepted, convert it to an invoice in one tap — no re-entering data.</div>
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px;text-align:left">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">One-tap conversion</div><div style="font-size:12px;color:#8B8A84">Turn an accepted quote into an invoice instantly</div></div></div>
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Track acceptance</div><div style="font-size:12px;color:#8B8A84">See which quotes are pending, accepted or declined</div></div></div>
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-coin" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">See pending value</div><div style="font-size:12px;color:#8B8A84">Know how much work is waiting to be confirmed</div></div></div>
+            </div>
+            <button onclick="showQuoteTable()" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;border:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700;width:100%;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:17px"></i> Create your first quote</button>
+          </div>
         </div>
 
-        <div class="stats">
-          <div class="stat"><div class="stat-label">Total quotes</div><div class="stat-value">0</div></div>
-          <div class="stat"><div class="stat-label">Accepted</div><div class="stat-value">0</div></div>
-          <div class="stat"><div class="stat-label">Pending</div><div class="stat-value">0</div></div>
-          <div class="stat"><div class="stat-label">Value pending</div><div class="stat-value">£0</div></div>
-        </div>
-
-        <div class="toolbar">
-          <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search by customer or quote number..." oninput="filterQuotes(this.value)" /></div>
-        </div>
-        <div class="filter-tabs" style="margin-bottom:16px">
-          <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
-          <div class="filter-tab" onclick="setFilter(this,'accepted')">Accepted</div>
-          <div class="filter-tab" onclick="setFilter(this,'pending')">Pending</div>
-          <div class="filter-tab" onclick="setFilter(this,'declined')">Declined</div>
-          <div class="filter-tab" onclick="setFilter(this,'draft')">Draft</div>
-        </div>
-
-        <div id="empty-state-wrap" style=""><div style="max-width:480px;margin:0 auto;padding:20px 0 40px"><div style="text-align:center;padding:28px 0 24px"><div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-file-text" style="font-size:28px;color:#0A2540"></i></div><div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Win more jobs with quotes</div><div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto">Send a professional quote before the job starts. Once the customer accepts, convert it into an invoice with one tap — no re-entering data.</div></div><div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px"><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">One-tap conversion</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Turn an accepted quote into an invoice instantly</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Track acceptance</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">See which quotes are pending, accepted or declined</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-coin" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">See pending value</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Know how much work is waiting to be confirmed</div></div></div><div style="padding:12px 0;border:none"></div></div><a href="#" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create your first quote</a></div></div>
-        <div id="table-section" style="display:none">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Quote</th><th>Customer</th><th>Job</th><th>Amount</th><th>Sent</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="q-body"></tbody>
-          </table>
+        <div id="quotes-table" style="display:none">
+          <div class="stats">
+            <div class="stat"><div class="stat-label">Total quotes</div><div class="stat-value">5</div></div>
+            <div class="stat"><div class="stat-label">Accepted</div><div class="stat-value">2</div></div>
+            <div class="stat"><div class="stat-label">Pending</div><div class="stat-value">2</div></div>
+            <div class="stat"><div class="stat-label">Value pending</div><div class="stat-value">£2,580</div></div>
+          </div>
+          <div class="toolbar">
+            <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search quotes..." oninput="filterQuotes(this.value)" /></div>
+          </div>
+          <div class="filter-tabs">
+            <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
+            <div class="filter-tab" onclick="setFilter(this,'accepted')">Accepted</div>
+            <div class="filter-tab" onclick="setFilter(this,'pending')">Pending</div>
+            <div class="filter-tab" onclick="setFilter(this,'declined')">Declined</div>
+            <div class="filter-tab" onclick="setFilter(this,'draft')">Draft</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Quote</th><th>Customer</th><th>Job</th><th>Amount</th><th>Sent</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="q-body">
+                <tr class="q-row" data-status="pending" data-pay-id="Q-012">
+                  <td><span class="q-num">#Q-012</span></td>
+                  <td><div class="cust-cell"><div class="avatar av-blue">MT</div><span class="cust-name-text">Mark Taylor</span></div></td>
+                  <td>Extension wiring</td><td>£2,400</td><td>2 days ago</td>
+                  <td><span class="badge dyn-badge badge-pending"><i class="ti ti-clock"></i> Pending</span></td>
+                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-012','pending')"><i class="ti ti-cash"></i></button></div></td>
+                </tr>
+                <tr class="q-row" data-status="accepted" data-pay-id="Q-011">
+                  <td><span class="q-num">#Q-011</span></td>
+                  <td><div class="cust-cell"><div class="avatar av-teal">SC</div><span class="cust-name-text">Sarah Collins</span></div></td>
+                  <td>Loft conversion</td><td>£8,200</td><td>4 days ago</td>
+                  <td><span class="badge dyn-badge badge-accepted"><i class="ti ti-check"></i> Accepted</span></td>
+                  <td><div class="action-btns"><a href="create-invoice.html" class="icon-btn" title="Convert to invoice"><i class="ti ti-arrow-right"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-011','accepted')"><i class="ti ti-cash"></i></button></div></td>
+                </tr>
+                <tr class="q-row" data-status="declined" data-pay-id="Q-010">
+                  <td><span class="q-num">#Q-010</span></td>
+                  <td><div class="cust-cell"><div class="avatar av-amber">RH</div><span class="cust-name-text">Riverside Homes</span></div></td>
+                  <td>Roof repair</td><td>£1,650</td><td>1 week ago</td>
+                  <td><span class="badge dyn-badge badge-declined"><i class="ti ti-x"></i> Declined</span></td>
+                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-010','declined')"><i class="ti ti-cash"></i></button></div></td>
+                </tr>
+                <tr class="q-row" data-status="accepted" data-pay-id="Q-009">
+                  <td><span class="q-num">#Q-009</span></td>
+                  <td><div class="cust-cell"><div class="avatar av-coral">PL</div><span class="cust-name-text">Pete Lawson</span></div></td>
+                  <td>Bathroom suite</td><td>£1,200</td><td>2 weeks ago</td>
+                  <td><span class="badge dyn-badge badge-accepted"><i class="ti ti-check"></i> Accepted</span></td>
+                  <td><div class="action-btns"><a href="create-invoice.html" class="icon-btn" title="Convert to invoice"><i class="ti ti-arrow-right"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-009','accepted')"><i class="ti ti-cash"></i></button></div></td>
+                </tr>
+                <tr class="q-row" data-status="draft" data-pay-id="Q-013">
+                  <td><span class="q-num">#Q-013</span></td>
+                  <td><div class="cust-cell"><div class="avatar av-blue">TW</div><span class="cust-name-text">Tom Walsh</span></div></td>
+                  <td>Outdoor tap</td><td>£180</td><td>Not sent</td>
+                  <td><span class="badge dyn-badge badge-draft"><i class="ti ti-pencil"></i> Draft</span></td>
+                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-013','draft')"><i class="ti ti-cash"></i></button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-        </div>
       <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
         <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
@@ -220,72 +271,143 @@
     </div>
   </div>
 
+  <!-- PAYMENT STATUS MODAL -->
+  <div class="pay-modal-overlay" id="pay-modal">
+    <div class="pay-modal">
+      <div class="pay-modal-header">
+        <div class="pay-modal-title">Update payment status</div>
+        <button class="pay-modal-close" onclick="closePayModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px">
+        <div class="pay-status-opts">
+          <div class="pay-status-opt" data-status="paid" style="--c:#1D9E75;--bg:#F0FAF6" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#1D9E75"></div>
+            <div><div class="pay-status-label">Paid in full</div><div class="pay-status-desc">Full amount received</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="partial" style="--c:#C28A1E;--bg:#FBF9F0" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#C28A1E"></div>
+            <div><div class="pay-status-label">Partially paid</div><div class="pay-status-desc">Deposit or part payment received</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="unpaid" style="--c:#D14343;--bg:#FEF5F5" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#D14343"></div>
+            <div><div class="pay-status-label">Unpaid</div><div class="pay-status-desc">No payment received yet</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="overdue" style="--c:#991F1F;--bg:#FEF0F0" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#991F1F"></div>
+            <div><div class="pay-status-label">Overdue</div><div class="pay-status-desc">Payment is past due</div></div>
+          </div>
+        </div>
+        <div class="pay-partial-row" id="pay-partial-row">
+          <label>Amount received so far (£)</label>
+          <input type="number" id="pay-partial-amt" placeholder="e.g. 500" min="0" />
+        </div>
+        <div class="pay-method-row">
+          <label>Payment method</label>
+          <div class="pay-method-btns">
+            <button class="pay-method-btn active" data-method="card" onclick="selectPayMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
+            <button class="pay-method-btn" data-method="cash" onclick="selectPayMethod(this)"><i class="ti ti-cash"></i> Cash</button>
+            <button class="pay-method-btn" data-method="bank" onclick="selectPayMethod(this)"><i class="ti ti-building-bank"></i> Bank</button>
+            <button class="pay-method-btn" data-method="mixed" onclick="selectPayMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
+          </div>
+        </div>
+      </div>
+      <div class="pay-modal-footer">
+        <button class="pay-btn-cancel" onclick="closePayModal()">Cancel</button>
+        <button class="pay-btn-save" onclick="savePayStatus()">Save status</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function initials(first, last, email) {
-      const f = (first || '').trim().charAt(0).toUpperCase();
-      const l = (last || '').trim().charAt(0).toUpperCase();
-      if (f && l) return f + l;
-      if (f) return f;
-      if (email) return email.charAt(0).toUpperCase();
-      return '?';
-    }
+    var _payTargetId = null;
+    var _payStatuses = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
+    var _badgeCls = { paid:'badge-accepted', partial:'badge-partial', unpaid:'badge-pending', overdue:'badge-declined', draft:'badge-draft' };
+    var _badgeLbl = { paid:'Paid', partial:'Partial paid', unpaid:'Unpaid', overdue:'Overdue', draft:'Draft' };
+    var _badgeIcon = { paid:'ti-check', partial:'ti-clock-pause', unpaid:'ti-clock', overdue:'ti-alert-circle', draft:'ti-pencil' };
+
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? `${first} ${last}`.trim() : (data.user.email ? data.user.email.split('@')[0] : 'there');
-      const sbAvatar = document.getElementById('sb-avatar');
-      const sbName = document.getElementById('sb-user-name');
-      if (sbAvatar) sbAvatar.textContent = initials(first, last, data.user.email);
-      if (sbName) sbName.textContent = fullName;
+      try {
+        var r = await supabase.auth.getUser();
+        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
+        var m = r.data.user.user_metadata || {};
+        var first = m.first_name || m.given_name || '';
+        var last = m.last_name || m.family_name || '';
+        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : r.data.user.email.split('@')[0];
+      } catch(e) {}
     }
     loadUser();
+
+    function showQuoteTable() {
+      document.getElementById('quotes-intro').style.display = 'none';
+      document.getElementById('quotes-table').style.display = 'block';
+    }
 
     function filterQuotes(q) {
       q = q.toLowerCase();
-      document.querySelectorAll('#q-body tr').forEach(r => {
+      document.querySelectorAll('#q-body tr').forEach(function(r) {
         r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     }
+
     function setFilter(el, status) {
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
       el.classList.add('active');
-      document.querySelectorAll('#q-body tr').forEach(r => {
+      document.querySelectorAll('#q-body tr').forEach(function(r) {
         r.style.display = (status === 'all' || r.dataset.status === status) ? '' : 'none';
       });
     }
-    async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
-      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
-      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
-      const tbody = document.getElementById('q-body');
-      if (tbody && tbody.children.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:52px 20px">
-          <div style="width:52px;height:52px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-            <i class="ti ti-file-text" style="font-size:24px;color:#0A2540"></i>
-          </div>
-          <div style="font-size:15px;font-weight:700;color:#061A30;margin-bottom:6px">No quotes yet</div>
-          <div style="font-size:13px;color:#6B6A65;margin-bottom:18px">Send a quote to a customer before invoicing them</div>
-          <a href="#" style="display:inline-flex;align-items:center;gap:6px;background:#0A2540;color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700">
-            <i class="ti ti-plus"></i> New quote
-          </a></td></tr>`;
-      }
-    }
-    loadUser();
 
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        const m = document.getElementById('plus-menu');
-        if (m) m.classList.remove('open');
+    function openPayModal(id, currentStatus) {
+      _payTargetId = id;
+      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
+      var saved = _payStatuses[id] ? _payStatuses[id].status : currentStatus;
+      var cur = document.querySelector('.pay-status-opt[data-status="' + saved + '"]');
+      if (cur) cur.classList.add('selected');
+      document.getElementById('pay-partial-row').style.display = saved === 'partial' ? 'block' : 'none';
+      document.getElementById('pay-partial-amt').value = _payStatuses[id] ? (_payStatuses[id].partialAmt || '') : '';
+      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
+      var savedMethod = _payStatuses[id] ? _payStatuses[id].method : 'card';
+      var mb = document.querySelector('.pay-method-btn[data-method="' + savedMethod + '"]');
+      if (mb) mb.classList.add('active');
+      document.getElementById('pay-modal').classList.add('open');
+    }
+
+    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+
+    function selectPayStatus(el) {
+      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      document.getElementById('pay-partial-row').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
+    }
+
+    function selectPayMethod(el) {
+      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    function savePayStatus() {
+      var sel = document.querySelector('.pay-status-opt.selected');
+      if (!sel) return;
+      var status = sel.dataset.status;
+      var mb = document.querySelector('.pay-method-btn.active');
+      _payStatuses[_payTargetId] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status === 'partial' ? document.getElementById('pay-partial-amt').value : null };
+      localStorage.setItem('tb_pay_statuses', JSON.stringify(_payStatuses));
+      var row = document.querySelector('[data-pay-id="' + _payTargetId + '"]');
+      if (row) {
+        var badge = row.querySelector('.dyn-badge');
+        if (badge) {
+          badge.className = 'badge dyn-badge ' + (_badgeCls[status] || 'badge-pending');
+          badge.innerHTML = '<i class="ti ' + (_badgeIcon[status] || 'ti-clock') + '"></i> ' + (_badgeLbl[status] || status);
+        }
       }
+      closePayModal();
+    }
+
+    document.getElementById('pay-modal').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
     });
   </script>
 
