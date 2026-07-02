@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -171,6 +171,35 @@
     * { max-width: 100%; }
     img, video, iframe, table { max-width: 100%; }
 
+  
+    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
+    .pay-modal-overlay.open { display:flex; }
+    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
+    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
+    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
+    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
+    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:13px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; }
+    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
+    .pay-status-opt.selected { border-color:var(--opt-color); background:var(--opt-bg); }
+    .pay-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .pay-status-label { font-size:14px; font-weight:600; color:#061A30; }
+    .pay-status-desc { font-size:12px; color:#8B8A84; margin-top:1px; }
+    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
+    .pay-method-btn { padding:7px 13px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px; }
+    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
+    .pay-partial-row { margin-bottom:14px; display:none; }
+    .pay-partial-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-partial-row input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
+    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
+    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .job-pay-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; display:inline-block; }
+    .job-pay-paid { background:#E1F5EE; color:#0F6E56; }
+    .job-pay-partial { background:#FBF3E3; color:#C28A1E; }
+    .job-pay-unpaid { background:#F0EFEA; color:#6B6A65; }
+    .job-pay-overdue { background:#FDEDED; color:#D14343; }
   </style>
 </head>
 <body>
@@ -475,10 +504,17 @@
         el.innerHTML = cols[status].map(function(j) {
           var dateStr = j.date ? '<div class="job-date"><i class="ti ti-calendar"></i>' + formatDate(j.date) + (j.time ? ' · ' + j.time : '') + '</div>' : '';
           var tag = j.priority === 'urgent' ? '<span class="job-tag tag-urgent">Urgent</span>' : '';
-          return '<div class="job-card" onclick="openEditModal(\'' + j.id + '\')">'
-            + '<div class="job-title">' + j.title + '</div>'
-            + (j.customer ? '<div class="job-customer"><i class="ti ti-user"></i>' + j.customer + '</div>' : '')
+          var payStatus = _payStatuses && _payStatuses[j.id] ? _payStatuses[j.id].status : 'unpaid';
+          var payBadgeCls = { paid:'job-pay-paid', partial:'job-pay-partial', unpaid:'job-pay-unpaid', overdue:'job-pay-overdue' };
+          var payBadgeLbl = { paid:'Paid', partial:'Partial', unpaid:'Unpaid', overdue:'Overdue' };
+          var payBadge = '<span class="job-pay-badge ' + (payBadgeCls[payStatus] || 'job-pay-unpaid') + '" id="pay-badge-' + j.id + '">' + (payBadgeLbl[payStatus] || payStatus) + '</span>';
+          return '<div class="job-card" data-pay-id="' + j.id + '">'
+            + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">'
+            + '<div class="job-title" style="margin-bottom:0;cursor:pointer" onclick="openEditModal(\'' + j.id + '\')">' + j.title + '</div>'
+            + payBadge + '</div>'
+            + (j.customer ? '<div class="job-customer" onclick="openEditModal(\'' + j.id + '\')" style="cursor:pointer"><i class="ti ti-user"></i>' + j.customer + '</div>' : '')
             + '<div class="job-meta">' + dateStr + tag + '</div>'
+            + '<button onclick="openPayModal(\'' + j.id + '\', \'' + payStatus + '\')" style="margin-top:8px;width:100%;padding:5px 8px;border-radius:7px;border:1px solid #E5E3DC;background:#FAFAF8;font-size:11px;font-weight:600;color:#6B6A65;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px"><i class="ti ti-cash" style="font-size:12px"></i> Mark payment</button>'
             + '</div>';
         }).join('');
       });
@@ -569,7 +605,104 @@
       var cont = document.getElementById('jobs-content'); if (cont) cont.style.display = 'block';
     }
     renderBoard();
+
+    var _payTargetId = null;
+    var _payStatuses = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
+    var _badgeCls = { paid:'job-pay-paid', partial:'job-pay-partial', unpaid:'job-pay-unpaid', overdue:'job-pay-overdue' };
+    var _badgeLbl = { paid:'Paid', partial:'Partial', unpaid:'Unpaid', overdue:'Overdue' };
+
+    function openPayModal(id, currentStatus) {
+      _payTargetId = id;
+      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
+      var cur = document.querySelector('.pay-status-opt[data-status="' + (currentStatus || 'unpaid') + '"]');
+      if (cur) cur.classList.add('selected');
+      document.getElementById('pay-partial-row').style.display = currentStatus === 'partial' ? 'block' : 'none';
+      document.getElementById('pay-partial-amt').value = _payStatuses[id] ? (_payStatuses[id].partialAmt || '') : '';
+      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
+      var saved = _payStatuses[id] ? _payStatuses[id].method : 'card';
+      var mb = document.querySelector('.pay-method-btn[data-method="' + saved + '"]');
+      if (mb) mb.classList.add('active');
+      document.getElementById('pay-modal').classList.add('open');
+    }
+    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+    function selectPayStatus(el) {
+      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      document.getElementById('pay-partial-row').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
+    }
+    function selectPayMethod(el) {
+      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
+      el.classList.add('active');
+    }
+    function savePayStatus() {
+      var sel = document.querySelector('.pay-status-opt.selected');
+      if (!sel) return;
+      var status = sel.dataset.status;
+      var mb = document.querySelector('.pay-method-btn.active');
+      _payStatuses[_payTargetId] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status === 'partial' ? document.getElementById('pay-partial-amt').value : null };
+      localStorage.setItem('tb_pay_statuses', JSON.stringify(_payStatuses));
+      var badge = document.getElementById('pay-badge-' + _payTargetId);
+      if (badge) { badge.className = 'job-pay-badge ' + (_badgeCls[status] || 'job-pay-unpaid'); badge.textContent = _badgeLbl[status] || status; }
+      closePayModal();
+    }
+    function getPayBadge(id) {
+      var s = _payStatuses[id];
+      var status = s ? s.status : 'unpaid';
+      var cls = _badgeCls[status] || 'job-pay-unpaid';
+      var lbl = _badgeLbl[status] || status;
+      return '<span class="job-pay-badge ' + cls + '" id="pay-badge-' + id + '">' + lbl + '</span>';
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      var overlay = document.getElementById('pay-modal');
+      if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
+    });
   </script>
+
+  <div class="pay-modal-overlay" id="pay-modal">
+    <div class="pay-modal">
+      <div class="pay-modal-header">
+        <div class="pay-modal-title">Mark payment status</div>
+        <button class="pay-modal-close" onclick="closePayModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px">
+        <div class="pay-status-opts">
+          <div class="pay-status-opt" data-status="paid" style="--opt-color:#1D9E75;--opt-bg:#F0FAF6" onclick="selectPayStatus(this)">
+            <div class="pay-status-dot" style="background:#1D9E75"></div>
+            <div><div class="pay-status-label">Paid in full</div><div class="pay-status-desc">Full amount received</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="partial" style="--opt-color:#C28A1E;--opt-bg:#FBF9F0" onclick="selectPayStatus(this)">
+            <div class="pay-status-dot" style="background:#C28A1E"></div>
+            <div><div class="pay-status-label">Partially paid</div><div class="pay-status-desc">Deposit or part payment received</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="unpaid" style="--opt-color:#6B6A65;--opt-bg:#F8F7F3" onclick="selectPayStatus(this)">
+            <div class="pay-status-dot" style="background:#6B6A65"></div>
+            <div><div class="pay-status-label">Unpaid</div><div class="pay-status-desc">No payment received yet</div></div>
+          </div>
+          <div class="pay-status-opt" data-status="overdue" style="--opt-color:#D14343;--opt-bg:#FEF0F0" onclick="selectPayStatus(this)">
+            <div class="pay-status-dot" style="background:#D14343"></div>
+            <div><div class="pay-status-label">Overdue</div><div class="pay-status-desc">Payment is past due</div></div>
+          </div>
+        </div>
+        <div class="pay-partial-row" id="pay-partial-row">
+          <label>Amount received so far (£)</label>
+          <input type="number" id="pay-partial-amt" placeholder="e.g. 500" min="0" />
+        </div>
+        <div class="pay-method-row">
+          <label>Payment method</label>
+          <div class="pay-method-btns">
+            <button class="pay-method-btn active" data-method="card" onclick="selectPayMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
+            <button class="pay-method-btn" data-method="cash" onclick="selectPayMethod(this)"><i class="ti ti-cash"></i> Cash</button>
+            <button class="pay-method-btn" data-method="bank" onclick="selectPayMethod(this)"><i class="ti ti-building-bank"></i> Bank transfer</button>
+            <button class="pay-method-btn" data-method="mixed" onclick="selectPayMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
+          </div>
+        </div>
+      </div>
+      <div class="pay-modal-footer">
+        <button class="pay-btn-cancel" onclick="closePayModal()">Cancel</button>
+        <button class="pay-btn-save" onclick="savePayStatus()">Save status</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
