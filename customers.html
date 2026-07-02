@@ -5,65 +5,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customers — TradesBill</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
     .db { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
     .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
     .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
     .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; }
+    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
     .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
-    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+
+    /* Main */
+    .main { flex: 1; margin-left: 210px; display: flex; min-height: 100vh; }
+
+    /* List panel */
+    .list-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; border-right: 1px solid #E5E3DC; }
+    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
-    .btn-new:hover { background: #0A2540; }
-    .content { padding: 24px 28px; }
-    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
-    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
-    .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 6px; }
-    .stat-value { font-size: 22px; font-weight: 600; color: #061A30; }
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-    .search-wrap { position: relative; flex: 1; min-width: 180px; }
-    .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; pointer-events: none; }
-    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; }
-    .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
-    .filter-btn { display: flex; align-items: center; gap: 5px; padding: 8px 14px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; color: #6B6A65; background: #fff; cursor: pointer; }
-    .filter-btn:hover { background: #FAFAF8; }
-    .table-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-    thead { background: #F8F7F3; }
-    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #8B8A84; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E5E3DC; }
-    td { padding: 12px 16px; color: #1A1A18; border-bottom: 1px solid #FAFAF8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #F8F7F3; cursor: pointer; }
-    .cust-cell { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
-    .av-blue{background:#EEF3F8;color:#0A2540} .av-teal{background:#E1F5EE;color:#0F6E56}
-    .av-amber{background:#FBF3E3;color:#C28A1E} .av-coral{background:#FAECE7;color:#993C1D}
-    .av-purple{background:#EEEDFE;color:#3C3489}
-    .cust-name-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
-    .cust-email { font-size: 11px; color: #8B8A84; }
-    .badge { display: inline-flex; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
-    .badge-active{background:#E1F5EE;color:#0F6E56} .badge-overdue{background:#FCEBEB;color:#D14343} .badge-new{background:#EEF3F8;color:#0A2540}
-    .action-btns { display: flex; gap: 6px; }
-    .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8B8A84; text-decoration: none; }
-    .icon-btn:hover { background: #FAFAF8; color: #0A2540; border-color: #0A2540; }
-    .icon-btn i { font-size: 15px; }
+    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; }
+    .btn-new:hover { background: #061A30; }
+    .content { padding: 20px 24px; flex: 1; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 14px; }
+    .stat-label { font-size: 11px; color: #8B8A84; margin-bottom: 5px; font-weight: 600; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
+
+    /* Search */
+    .search-wrap { position: relative; margin-bottom: 14px; }
+    .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; }
+    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
+    .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
+
+    /* Filter tabs */
+    .filter-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .filter-tab { padding: 6px 13px; border-radius: 7px; font-size: 12px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; }
+    .filter-tab.active { background: #0A2540; color: #fff; border-color: #0A2540; }
+
+    /* Customer list */
+    .cust-list { background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; overflow: hidden; }
+    .cust-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #F0EFEA; cursor: pointer; transition: background 0.1s; }
+    .cust-row:last-child { border-bottom: none; }
+    .cust-row:hover, .cust-row.active { background: #F4F7FB; }
+    .cust-initials { width: 36px; height: 36px; border-radius: 50%; background: #EEF3F8; color: #0A2540; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cust-info { flex: 1; min-width: 0; }
+    .cust-name { font-size: 13px; font-weight: 600; color: #061A30; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cust-sub { font-size: 11px; color: #8B8A84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cust-right { text-align: right; flex-shrink: 0; }
+    .cust-amount { font-size: 13px; font-weight: 600; color: #061A30; }
+    .cust-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; display: inline-block; margin-top: 2px; }
+    .badge-new { background: #E1F5EE; color: #0F6E56; }
+    .badge-repeat { background: #EEF3F8; color: #0A2540; }
+    .cust-empty { padding: 48px 20px; text-align: center; }
+    .cust-empty i { font-size: 32px; color: #D3D1C7; margin-bottom: 10px; display: block; }
+    .cust-empty p { font-size: 14px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
+    .cust-empty span { font-size: 13px; color: #8B8A84; }
+
+    /* Detail panel */
+    .detail-panel { width: 360px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .detail-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; color: #A3A29C; }
+    .detail-empty i { font-size: 36px; margin-bottom: 12px; }
+    .detail-empty p { font-size: 13px; }
+    .detail-header { padding: 20px; border-bottom: 1px solid #F0EFEA; display: flex; align-items: center; gap: 14px; }
+    .detail-avatar { width: 48px; height: 48px; border-radius: 50%; background: #EEF3F8; color: #0A2540; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .detail-name { font-size: 16px; font-weight: 700; color: #061A30; margin-bottom: 2px; }
+    .detail-since { font-size: 12px; color: #8B8A84; }
+    .detail-close { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #8B8A84; flex-shrink: 0; }
+    .detail-close:hover { background: #F0EFEA; }
+
+    .detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #F0EFEA; border-bottom: 1px solid #F0EFEA; }
+    .detail-stat { background: #fff; padding: 14px 12px; text-align: center; }
+    .detail-stat-val { font-size: 17px; font-weight: 700; color: #061A30; letter-spacing: -0.01em; }
+    .detail-stat-label { font-size: 10px; color: #8B8A84; font-weight: 600; margin-top: 2px; }
+
+    .detail-section { padding: 16px 20px; border-bottom: 1px solid #F0EFEA; }
+    .detail-section-title { font-size: 11px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .detail-field { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
+    .detail-field:last-child { margin-bottom: 0; }
+    .detail-field i { font-size: 16px; color: #A3A29C; flex-shrink: 0; margin-top: 1px; }
+    .detail-field-val { font-size: 13px; color: #1A1A18; line-height: 1.4; }
+    .detail-field-empty { color: #A3A29C; font-style: italic; }
+
+    .invoice-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F0EFEA; }
+    .invoice-row:last-child { border-bottom: none; }
+    .invoice-row-left { font-size: 12px; color: #1A1A18; }
+    .invoice-row-num { font-weight: 600; color: #0A2540; }
+    .invoice-row-date { color: #8B8A84; font-size: 11px; margin-top: 1px; }
+    .invoice-row-right { text-align: right; }
+    .invoice-row-amount { font-size: 13px; font-weight: 600; color: #061A30; }
+    .inv-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+    .inv-paid { background: #E1F5EE; color: #0F6E56; }
+    .inv-unpaid { background: #FBF3E3; color: #C28A1E; }
+    .inv-overdue { background: #FDEDED; color: #D14343; }
+
+    .detail-actions { padding: 16px 20px; display: flex; gap: 8px; }
+    .det-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+    .det-btn-primary { background: #0A2540; color: #fff; border: none; }
+    .det-btn-primary:hover { background: #061A30; }
+    .det-btn-secondary { background: #fff; color: #0A2540; border: 1px solid #E5E3DC; }
+    .det-btn-secondary:hover { background: #F0EFEA; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #F0EFEA; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #061A30; }
+    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #F0EFEA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B6A65; font-size: 18px; }
+    .modal-body { padding: 22px; }
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 14px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid #F0EFEA; display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel { padding: 9px 18px; border-radius: 8px; border: 1px solid #E5E3DC; background: #fff; color: #6B6A65; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-save { padding: 9px 22px; border-radius: 8px; border: none; background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+    /* Mobile */
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
+    @media (max-width: 900px) {
+      .detail-panel { display: none; }
+      .list-panel { border-right: none; }
+    }
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .main { margin-left: 0; }
@@ -72,25 +159,21 @@
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-right { display: flex; align-items: center; gap: 12px; }
-      .mob-page-title { font-size: 16px; font-weight: 600; color: #fff; }
-      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; }
       .content { padding: 14px 16px; }
-      .stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-      .stat-value { font-size: 18px; }
-      th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { display: none; }
+      .stats { grid-template-columns: 1fr 1fr 1fr; }
+      .stat-value { font-size: 16px; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
       .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
       .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
       .plus-menu-item:last-child { border-bottom: none; }
       .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
@@ -99,12 +182,10 @@
   </style>
 </head>
 <body>
+
   <div class="mobile-topbar">
     <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
-    <div class="mob-right">
-      <span class="mob-page-title">Customers</span>
-      <button class="mob-add-btn"><i class="ti ti-plus"></i> Add</button>
-    </div>
+    <button class="mob-add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Add customer</button>
   </div>
 
   <div class="db">
@@ -116,96 +197,311 @@
         <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item active"><i class="ti ti-users"></i> Customers</a>
         <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
         <div class="sb-section-label">Reports</div>
         <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
         <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><div class="sb-user"><div class="sb-avatar">DH</div><div><div class="sb-user-name">Dave Hughes</div><div class="sb-user-plan">Pro plan</div></div></div></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
     </nav>
 
     <div class="main">
-      <div class="topbar">
-        <h1>Customers</h1>
-        <a href="#" class="btn-new"><i class="ti ti-plus"></i> Add customer</a>
-      </div>
-      <div class="content">
-        <div class="stats">
-          <div class="stat"><div class="stat-label">Total customers</div><div class="stat-value">0</div></div>
-          <div class="stat"><div class="stat-label">Active this month</div><div class="stat-value">0</div></div>
-          <div class="stat"><div class="stat-label">Avg. spend</div><div class="stat-value">—</div></div>
+      <!-- LIST PANEL -->
+      <div class="list-panel">
+        <div class="topbar">
+          <h1>Customers</h1>
+          <button class="btn-new" onclick="openModal()"><i class="ti ti-plus"></i> Add customer</button>
         </div>
-        <div class="toolbar">
-          <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search customers..." oninput="filterCustomers(this.value)" /></div>
-          <div class="filter-btn"><i class="ti ti-adjustments-horizontal"></i> Filter</div>
-          <div class="filter-btn"><i class="ti ti-download"></i> Export</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th style="width:32%">Customer</th><th style="width:18%">Phone</th><th style="width:10%">Invoices</th><th style="width:14%">Total spent</th><th style="width:12%">Status</th><th style="width:14%">Actions</th></tr></thead>
-            <tbody id="cust-body"></tbody>
-          </table>
-        </div>
-      </div>
-      <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="invoices.html" class="nav-item active"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+        <div class="content">
+          <div class="stats">
+            <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+            <div class="stat"><div class="stat-label">Repeat</div><div class="stat-value" id="stat-repeat">0</div></div>
+            <div class="stat"><div class="stat-label">Total spent</div><div class="stat-value" id="stat-spent">£0</div></div>
+          </div>
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Search customers..." oninput="filterCustomers(this.value)" />
+          </div>
+          <div class="filter-tabs">
+            <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
+            <div class="filter-tab" onclick="setFilter(this,'new')">New</div>
+            <div class="filter-tab" onclick="setFilter(this,'repeat')">Repeat</div>
+          </div>
+          <div class="cust-list" id="cust-list">
+            <div class="cust-empty">
+              <i class="ti ti-users"></i>
+              <p>No customers yet</p>
+              <span>Add your first customer to get started</span>
+            </div>
           </div>
         </div>
-        <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
+        <nav class="bottom-nav">
+          <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+          <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+          <div class="nav-plus-wrap">
+            <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+            <div class="plus-menu" id="plus-menu">
+              <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+              <a href="#" class="plus-menu-item" onclick="openModal(); return false;"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+            </div>
+          </div>
+          <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+          <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+        </nav>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-empty" id="detail-empty">
+          <i class="ti ti-user-circle"></i>
+          <p>Select a customer<br>to view their profile</p>
+        </div>
+        <div id="detail-content" style="display:none"></div>
+      </div>
     </div>
   </div>
+
+  <!-- ADD CUSTOMER MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">Add customer</div>
+        <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field"><label>First name</label><input type="text" id="f-first" placeholder="Mark" autocomplete="off" /></div>
+          <div class="field"><label>Last name</label><input type="text" id="f-last" placeholder="Taylor" autocomplete="off" /></div>
+        </div>
+        <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="mark@email.com" autocomplete="off" /></div>
+        <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="07700 900123" autocomplete="off" /></div>
+        <div class="field"><label>Address</label><input type="text" id="f-address" placeholder="14 Elm Street, Manchester" autocomplete="off" /></div>
+        <div class="field"><label>Postcode</label><input type="text" id="f-postcode" placeholder="M1 4BT" autocomplete="off" style="text-transform:uppercase" /></div>
+        <div class="field"><label>Notes</label><textarea id="f-notes" placeholder="Any notes about this customer..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="saveCustomer()">Save customer</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function filterCustomers(q) {
-      q = q.toLowerCase();
-      document.querySelectorAll('#cust-body tr').forEach(r => {
-        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    }
+    var customers = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+    var activeFilter = 'all';
+    var activeId = null;
+    var editingId = null;
 
+    // ── Auth ──
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
-      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
-      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
-      showEmpty();
-    }
-
-    function showEmpty() {
-      const tbody = document.getElementById('cust-body');
-      if (tbody && tbody.children.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:52px 20px">
-          <div style="width:52px;height:52px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-            <i class="ti ti-users" style="font-size:24px;color:#0A2540"></i>
-          </div>
-          <div style="font-size:15px;font-weight:700;color:#061A30;margin-bottom:6px">No customers yet</div>
-          <div style="font-size:13px;color:#6B6A65;margin-bottom:18px">Add your first customer to get started</div>
-          <a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:6px;background:#0A2540;color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700">
-            <i class="ti ti-plus"></i> Create invoice
-          </a></td></tr>`;
-      }
+      try {
+        var r = await supabase.auth.getUser();
+        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
+        var m = r.data.user.user_metadata || {};
+        var first = m.first_name || m.given_name || '';
+        var last = m.last_name || m.family_name || '';
+        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : r.data.user.email.split('@')[0];
+      } catch(e) {}
     }
     loadUser();
 
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        const m = document.getElementById('plus-menu');
-        if (m) m.classList.remove('open');
+    // ── Helpers ──
+    function fmt(n) { return '£' + (n || 0).toLocaleString('en-GB', { maximumFractionDigits: 0 }); }
+    function initials(name) { var p = name.trim().split(' '); return (p[0].charAt(0) + (p[1] ? p[1].charAt(0) : '')).toUpperCase(); }
+    function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+    function isRepeat(c) { return (c.invoiceCount || 0) >= 2; }
+
+    // ── Render list ──
+    function renderList(filter, query) {
+      var list = customers.filter(function(c) {
+        var matchFilter = filter === 'all' || (filter === 'new' && !isRepeat(c)) || (filter === 'repeat' && isRepeat(c));
+        var matchQ = !query || c.name.toLowerCase().includes(query.toLowerCase()) || (c.email || '').toLowerCase().includes(query.toLowerCase());
+        return matchFilter && matchQ;
+      });
+
+      // Stats
+      var totalSpent = customers.reduce(function(a, c) { return a + (c.totalSpent || 0); }, 0);
+      var repeatCount = customers.filter(isRepeat).length;
+      document.getElementById('stat-total').textContent = customers.length;
+      document.getElementById('stat-repeat').textContent = repeatCount;
+      document.getElementById('stat-spent').textContent = fmt(totalSpent);
+
+      var el = document.getElementById('cust-list');
+      if (list.length === 0) {
+        el.innerHTML = '<div class="cust-empty"><i class="ti ti-users"></i><p>' + (query ? 'No results found' : 'No customers yet') + '</p><span>' + (query ? 'Try a different search' : 'Add your first customer to get started') + '</span></div>';
+        return;
       }
+
+      el.innerHTML = list.map(function(c) {
+        var badge = isRepeat(c)
+          ? '<span class="cust-badge badge-repeat">Repeat</span>'
+          : '<span class="cust-badge badge-new">New</span>';
+        return '<div class="cust-row' + (c.id === activeId ? ' active' : '') + '" onclick="showDetail(\'' + c.id + '\')">'
+          + '<div class="cust-initials">' + initials(c.name) + '</div>'
+          + '<div class="cust-info"><div class="cust-name">' + c.name + '</div>'
+          + '<div class="cust-sub">' + (c.email || c.phone || c.postcode || 'No contact details') + '</div></div>'
+          + '<div class="cust-right"><div class="cust-amount">' + fmt(c.totalSpent) + '</div>' + badge + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    // ── Detail panel ──
+    function showDetail(id) {
+      activeId = id;
+      var c = customers.find(function(x) { return x.id === id; });
+      if (!c) return;
+      renderList(activeFilter);
+
+      document.getElementById('detail-empty').style.display = 'none';
+      var dc = document.getElementById('detail-content');
+      dc.style.display = 'block';
+
+      var invoicesHtml = '';
+      if (c.invoices && c.invoices.length > 0) {
+        invoicesHtml = c.invoices.slice().reverse().slice(0, 5).map(function(inv) {
+          var badgeCls = inv.status === 'paid' ? 'inv-paid' : inv.status === 'overdue' ? 'inv-overdue' : 'inv-unpaid';
+          var badgeLabel = inv.status === 'paid' ? 'Paid' : inv.status === 'overdue' ? 'Overdue' : 'Unpaid';
+          return '<div class="invoice-row">'
+            + '<div class="invoice-row-left"><div class="invoice-row-num">' + (inv.number || 'Invoice') + '</div>'
+            + '<div class="invoice-row-date">' + fmtDate(inv.date) + '</div></div>'
+            + '<div class="invoice-row-right"><div class="invoice-row-amount">£' + (inv.amount || 0).toLocaleString() + '</div>'
+            + '<span class="inv-badge ' + badgeCls + '">' + badgeLabel + '</span></div>'
+            + '</div>';
+        }).join('');
+      } else {
+        invoicesHtml = '<div style="padding:12px 0;font-size:13px;color:#A3A29C;text-align:center">No invoices yet</div>';
+      }
+
+      dc.innerHTML =
+        '<div class="detail-header">'
+        + '<div class="detail-avatar">' + initials(c.name) + '</div>'
+        + '<div><div class="detail-name">' + c.name + '</div>'
+        + '<div class="detail-since">Customer since ' + fmtDate(c.createdAt) + '</div></div>'
+        + '<button class="detail-close" onclick="editCustomer(\'' + c.id + '\')"><i class="ti ti-pencil"></i></button>'
+        + '</div>'
+
+        + '<div class="detail-stats">'
+        + '<div class="detail-stat"><div class="detail-stat-val">' + fmt(c.totalSpent) + '</div><div class="detail-stat-label">Total spent</div></div>'
+        + '<div class="detail-stat"><div class="detail-stat-val">' + (c.invoiceCount || 0) + '</div><div class="detail-stat-label">Invoices</div></div>'
+        + '<div class="detail-stat"><div class="detail-stat-val">' + (isRepeat(c) ? 'Repeat' : 'New') + '</div><div class="detail-stat-label">Status</div></div>'
+        + '</div>'
+
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title">Contact</div>'
+        + '<div class="detail-field"><i class="ti ti-mail"></i><div class="detail-field-val ' + (c.email ? '' : 'detail-field-empty') + '">' + (c.email || 'No email') + '</div></div>'
+        + '<div class="detail-field"><i class="ti ti-phone"></i><div class="detail-field-val ' + (c.phone ? '' : 'detail-field-empty') + '">' + (c.phone || 'No phone') + '</div></div>'
+        + '</div>'
+
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title">Address</div>'
+        + '<div class="detail-field"><i class="ti ti-map-pin"></i><div class="detail-field-val ' + (c.address ? '' : 'detail-field-empty') + '">'
+        + (c.address ? c.address + (c.postcode ? '<br>' + c.postcode.toUpperCase() : '') : 'No address') + '</div></div>'
+        + '</div>'
+
+        + (c.notes ? '<div class="detail-section"><div class="detail-section-title">Notes</div>'
+        + '<div style="font-size:13px;color:#1A1A18;line-height:1.5">' + c.notes + '</div></div>' : '')
+
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title">Invoice history</div>'
+        + invoicesHtml
+        + '</div>'
+
+        + '<div class="detail-actions">'
+        + '<a href="create-invoice.html" class="det-btn det-btn-primary"><i class="ti ti-file-plus"></i> New invoice</a>'
+        + '<button class="det-btn det-btn-secondary" onclick="deleteCustomer(\'' + c.id + '\')"><i class="ti ti-trash"></i></button>'
+        + '</div>';
+    }
+
+    // ── Modal ──
+    function openModal() {
+      editingId = null;
+      document.getElementById('modal-title').textContent = 'Add customer';
+      ['f-first','f-last','f-email','f-phone','f-address','f-postcode','f-notes'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('modal').classList.add('open');
+      setTimeout(function() { document.getElementById('f-first').focus(); }, 100);
+    }
+
+    function editCustomer(id) {
+      var c = customers.find(function(x) { return x.id === id; });
+      if (!c) return;
+      editingId = id;
+      var parts = c.name.split(' ');
+      document.getElementById('modal-title').textContent = 'Edit customer';
+      document.getElementById('f-first').value = parts[0] || '';
+      document.getElementById('f-last').value = parts.slice(1).join(' ') || '';
+      document.getElementById('f-email').value = c.email || '';
+      document.getElementById('f-phone').value = c.phone || '';
+      document.getElementById('f-address').value = c.address || '';
+      document.getElementById('f-postcode').value = c.postcode || '';
+      document.getElementById('f-notes').value = c.notes || '';
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+    function saveCustomer() {
+      var first = document.getElementById('f-first').value.trim();
+      var last = document.getElementById('f-last').value.trim();
+      if (!first) { document.getElementById('f-first').focus(); return; }
+      var name = (first + ' ' + last).trim();
+      var cust = {
+        id: editingId || Date.now().toString(),
+        name: name,
+        email: document.getElementById('f-email').value.trim(),
+        phone: document.getElementById('f-phone').value.trim(),
+        address: document.getElementById('f-address').value.trim(),
+        postcode: document.getElementById('f-postcode').value.trim().toUpperCase(),
+        notes: document.getElementById('f-notes').value.trim(),
+        createdAt: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).createdAt : new Date().toISOString(),
+        totalSpent: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).totalSpent || 0 : 0,
+        invoiceCount: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).invoiceCount || 0 : 0,
+        invoices: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).invoices || [] : []
+      };
+      if (editingId) {
+        customers = customers.map(function(c) { return c.id === editingId ? cust : c; });
+      } else {
+        customers.push(cust);
+      }
+      localStorage.setItem('tb_customers', JSON.stringify(customers));
+      closeModal();
+      renderList(activeFilter);
+      if (editingId === activeId) showDetail(editingId);
+    }
+
+    function deleteCustomer(id) {
+      if (!confirm('Delete this customer? This cannot be undone.')) return;
+      customers = customers.filter(function(c) { return c.id !== id; });
+      localStorage.setItem('tb_customers', JSON.stringify(customers));
+      activeId = null;
+      document.getElementById('detail-empty').style.display = 'flex';
+      document.getElementById('detail-content').style.display = 'none';
+      renderList(activeFilter);
+    }
+
+    // ── Filters ──
+    function filterCustomers(q) { renderList(activeFilter, q); }
+    function setFilter(el, f) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      renderList(f);
+    }
+
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
     });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
+    });
+
+    renderList('all');
   </script>
+
 </body>
 </html>
