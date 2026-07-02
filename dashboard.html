@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -243,105 +243,137 @@
       const stripeConnected = !!(meta && meta.stripe_connected);
       const hasBusiness = !!(meta && meta.business_name);
       const hasLogo = !!(meta && meta.logo_url);
+
       const steps = [
-        { done: true,          icon: 'ti-check',        title: 'Create your account',       desc: 'You\'re in — welcome to TradesBill.',                             btn: null,       btnClass: null,    href: null },
-        { done: hasBusiness,   icon: 'ti-building',     title: 'Add your business details', desc: 'Name, logo, trade type — appears on every invoice.',              btn: 'Set up',   btnClass: 'primary', href: 'settings.html' },
-        { done: stripeConnected, icon: 'ti-brand-stripe', title: 'Connect Stripe',          desc: 'Get paid by card or Apple Pay — direct to your bank.',           btn: 'Connect',  btnClass: 'purple',  href: 'onboarding-payments.html' },
-        { done: false,         icon: 'ti-file-plus',    title: 'Send your first invoice',   desc: 'Add a customer, describe the job, set the amount — 60 seconds.', btn: 'Create',   btnClass: 'primary', href: 'create-invoice.html' },
-        { done: false,         icon: 'ti-user-plus',    title: 'Add your first customer',   desc: 'Save their details so invoicing them next time is instant.',      btn: 'Add',      btnClass: 'secondary', href: 'customers.html' },
-        { done: hasLogo,       icon: 'ti-photo',        title: 'Upload your logo',          desc: 'Make your invoices look professional with your branding.',        btn: 'Upload',   btnClass: 'secondary', href: 'settings.html' },
-        { done: false,         icon: 'ti-share',        title: 'Refer a tradesperson',      desc: 'Know a builder or plumber who\'d benefit? Pass it on.',           btn: 'Share',    btnClass: 'secondary', href: 'settings.html' },
+        { done: true,            label: 'Create your account',       href: null },
+        { done: hasBusiness,     label: 'Add your business details', href: 'settings.html' },
+        { done: stripeConnected, label: 'Connect Stripe',            href: 'onboarding-payments.html' },
+        { done: false,           label: 'Send your first invoice',   href: 'create-invoice.html' },
+        { done: hasLogo,         label: 'Upload your logo',          href: 'settings.html' },
       ];
-      const doneCount = steps.filter(s => s.done).length;
-      const total = steps.length;
-      const pct = Math.round((doneCount / total) * 100);
-      let firstActive = true;
 
-      const stepsHtml = steps.map(s => {
-        const isActive = !s.done && firstActive;
-        if (!s.done) firstActive = false;
-        const iconColor = s.done ? '#fff' : (isActive ? '#0A2540' : '#8B8A84');
-        const iconBg = s.done ? '#0A2540' : '#EEF3F8';
-        const iconBorder = s.done ? 'none' : (isActive ? '1.5px solid #0A2540' : '1.5px solid #E5E3DC');
-        const stepClass = s.done ? 'ob-step step-done' : (isActive ? 'ob-step step-active' : 'ob-step');
+      const doneCount = steps.filter(function(s) { return s.done; }).length;
+      const pct = Math.round((doneCount / steps.length) * 100);
+      const allDone = doneCount === steps.length;
 
-        let actionHtml = '';
-        if (s.done) {
-          actionHtml = `<div class="step-done-badge"><i class="ti ti-circle-check"></i> Done</div>`;
-        } else if (s.btn) {
-          actionHtml = `<a href="${s.href}" class="step-btn ${s.btnClass}">${s.btn} <i class="ti ti-arrow-right" style="font-size:13px"></i></a>`;
-        }
-
-        return `<a href="${s.href || '#'}" class="${stepClass}" onclick="${s.href ? '' : 'return false'}">
-          <div class="step-icon" style="background:${iconBg};border:${iconBorder}">
-            <i class="ti ${s.done ? 'ti-check' : s.icon}" style="color:${iconColor};font-size:15px"></i>
-          </div>
-          <div class="step-body">
-            <div class="step-title" style="${s.done ? 'text-decoration:line-through;color:#8B8A84' : ''}">${s.title}</div>
-            <div class="step-desc">${s.desc}</div>
-          </div>
-          <div class="step-action">${actionHtml}</div>
-        </a>`;
+      var stepsHtml = steps.map(function(s) {
+        var href = s.href || '#';
+        var pointer = s.done ? 'opacity:0.5;pointer-events:none' : '';
+        var dotBg = s.done ? '#0A2540' : '#F0EFEA';
+        var dotBorder = s.done ? 'none' : '1.5px solid #D3D1C7';
+        var icon = s.done ? 'ti-check' : 'ti-circle';
+        var iconColor = s.done ? '#fff' : '#A3A29C';
+        var labelColor = s.done ? '#8B8A84' : '#061A30';
+        var labelDecor = s.done ? 'text-decoration:line-through' : '';
+        var arrow = s.done ? '' : '<i class="ti ti-arrow-right" style="font-size:13px;color:#A3A29C;margin-left:auto"></i>';
+        return '<a href="' + href + '" style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none;' + pointer + '">'
+          + '<div style="width:20px;height:20px;border-radius:50%;background:' + dotBg + ';border:' + dotBorder + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+          + '<i class="ti ' + icon + '" style="font-size:11px;color:' + iconColor + '"></i></div>'
+          + '<span style="font-size:13px;font-weight:600;color:' + labelColor + ';' + labelDecor + '">' + s.label + '</span>'
+          + arrow + '</a>';
       }).join('');
 
-      document.getElementById('main-content').innerHTML = `
-        <div style="max-width:680px">
-          <div class="ob-header">
-            <div>
-              <div class="ob-title">Welcome, ${name}!</div>
-              <div class="ob-sub">Complete these steps to start getting paid — takes about 3 minutes.</div>
-            </div>
-            <div class="ob-progress">
-              <div class="ob-track"><div class="ob-fill" style="width:${pct}%"></div></div>
-              <div class="ob-count">${doneCount} / ${total}</div>
-            </div>
-          </div>
-          <div class="ob-steps">${stepsHtml}</div>
-          <div class="ob-dismiss"><a href="dashboard.html?skip=true">I know what I'm doing — hide this</a></div>
-        </div>`;
+      var checklistHtml = allDone ? '' :
+        '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Get set up</div>'
+        + '<div style="display:flex;align-items:center;gap:8px">'
+        + '<div style="width:70px;height:4px;background:#E5E3DC;border-radius:2px;overflow:hidden">'
+        + '<div style="height:100%;width:' + pct + '%;background:#0A2540;border-radius:2px"></div></div>'
+        + '<div style="font-size:11px;color:#8B8A84;font-weight:600">' + doneCount + '/' + steps.length + '</div>'
+        + '</div></div>'
+        + stepsHtml
+        + '<div style="padding:10px 16px;text-align:right">'
+        + '<a href="dashboard.html?skip=true" style="font-size:11px;color:#A3A29C;text-decoration:none">Dismiss</a>'
+        + '</div></div>';
+
+      document.getElementById('main-content').innerHTML =
+        '<div style="max-width:540px">'
+        + '<div style="background:#0A2540;border-radius:16px;padding:26px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">'
+        + '<div>'
+        + '<div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px">Welcome, ' + name + '!</div>'
+        + '<div style="font-size:13px;color:#8FA8C2">Create your first invoice in under 60 seconds.</div>'
+        + '</div>'
+        + '<a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:7px;background:#5DCAA5;color:#061A30;text-decoration:none;padding:13px 22px;border-radius:10px;font-size:14px;font-weight:700;white-space:nowrap;flex-shrink:0">'
+        + '<i class="ti ti-plus" style="font-size:17px"></i> New invoice</a>'
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">'
+        + '<a href="invoices.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
+        + '<i class="ti ti-file-invoice" style="font-size:20px;color:#0A2540"></i>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">Invoices</span></a>'
+        + '<a href="customers.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
+        + '<i class="ti ti-users" style="font-size:20px;color:#0A2540"></i>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">Customers</span></a>'
+        + '<a href="earnings.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
+        + '<i class="ti ti-chart-bar" style="font-size:20px;color:#0A2540"></i>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">Earnings</span></a>'
+        + '</div>'
+        + checklistHtml
+        + '</div>';
     }
+
+    function initials(first, last, email) {
+      var f = (first || '').trim().charAt(0).toUpperCase();
+      var l = (last || '').trim().charAt(0).toUpperCase();
+      if (f && l) return f + l;
+      if (f) return f;
+      if (email) return email.charAt(0).toUpperCase();
+      return '?';
+    }
+
+    function greeting() {
+      var h = parseInt(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' }).format(new Date()));
+      if (h < 12) return 'Good morning,';
+      if (h < 18) return 'Good afternoon,';
+      return 'Good evening,';
+    }
+
+    function toggleNotifs() {
+      document.getElementById('notif-dropdown').classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.notif-wrap')) document.getElementById('notif-dropdown').classList.remove('open');
+      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
+    });
 
     async function loadUser() {
       try {
-        const { data, error } = await supabase.auth.getUser();
+        var result = await supabase.auth.getUser();
+        var data = result.data;
+        var error = result.error;
 
         if (error || !data || !data.user) {
           window.location.href = 'login.html';
           return;
         }
 
-        const user = data.user;
-        const meta = user.user_metadata || {};
+        var user = data.user;
+        var meta = user.user_metadata || {};
+        var first = meta.first_name || meta.given_name || '';
+        var last = meta.last_name || meta.family_name || '';
+        var fullName = (first || last) ? (first + ' ' + last).trim() : (user.email ? user.email.split('@')[0] : 'there');
+        var ini = initials(first, last, user.email);
 
-        // Name and initials
-        const first = meta.first_name || meta.given_name || '';
-        const last = meta.last_name || meta.family_name || '';
-        const fullName = (first || last) ? `${first} ${last}`.trim() : (user.email ? user.email.split('@')[0] : 'there');
-        const ini = initials(first, last, user.email);
-
-        // Update sidebar
-        const sbAvatar = document.getElementById('sb-avatar'); if (sbAvatar) sbAvatar.textContent = ini;
-        const sbName = document.getElementById('sb-user-name'); if (sbName) sbName.textContent = fullName;
-        const sbPlan = document.getElementById('sb-user-plan'); if (sbPlan) sbPlan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
-
-        // Update mobile
-        const mobAvatar = document.getElementById('mob-avatar'); if (mobAvatar) mobAvatar.textContent = ini;
-        const heroName = document.getElementById('hero-name'); if (heroName) heroName.textContent = first || fullName;
-        const heroGreet = document.getElementById('hero-greet'); if (heroGreet) heroGreet.textContent = greeting();
-        const mobHero = document.getElementById('mob-hero');
+        var sbAvatar = document.getElementById('sb-avatar'); if (sbAvatar) sbAvatar.textContent = ini;
+        var sbName = document.getElementById('sb-user-name'); if (sbName) sbName.textContent = fullName;
+        var sbPlan = document.getElementById('sb-user-plan'); if (sbPlan) sbPlan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
+        var mobAvatar = document.getElementById('mob-avatar'); if (mobAvatar) mobAvatar.textContent = ini;
+        var heroName = document.getElementById('hero-name'); if (heroName) heroName.textContent = first || fullName;
+        var heroGreet = document.getElementById('hero-greet'); if (heroGreet) heroGreet.textContent = greeting();
+        var mobHero = document.getElementById('mob-hero');
         if (mobHero && window.innerWidth <= 768) mobHero.style.display = 'block';
 
-        // Render checklist — never show dummy data
         renderChecklist(first || fullName, meta);
 
       } catch(e) {
-        document.getElementById('main-content').innerHTML = `
-          <div style="max-width:480px;margin:40px auto;background:#FDEDED;border:1px solid #F09595;border-radius:12px;padding:24px">
-            <div style="font-size:15px;font-weight:700;color:#D14343;margin-bottom:8px">Could not load dashboard</div>
-            <div style="font-size:13px;color:#D14343;margin-bottom:12px">${e.message}</div>
-            <div style="font-size:12px;color:#A32D2D;background:#FCEBEB;border-radius:8px;padding:10px;margin-bottom:14px">Check your Supabase URL and anon key are correct on lines 11–12</div>
-            <button onclick="window.location.reload()" style="background:#D14343;color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Try again</button>
-          </div>`;
+        document.getElementById('main-content').innerHTML =
+          '<div style="max-width:480px;margin:40px auto;background:#FDEDED;border:1px solid #F09595;border-radius:12px;padding:24px">'
+          + '<div style="font-size:15px;font-weight:700;color:#D14343;margin-bottom:8px">Could not load dashboard</div>'
+          + '<div style="font-size:13px;color:#D14343;margin-bottom:12px">' + e.message + '</div>'
+          + '<div style="font-size:12px;color:#A32D2D;background:#FCEBEB;border-radius:8px;padding:10px;margin-bottom:14px">Check your Supabase URL and anon key are correct on lines 11-12</div>'
+          + '<button onclick="window.location.reload()" style="background:#D14343;color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Try again</button>'
+          + '</div>';
       }
     }
 
