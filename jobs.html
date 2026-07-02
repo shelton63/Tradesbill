@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jobs — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
+    .db { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
+    .sb-logo-icon i { color: #fff; font-size: 18px; }
+    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
+    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .sb-item i { font-size: 18px; }
+    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
+    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
+    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    /* ── Main ── */
+    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
+    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; font-family: inherit; }
+    .btn-new:hover { background: #061A30; }
+    .content { padding: 24px 28px; }
+
+    /* ── View toggle ── */
+    .view-toggle { display: flex; gap: 4px; background: #F0EFEA; border-radius: 9px; padding: 3px; margin-bottom: 20px; width: fit-content; }
+    .view-btn { padding: 6px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: #6B6A65; cursor: pointer; border: none; background: transparent; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+    .view-btn.active { background: #fff; color: #061A30; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+    /* ── Board view ── */
+    .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: start; }
+    .col { background: #F0EFEA; border-radius: 12px; padding: 12px; }
+    .col-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .col-label { font-size: 12px; font-weight: 700; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+    .col-count { font-size: 11px; font-weight: 600; color: #8B8A84; background: #E5E3DC; border-radius: 5px; padding: 1px 7px; }
+    .col-add { width: 24px; height: 24px; border-radius: 6px; background: transparent; border: none; cursor: pointer; color: #8B8A84; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .col-add:hover { background: #E5E3DC; color: #0A2540; }
+
+    .job-card { background: #fff; border-radius: 10px; padding: 13px; margin-bottom: 8px; cursor: pointer; border: 1px solid #E8E6DF; transition: box-shadow 0.15s; }
+    .job-card:hover { box-shadow: 0 2px 8px rgba(10,37,64,0.08); border-color: #C5C3BB; }
+    .job-card:last-child { margin-bottom: 0; }
+    .job-title { font-size: 13px; font-weight: 600; color: #061A30; margin-bottom: 6px; }
+    .job-customer { font-size: 12px; color: #6B6A65; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; }
+    .job-customer i { font-size: 13px; }
+    .job-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .job-date { font-size: 11px; color: #8B8A84; display: flex; align-items: center; gap: 3px; }
+    .job-date i { font-size: 12px; }
+    .job-tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; }
+    .tag-urgent { background: #FDEDED; color: #D14343; }
+    .tag-quote { background: #EEF3F8; color: #0A2540; }
+    .tag-invoice { background: #E1F5EE; color: #0F6E56; }
+    .col-empty { text-align: center; padding: 20px 10px; color: #A3A29C; font-size: 12px; }
+
+    /* ── Calendar view ── */
+    .calendar-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #F0EFEA; }
+    .cal-month { font-size: 16px; font-weight: 700; color: #061A30; }
+    .cal-nav { display: flex; gap: 6px; }
+    .cal-nav button { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; cursor: pointer; color: #6B6A65; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .cal-nav button:hover { background: #F0EFEA; }
+    .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #F0EFEA; }
+    .cal-day-name { text-align: center; padding: 8px; font-size: 11px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.04em; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-cell { min-height: 90px; padding: 6px; border-right: 1px solid #F0EFEA; border-bottom: 1px solid #F0EFEA; cursor: pointer; transition: background 0.1s; }
+    .cal-cell:hover { background: #FAFAF8; }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell.today .cal-date { background: #0A2540; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+    .cal-cell.other-month .cal-date { color: #C5C3BB; }
+    .cal-date { font-size: 12px; font-weight: 600; color: #061A30; margin-bottom: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+    .cal-event { font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+    .cal-event.ev-scheduled { background: #EEF3F8; color: #0A2540; }
+    .cal-event.ev-inprogress { background: #FBF3E3; color: #C28A1E; }
+    .cal-event.ev-urgent { background: #FDEDED; color: #D14343; }
+
+    /* ── Modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #F0EFEA; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #061A30; }
+    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #F0EFEA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B6A65; font-size: 18px; }
+    .modal-close:hover { background: #E5E3DC; }
+    .modal-body { padding: 22px; }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 9px;
+      font-size: 14px; color: #1A1A18; background: #fff; outline: none; font-family: inherit;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .reminder-row { display: flex; align-items: center; gap: 10px; padding: 11px 13px; background: #F8F7F3; border-radius: 9px; border: 1px solid #E5E3DC; }
+    .reminder-row i { font-size: 18px; color: #0A2540; flex-shrink: 0; }
+    .reminder-row p { font-size: 13px; font-weight: 600; color: #061A30; flex: 1; }
+    .reminder-row span { font-size: 11px; color: #8B8A84; }
+    .toggle { width: 36px; height: 20px; border-radius: 10px; background: #0A2540; position: relative; cursor: pointer; flex-shrink: 0; }
+    .toggle.off { background: #D3D1C7; }
+    .toggle-dot { width: 16px; height: 16px; border-radius: 50%; background: #fff; position: absolute; top: 2px; right: 2px; transition: right 0.2s; }
+    .toggle.off .toggle-dot { right: auto; left: 2px; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid #F0EFEA; display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel { padding: 9px 18px; border-radius: 8px; border: 1px solid #E5E3DC; background: #fff; color: #6B6A65; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-save { padding: 9px 18px; border-radius: 8px; border: none; background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-save:hover { background: #061A30; }
+
+    /* ── Mobile ── */
+    .mobile-topbar { display: none; }
+    .bottom-nav { display: none; }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .topbar { display: none; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
+      .mob-logo { display: flex; align-items: center; gap: 7px; }
+      .mob-logo i { color: #5DCAA5; font-size: 22px; }
+      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
+      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: inherit; }
+      .content { padding: 14px 16px; }
+      .board { grid-template-columns: 1fr; }
+      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item i { font-size: 22px; color: #A3A29C; }
+      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus i { font-size: 23px; color: #fff; }
+      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
+      .plus-menu.open { display: block; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
+      .plus-menu-item:last-child { border-bottom: none; }
+      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
+      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
+      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-topbar">
+    <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
+    <button class="mob-add-btn" onclick="openModal()"><i class="ti ti-plus"></i> New job</button>
+  </div>
+
+  <div class="db">
+    <nav class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></div>
+      <div class="sb-nav">
+        <div class="sb-section-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item active"><i class="ti ti-briefcase"></i> Jobs</a>
+        <div class="sb-section-label">Reports</div>
+        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-section-label">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar">
+        <h1>Jobs</h1>
+        <button class="btn-new" onclick="openModal()"><i class="ti ti-plus"></i> New job</button>
+      </div>
+
+      <div class="content">
+
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-board" onclick="switchView('board')"><i class="ti ti-layout-columns"></i> Board</button>
+          <button class="view-btn" id="btn-calendar" onclick="switchView('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
+        </div>
+
+        <!-- BOARD VIEW -->
+        <div id="view-board">
+          <div class="board">
+            <div class="col">
+              <div class="col-title">
+                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#8B8A84;display:inline-block"></span> To do</div>
+                <span class="col-count" id="count-todo">0</span>
+              </div>
+              <div id="col-todo">
+                <div class="col-empty">No jobs yet<br><small>Click + to add one</small></div>
+              </div>
+              <button class="col-add" onclick="openModal('todo')" style="width:100%;border-radius:8px;padding:7px;margin-top:6px;font-size:12px;color:#8B8A84;background:transparent;border:1.5px dashed #D3D1C7;cursor:pointer;font-family:inherit">+ Add job</button>
+            </div>
+            <div class="col">
+              <div class="col-title">
+                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#C28A1E;display:inline-block"></span> Scheduled</div>
+                <span class="col-count" id="count-scheduled">0</span>
+              </div>
+              <div id="col-scheduled">
+                <div class="col-empty">No scheduled jobs</div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="col-title">
+                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#635BFF;display:inline-block"></span> In progress</div>
+                <span class="col-count" id="count-inprogress">0</span>
+              </div>
+              <div id="col-inprogress">
+                <div class="col-empty">No jobs in progress</div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="col-title">
+                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block"></span> Done</div>
+                <span class="col-count" id="count-done">0</span>
+              </div>
+              <div id="col-done">
+                <div class="col-empty">No completed jobs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALENDAR VIEW -->
+        <div id="view-calendar" style="display:none">
+          <div class="calendar-wrap">
+            <div class="cal-header">
+              <div class="cal-month" id="cal-month">July 2026</div>
+              <div class="cal-nav">
+                <button onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+                <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+              </div>
+            </div>
+            <div class="cal-days-header">
+              <div class="cal-day-name">Mon</div>
+              <div class="cal-day-name">Tue</div>
+              <div class="cal-day-name">Wed</div>
+              <div class="cal-day-name">Thu</div>
+              <div class="cal-day-name">Fri</div>
+              <div class="cal-day-name">Sat</div>
+              <div class="cal-day-name">Sun</div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+        <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+        <div class="nav-plus-wrap">
+          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+          <div class="plus-menu" id="plus-menu">
+            <a href="#" class="plus-menu-item" onclick="openModal(); return false;"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
+            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
+          </div>
+        </div>
+        <a href="jobs.html" class="nav-item active"><i class="ti ti-briefcase"></i><span>Jobs</span></a>
+        <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- NEW JOB MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">New job</div>
+        <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Job title</label>
+          <input type="text" id="f-title" placeholder="e.g. Bathroom refit at 14 Elm St" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Customer name</label>
+          <input type="text" id="f-customer" placeholder="e.g. Mark Taylor" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Job details, access notes, materials needed..."></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="f-date" />
+          </div>
+          <div class="field">
+            <label>Time</label>
+            <input type="time" id="f-time" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="todo">To do</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="inprogress">In progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select id="f-priority">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Reminder</label>
+          <div class="reminder-row">
+            <i class="ti ti-bell"></i>
+            <div>
+              <p>Get a reminder before this job</p>
+              <span>We'll remind you the day before</span>
+            </div>
+            <div class="toggle" id="reminder-toggle" onclick="this.classList.toggle('off')">
+              <div class="toggle-dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="saveJob()">Save job</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+    var currentView = 'board';
+    var calDate = new Date(2026, 6, 1); // July 2026
+    var editingId = null;
+
+    // ── Auth ──
+    async function loadUser() {
+      try {
+        var result = await supabase.auth.getUser();
+        if (!result.data || !result.data.user) { window.location.href = 'login.html'; return; }
+        var meta = result.data.user.user_metadata || {};
+        var first = meta.first_name || meta.given_name || '';
+        var last = meta.last_name || meta.family_name || '';
+        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (result.data.user.email ? result.data.user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : result.data.user.email.split('@')[0];
+      } catch(e) {}
+    }
+    loadUser();
+
+    // ── Modal ──
+    function openModal(status) {
+      editingId = null;
+      document.getElementById('modal-title').textContent = 'New job';
+      document.getElementById('f-title').value = '';
+      document.getElementById('f-customer').value = '';
+      document.getElementById('f-notes').value = '';
+      document.getElementById('f-date').value = '';
+      document.getElementById('f-time').value = '';
+      document.getElementById('f-status').value = status || 'todo';
+      document.getElementById('f-priority').value = 'normal';
+      document.getElementById('reminder-toggle').classList.remove('off');
+      document.getElementById('modal').classList.add('open');
+      setTimeout(function() { document.getElementById('f-title').focus(); }, 100);
+    }
+
+    function openEditModal(id) {
+      var job = jobs.find(function(j) { return j.id === id; });
+      if (!job) return;
+      editingId = id;
+      document.getElementById('modal-title').textContent = 'Edit job';
+      document.getElementById('f-title').value = job.title;
+      document.getElementById('f-customer').value = job.customer || '';
+      document.getElementById('f-notes').value = job.notes || '';
+      document.getElementById('f-date').value = job.date || '';
+      document.getElementById('f-time').value = job.time || '';
+      document.getElementById('f-status').value = job.status;
+      document.getElementById('f-priority').value = job.priority || 'normal';
+      if (!job.reminder) document.getElementById('reminder-toggle').classList.add('off');
+      else document.getElementById('reminder-toggle').classList.remove('off');
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+    function saveJob() {
+      var title = document.getElementById('f-title').value.trim();
+      if (!title) { document.getElementById('f-title').focus(); return; }
+      var reminder = !document.getElementById('reminder-toggle').classList.contains('off');
+      var job = {
+        id: editingId || Date.now().toString(),
+        title: title,
+        customer: document.getElementById('f-customer').value.trim(),
+        notes: document.getElementById('f-notes').value.trim(),
+        date: document.getElementById('f-date').value,
+        time: document.getElementById('f-time').value,
+        status: document.getElementById('f-status').value,
+        priority: document.getElementById('f-priority').value,
+        reminder: reminder,
+        created: editingId ? (jobs.find(function(j){return j.id===editingId;})||{}).created : new Date().toISOString()
+      };
+      if (editingId) {
+        jobs = jobs.map(function(j) { return j.id === editingId ? job : j; });
+      } else {
+        jobs.push(job);
+      }
+      localStorage.setItem('tb_jobs', JSON.stringify(jobs));
+      closeModal();
+      renderBoard();
+      renderCalendar();
+    }
+
+    // ── Board ──
+    function renderBoard() {
+      var cols = { todo: [], scheduled: [], inprogress: [], done: [] };
+      jobs.forEach(function(j) { if (cols[j.status]) cols[j.status].push(j); });
+      Object.keys(cols).forEach(function(status) {
+        var el = document.getElementById('col-' + status);
+        var count = document.getElementById('count-' + status);
+        if (count) count.textContent = cols[status].length;
+        if (!el) return;
+        if (cols[status].length === 0) {
+          var empty = { todo: 'No jobs yet<br><small>Click + to add one</small>', scheduled: 'No scheduled jobs', inprogress: 'No jobs in progress', done: 'No completed jobs' };
+          el.innerHTML = '<div class="col-empty">' + (empty[status] || '') + '</div>';
+          return;
+        }
+        el.innerHTML = cols[status].map(function(j) {
+          var dateStr = j.date ? '<div class="job-date"><i class="ti ti-calendar"></i>' + formatDate(j.date) + (j.time ? ' · ' + j.time : '') + '</div>' : '';
+          var tag = j.priority === 'urgent' ? '<span class="job-tag tag-urgent">Urgent</span>' : '';
+          return '<div class="job-card" onclick="openEditModal(\'' + j.id + '\')">'
+            + '<div class="job-title">' + j.title + '</div>'
+            + (j.customer ? '<div class="job-customer"><i class="ti ti-user"></i>' + j.customer + '</div>' : '')
+            + '<div class="job-meta">' + dateStr + tag + '</div>'
+            + '</div>';
+        }).join('');
+      });
+    }
+
+    // ── Calendar ──
+    function renderCalendar() {
+      var year = calDate.getFullYear();
+      var month = calDate.getMonth();
+      document.getElementById('cal-month').textContent = calDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      var firstDay = new Date(year, month, 1);
+      var startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // Mon start
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var today = new Date();
+      var html = '';
+      for (var i = 0; i < startDay; i++) {
+        var d = new Date(year, month, -startDay + i + 1);
+        html += '<div class="cal-cell other-month" onclick="openModalOnDate(\'' + fmtDate(d) + '\')">'
+          + '<div class="cal-date">' + d.getDate() + '</div></div>';
+      }
+      for (var day = 1; day <= daysInMonth; day++) {
+        var isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        var dateStr = fmtDate(new Date(year, month, day));
+        var dayJobs = jobs.filter(function(j) { return j.date === dateStr; });
+        var eventsHtml = dayJobs.slice(0, 3).map(function(j) {
+          var cls = j.status === 'inprogress' ? 'ev-inprogress' : j.priority === 'urgent' ? 'ev-urgent' : 'ev-scheduled';
+          return '<div class="cal-event ' + cls + '" onclick="event.stopPropagation();openEditModal(\'' + j.id + '\')">' + j.title + '</div>';
+        }).join('');
+        if (dayJobs.length > 3) eventsHtml += '<div style="font-size:10px;color:#8B8A84;padding:1px 5px">+' + (dayJobs.length - 3) + ' more</div>';
+        html += '<div class="cal-cell' + (isToday ? ' today' : '') + '" onclick="openModalOnDate(\'' + dateStr + '\')">'
+          + '<div class="cal-date">' + day + '</div>'
+          + eventsHtml + '</div>';
+      }
+      var remaining = 42 - startDay - daysInMonth;
+      for (var i = 1; i <= remaining; i++) {
+        var d = new Date(year, month + 1, i);
+        html += '<div class="cal-cell other-month" onclick="openModalOnDate(\'' + fmtDate(d) + '\')">'
+          + '<div class="cal-date">' + d.getDate() + '</div></div>';
+      }
+      document.getElementById('cal-grid').innerHTML = html;
+    }
+
+    function openModalOnDate(date) {
+      openModal('scheduled');
+      document.getElementById('f-date').value = date;
+      document.getElementById('f-status').value = 'scheduled';
+    }
+
+    function changeMonth(dir) {
+      calDate = new Date(calDate.getFullYear(), calDate.getMonth() + dir, 1);
+      renderCalendar();
+    }
+
+    // ── View switch ──
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('view-board').style.display = view === 'board' ? 'block' : 'none';
+      document.getElementById('view-calendar').style.display = view === 'calendar' ? 'block' : 'none';
+      document.getElementById('btn-board').classList.toggle('active', view === 'board');
+      document.getElementById('btn-calendar').classList.toggle('active', view === 'calendar');
+      if (view === 'calendar') renderCalendar();
+    }
+
+    // ── Helpers ──
+    function fmtDate(d) {
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function formatDate(str) {
+      if (!str) return '';
+      var d = new Date(str + 'T00:00:00');
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    }
+
+    // Close modal on overlay click
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) {
+        var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open');
+      }
+    });
+
+    // ── Init ──
+    renderBoard();
+  </script>
+
+</body>
+</html>
