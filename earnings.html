@@ -13,6 +13,7 @@
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: hidden; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
     .db { display: flex; min-height: 100vh; }
 
@@ -21,14 +22,15 @@
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
     .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
     .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
     .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
@@ -36,48 +38,48 @@
     .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .content { padding: 24px 28px; }
+    .content { padding: 24px 28px; flex: 1; }
 
-    .range-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; }
+    /* Range pills */
+    .range-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; -webkit-overflow-scrolling: touch; }
     .range-pill { flex-shrink: 0; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
     .range-pill.active { background: #0A2540; color: #fff; border-color: #0A2540; }
     .range-pill:hover:not(.active) { background: #F0EFEA; }
 
-    .top-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 20px; align-items: stretch; }
-    .stat-hero { background: #0A2540; border-radius: 16px; padding: 26px; display: flex; flex-direction: column; justify-content: center; }
+    /* Hero stat */
+    .stat-hero { background: #0A2540; border-radius: 16px; padding: 26px; margin-bottom: 16px; }
     .stat-hero-label { font-size: 13px; color: #8FA8C2; margin-bottom: 8px; font-weight: 600; }
     .stat-hero-value { font-size: 38px; font-weight: 600; color: #fff; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .stat-hero-compare { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-    .compare-pill { display: flex; align-items: center; gap: 3px; background: rgba(93,202,165,0.15); color: #6FDDB5; padding: 4px 9px; border-radius: 7px; font-weight: 700; }
+    .compare-pill { display: inline-flex; align-items: center; gap: 3px; background: rgba(93,202,165,0.15); color: #6FDDB5; padding: 4px 9px; border-radius: 7px; font-weight: 700; font-size: 13px; }
     .compare-pill.down { background: rgba(240,153,123,0.15); color: #F0997B; }
-    .compare-pill i { font-size: 13px; }
-    .compare-vs { color: #6B85A1; }
+    .compare-vs { color: #6B85A1; font-size: 13px; margin-left: 6px; }
 
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    /* Stat grid */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .stat-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
     .stat-card-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; font-weight: 600; }
     .stat-card-label i { font-size: 15px; color: #A3A29C; }
     .stat-card-value { font-size: 21px; font-weight: 600; color: #1A1A18; letter-spacing: -0.01em; }
 
+    /* Bottom grid */
     .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
     .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 20px; }
     .card-title { font-size: 14px; font-weight: 600; color: #061A30; margin-bottom: 16px; }
 
-    .chart-wrap { height: 200px; display: flex; align-items: flex-end; gap: 6px; padding-top: 10px; }
-    .chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .chart-bar { width: 100%; background: #EEF3F8; border-radius: 5px 5px 0 0; position: relative; min-height: 4px; }
-    .chart-bar.active { background: #0A2540; }
-    .chart-bar:hover { background: #0A2540; cursor: pointer; }
-    .chart-label { font-size: 10px; color: #A3A29C; font-weight: 600; }
+    /* Chart */
+    .chart-wrap { height: 180px; display: flex; align-items: flex-end; gap: 5px; }
+    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .chart-bar { width: 100%; background: #EEF3F8; border-radius: 5px 5px 0 0; min-height: 4px; cursor: pointer; transition: background 0.1s; }
+    .chart-bar:hover, .chart-bar.active { background: #0A2540; }
+    .chart-lbl { font-size: 10px; color: #A3A29C; font-weight: 600; }
 
-    .owing-list { display: flex; flex-direction: column; }
+    /* Owing list */
     .owing-item { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid #F0EFEA; }
     .owing-item:last-child { border-bottom: none; }
     .owing-avatar { width: 34px; height: 34px; border-radius: 50%; background: #FBF3E3; color: #C28A1E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
     .owing-info { flex: 1; min-width: 0; }
     .owing-name { font-size: 13.5px; font-weight: 600; color: #1A1A18; margin-bottom: 2px; }
-    .owing-status { display: flex; align-items: center; gap: 5px; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 4px; }
     .status-dot.overdue { background: #D14343; }
     .status-dot.upcoming { background: #C28A1E; }
     .owing-days { font-size: 12px; font-weight: 600; }
@@ -85,25 +87,17 @@
     .owing-days.upcoming { color: #C28A1E; }
     .owing-amount { font-size: 14px; font-weight: 600; color: #1A1A18; flex-shrink: 0; }
 
-    .custom-range-popup { display: none; background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 16px; margin-bottom: 20px; gap: 12px; align-items: end; }
-    .custom-range-popup.open { display: flex; }
-    .cr-field label { display: block; font-size: 11px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
-    .cr-field input { padding: 8px 10px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; font-family: inherit; }
-    .cr-apply { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    /* Custom range popup */
+    .custom-popup { display: none; background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 16px; margin-bottom: 16px; align-items: flex-end; gap: 12px; }
+    .custom-popup.open { display: flex; }
+    .cr-field label { display: block; font-size: 11px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; }
+    .cr-field input { padding: 8px 10px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; }
+    .cr-apply { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
 
     @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
@@ -112,46 +106,36 @@
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
       .content { padding: 14px 16px; }
-      .top-grid { grid-template-columns: 1fr; }
-      .stat-hero { padding: 20px; }
-      .stat-hero-value { font-size: 32px; }
+      .stat-hero { padding: 18px; }
+      .stat-hero-value { font-size: 30px; }
       .bottom-grid { grid-template-columns: 1fr; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
       .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
       .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
       .plus-menu-item:last-child { border-bottom: none; }
       .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
   </style>
 </head>
 <body>
 
   <div class="mobile-topbar">
-    <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
-    <i class="ti ti-calendar" style="color:#fff;font-size:20px"></i>
+    <a href="dashboard.html" class="mob-logo" style="text-decoration:none"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
   </div>
 
   <div class="db">
     <nav class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></div>
+      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></a>
       <div class="sb-nav">
         <div class="sb-section-label">Main</div>
         <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
@@ -165,75 +149,91 @@
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name">Loading...</div><div class="sb-user-plan">Free trial</div></div></a></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
     </nav>
 
     <div class="main">
       <div class="topbar"><h1>Earnings</h1></div>
 
-      <div id="earnings-intro" style="padding:24px 28px"><div style="max-width:480px;margin:0 auto;padding:20px 0 40px"><div style="text-align:center;padding:28px 0 24px"><div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-chart-bar" style="font-size:28px;color:#0A2540"></i></div><div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Track every penny you earn</div><div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto">Your earnings dashboard updates automatically as invoices get paid. Compare performance across any time period — today, last week, last month, or a custom date range.</div></div><div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px"><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-trending-up" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Revenue trends</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">See if you're earning more than last period</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-receipt" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Average order value</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Understand your typical job size</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Outstanding invoices</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">See exactly who still owes you money</div></div></div><div style="padding:12px 0;border:none"></div></div><a href="create-invoice.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create an invoice to get started</a></div></div>
-      <div id="earnings-content" style="display:none">
-      <div class="content">
-        <div class="range-scroll" id="range-scroll">
-          <div class="range-pill" data-range="today">Today</div>
-          <div class="range-pill" data-range="yesterday">Yesterday</div>
-          <div class="range-pill active" data-range="7d">7 days</div>
-          <div class="range-pill" data-range="14d">14 days</div>
-          <div class="range-pill" data-range="30d">30 days</div>
-          <div class="range-pill" data-range="lastmonth">Last month</div>
-          <div class="range-pill" data-range="3m">3 months</div>
-          <div class="range-pill" data-range="6m">6 months</div>
-          <div class="range-pill" data-range="1y">1 year</div>
-          <div class="range-pill" data-range="custom"><i class="ti ti-calendar" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Custom</div>
-        </div>
+      <div class="content" id="main-content">
 
-        <div class="custom-range-popup" id="custom-popup">
-          <div class="cr-field"><label>From</label><input type="date" id="cr-from" /></div>
-          <div class="cr-field"><label>To</label><input type="date" id="cr-to" /></div>
-          <button class="cr-apply" onclick="applyCustomRange()">Apply</button>
-        </div>
-
-        <div class="top-grid">
-          <div class="stat-hero">
-            <div class="stat-hero-label" id="hero-label">Total earned · last 7 days</div>
-            <div class="stat-hero-value" id="hero-value">£3,240</div>
-            <div class="stat-hero-compare">
-              <span class="compare-pill" id="hero-compare-pill"><i class="ti ti-arrow-up-right"></i>18%</span>
-              <span class="compare-vs" id="hero-compare-text">vs previous 7 days</span>
-            </div>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-clock"></i> Outstanding</div><div class="stat-card-value" id="stat-outstanding">£1,890</div></div>
-            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-file-invoice"></i> Invoices sent</div><div class="stat-card-value" id="stat-invoices">9</div></div>
-            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-receipt"></i> Avg. order value</div><div class="stat-card-value" id="stat-aov">£360</div></div>
-            <div class="stat-card"><div class="stat-card-label"><i class="ti ti-circle-check"></i> Avg. paid in</div><div class="stat-card-value" id="stat-paidtime">16 hrs</div></div>
-          </div>
-        </div>
-
-        <div class="bottom-grid">
-          <div class="card">
-            <div class="card-title">Earnings over time</div>
-            <div class="chart-wrap" id="chart-wrap"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Customers who owe you</div>
-            <div class="owing-list" id="owing-list">
-              <div class="owing-item">
-                <div class="owing-avatar">RH</div>
-                <div class="owing-info"><div class="owing-name">Riverside Homes</div><div class="owing-status"><span class="status-dot overdue"></span><span class="owing-days overdue">5 days overdue</span></div></div>
-                <div class="owing-amount">£3,200</div>
+        <!-- EMPTY STATE -->
+        <div id="empty-view">
+          <div style="max-width:480px;margin:0 auto;padding:20px 0 40px;text-align:center">
+            <div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-chart-bar" style="font-size:28px;color:#0A2540"></i></div>
+            <div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Track every penny you earn</div>
+            <div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto 24px">Your earnings dashboard updates automatically as invoices get paid. Compare performance across any time period — today, this week, last month, or a custom date range.</div>
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:18px;text-align:left">
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-trending-up" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Revenue trends</div><div style="font-size:12px;color:#8B8A84">See if you're earning more than last period</div></div>
               </div>
-              <div class="owing-item">
-                <div class="owing-avatar">MT</div>
-                <div class="owing-info"><div class="owing-name">Mark Taylor</div><div class="owing-status"><span class="status-dot upcoming"></span><span class="owing-days upcoming">Due in 2 days</span></div></div>
-                <div class="owing-amount">£1,850</div>
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-receipt" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Average order value</div><div style="font-size:12px;color:#8B8A84">Understand your typical job size</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Outstanding invoices</div><div style="font-size:12px;color:#8B8A84">See exactly who still owes you money</div></div>
               </div>
             </div>
+            <a href="create-invoice.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create an invoice to get started</a>
           </div>
         </div>
-      </div>
+
+        <!-- DATA VIEW -->
+        <div id="data-view" style="display:none">
+          <div class="range-scroll" id="range-pills">
+            <div class="range-pill active" data-range="7d">7 days</div>
+            <div class="range-pill" data-range="today">Today</div>
+            <div class="range-pill" data-range="30d">30 days</div>
+            <div class="range-pill" data-range="90d">3 months</div>
+            <div class="range-pill" data-range="365d">1 year</div>
+            <div class="range-pill" data-range="all">All time</div>
+            <div class="range-pill" data-range="custom"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Custom</div>
+          </div>
+
+          <div class="custom-popup" id="custom-popup">
+            <div class="cr-field"><label>From</label><input type="date" id="cr-from" /></div>
+            <div class="cr-field"><label>To</label><input type="date" id="cr-to" /></div>
+            <button class="cr-apply" onclick="applyCustom()">Apply</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:20px;align-items:start">
+            <div class="stat-hero">
+              <div class="stat-hero-label" id="hero-label">Total earned · last 7 days</div>
+              <div class="stat-hero-value" id="hero-value">£0</div>
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+                <span class="compare-pill" id="compare-pill">—</span>
+                <span class="compare-vs" id="compare-vs"></span>
+              </div>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-clock"></i> Outstanding</div><div class="stat-card-value" id="stat-outstanding">£0</div></div>
+              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-file-invoice"></i> Invoices</div><div class="stat-card-value" id="stat-invoices">0</div></div>
+              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-receipt"></i> Avg. value</div><div class="stat-card-value" id="stat-aov">£0</div></div>
+              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-users"></i> Customers</div><div class="stat-card-value" id="stat-customers">0</div></div>
+            </div>
+          </div>
+
+          <div class="bottom-grid">
+            <div class="card">
+              <div class="card-title">Earnings over time</div>
+              <div class="chart-wrap" id="chart-wrap">
+                <div style="width:100%;display:flex;align-items:center;justify-content:center;color:#A3A29C;font-size:13px">No data for this period</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Who owes you</div>
+              <div id="owing-list">
+                <div style="text-align:center;padding:20px;font-size:13px;color:#A3A29C">No outstanding invoices</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
+
       <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
         <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
@@ -251,129 +251,215 @@
   </div>
 
   <script>
-    function initials(first, last, email) {
-      const f = (first || '').trim().charAt(0).toUpperCase();
-      const l = (last || '').trim().charAt(0).toUpperCase();
-      if (f && l) return f + l;
-      if (f) return f;
-      if (email) return email.charAt(0).toUpperCase();
-      return '?';
-    }
+    // Pull real data from localStorage (written by invoices.html + payment status modal)
+    var invoices  = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+    var payStatus = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
+    var activeRange = '7d';
+    var customFrom = null, customTo = null;
 
+    function fmt(n) { return '£' + Number(n || 0).toLocaleString('en-GB', {maximumFractionDigits:0}); }
+
+    // ── Auth ──
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? `${first} ${last}`.trim() : (data.user.email ? data.user.email.split('@')[0] : 'there');
-      const sbAvatar = document.getElementById('sb-avatar');
-      const sbName = document.getElementById('sb-user-name');
-      if (sbAvatar) sbAvatar.textContent = initials(first, last, data.user.email);
-      if (sbName) sbName.textContent = fullName;
+      try {
+        var r = await supabase.auth.getUser();
+        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
+        var m = r.data.user.user_metadata || {};
+        var first = m.first_name || m.given_name || '';
+        var last  = m.last_name  || m.family_name || '';
+        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first||last) ? (first+' '+last).trim() : r.data.user.email.split('@')[0];
+      } catch(e) {}
     }
     loadUser();
 
-    function fmt(n) { return '£' + n.toLocaleString('en-GB', { maximumFractionDigits: 0 }); }
+    // ── Date helpers ──
+    function startOf(range) {
+      var d = new Date(); d.setHours(0,0,0,0);
+      if (range === 'today')  return d;
+      if (range === '7d')   { d.setDate(d.getDate()-7); return d; }
+      if (range === '30d')  { d.setDate(d.getDate()-30); return d; }
+      if (range === '90d')  { d.setDate(d.getDate()-90); return d; }
+      if (range === '365d') { d.setFullYear(d.getFullYear()-1); return d; }
+      if (range === 'all')  return new Date(2000,0,1);
+      return d;
+    }
+    function prevStart(range) {
+      var d = new Date(); d.setHours(0,0,0,0);
+      if (range === 'today')  { d.setDate(d.getDate()-1); return d; }
+      if (range === '7d')   { d.setDate(d.getDate()-14); return d; }
+      if (range === '30d')  { d.setDate(d.getDate()-60); return d; }
+      if (range === '90d')  { d.setDate(d.getDate()-180); return d; }
+      if (range === '365d') { d.setFullYear(d.getFullYear()-2); return d; }
+      return new Date(2000,0,1);
+    }
+    function prevEnd(range) {
+      var d = startOf(range);
+      d.setDate(d.getDate()-1);
+      return d;
+    }
 
-    // Demo dataset per range — in production this would query a Supabase
-    // "invoices" table filtered by date and aggregated server-side.
-    const rangeData = {
-      today:      { label: 'today', total: 480, compare: 'vs yesterday', pct: 12, up: true, outstanding: 1890, invoices: 1, aov: 480, paidtime: '—', bars: [480] },
-      yesterday:  { label: 'yesterday', total: 640, compare: 'vs day before', pct: 4, up: false, outstanding: 1890, invoices: 2, aov: 320, paidtime: '12 hrs', bars: [640] },
-      '7d':       { label: 'last 7 days', total: 3240, compare: 'vs previous 7 days', pct: 18, up: true, outstanding: 1890, invoices: 9, aov: 360, paidtime: '16 hrs', bars: [320,480,210,640,580,490,520] },
-      '14d':      { label: 'last 14 days', total: 5980, compare: 'vs previous 14 days', pct: 9, up: true, outstanding: 2640, invoices: 16, aov: 374, paidtime: '17 hrs', bars: [320,480,210,640,580,490,520,290,610,440,380,520,470,540] },
-      '30d':      { label: 'last 30 days', total: 14280, compare: 'vs previous 30 days', pct: 12, up: true, outstanding: 3450, invoices: 38, aov: 376, paidtime: '18 hrs', bars: [320,480,210,640,580,490,520,290,610,440,380,520,470,540,610,290,480,520,640,380,470,540,610,290,480,520,640,380,470,540] },
-      lastmonth:  { label: 'last month', total: 12640, compare: 'vs month before', pct: 6, up: true, outstanding: 2980, invoices: 34, aov: 372, paidtime: '19 hrs', bars: [400,480,520,610] },
-      '3m':       { label: 'last 3 months', total: 38400, compare: 'vs previous 3 months', pct: 22, up: true, outstanding: 4200, invoices: 102, aov: 376, paidtime: '17 hrs', bars: [12640,14280,11480] },
-      '6m':       { label: 'last 6 months', total: 71200, compare: 'vs previous 6 months', pct: 15, up: true, outstanding: 4200, invoices: 189, aov: 377, paidtime: '18 hrs', bars: [10200,11400,12640,14280,11480,11200] },
-      '1y':       { label: 'last year', total: 142800, compare: 'vs year before', pct: 27, up: true, outstanding: 4200, invoices: 378, aov: 378, paidtime: '18 hrs', bars: [9800,10400,11200,12100,10900,11400,12640,14280,11480,11200,13900,13500] }
-    };
+    // ── Filter invoices by date range ──
+    function filterByRange(invs, from, to) {
+      return invs.filter(function(inv) {
+        if (!inv.date) return false;
+        var d = new Date(inv.date);
+        return d >= from && d <= (to || new Date());
+      });
+    }
 
-    function renderRange(key) {
-      const d = rangeData[key];
-      if (!d) return;
-      document.getElementById('hero-label').textContent = 'Total earned · ' + d.label;
-      document.getElementById('hero-value').textContent = fmt(d.total);
-      document.getElementById('hero-compare-text').textContent = d.compare;
-      const pillEl = document.getElementById('hero-compare-pill');
-      pillEl.className = 'compare-pill' + (d.up ? '' : ' down');
-      pillEl.innerHTML = `<i class="ti ti-arrow-${d.up ? 'up' : 'down'}-right"></i>${d.pct}%`;
-      document.getElementById('stat-outstanding').textContent = fmt(d.outstanding);
-      document.getElementById('stat-invoices').textContent = d.invoices;
-      document.getElementById('stat-aov').textContent = fmt(d.aov);
-      document.getElementById('stat-paidtime').textContent = d.paidtime;
+    function isPaid(inv) {
+      var s = (payStatus[inv.id] || {}).status || inv.status || 'unpaid';
+      return s === 'paid' || s === 'partial';
+    }
+    function isOutstanding(inv) {
+      var s = (payStatus[inv.id] || {}).status || inv.status || 'unpaid';
+      return s === 'unpaid' || s === 'overdue';
+    }
 
-      const max = Math.max(...d.bars);
-      const wrap = document.getElementById('chart-wrap');
-      wrap.innerHTML = d.bars.map((v, i) => {
-        const h = Math.max(4, Math.round((v / max) * 160));
-        const isLast = i === d.bars.length - 1;
-        return `<div class="chart-bar-col"><div class="chart-bar${isLast ? ' active' : ''}" style="height:${h}px" title="${fmt(v)}"></div></div>`;
+    // ── Render dashboard ──
+    function render(range, customF, customT) {
+      if (invoices.length === 0) {
+        document.getElementById('empty-view').style.display = 'block';
+        document.getElementById('data-view').style.display = 'none';
+        return;
+      }
+      document.getElementById('empty-view').style.display = 'none';
+      document.getElementById('data-view').style.display = 'block';
+
+      var from = customF || startOf(range);
+      var to   = customT || new Date();
+      var pFrom = prevStart(range);
+      var pTo   = prevEnd(range);
+
+      var current = filterByRange(invoices, from, to);
+      var previous = filterByRange(invoices, pFrom, pTo);
+
+      var earned = current.filter(isPaid).reduce(function(a,i){ return a+(i.amount||0); }, 0);
+      var prevEarned = previous.filter(isPaid).reduce(function(a,i){ return a+(i.amount||0); }, 0);
+      var outstanding = invoices.filter(isOutstanding).reduce(function(a,i){ return a+(i.amount||0); }, 0);
+      var aov = current.length > 0 ? Math.round(current.reduce(function(a,i){return a+(i.amount||0);},0)/current.length) : 0;
+      var uniqueCustomers = [...new Set(current.map(function(i){return i.customer;}))].length;
+
+      // Hero
+      var rangeLabels = { today:'today', '7d':'last 7 days', '30d':'last 30 days', '90d':'last 3 months', '365d':'last year', all:'all time' };
+      document.getElementById('hero-label').textContent = 'Total earned · ' + (rangeLabels[range] || 'selected period');
+      document.getElementById('hero-value').textContent = fmt(earned);
+
+      var pill = document.getElementById('compare-pill');
+      var vs   = document.getElementById('compare-vs');
+      if (prevEarned > 0 && range !== 'all') {
+        var pct = Math.round(((earned - prevEarned) / prevEarned) * 100);
+        var up = pct >= 0;
+        pill.className = 'compare-pill' + (up ? '' : ' down');
+        pill.innerHTML = '<i class="ti ti-arrow-' + (up?'up':'down') + '-right"></i>' + Math.abs(pct) + '%';
+        vs.textContent = 'vs previous period';
+      } else {
+        pill.textContent = '—';
+        vs.textContent = 'no comparison data yet';
+      }
+
+      document.getElementById('stat-outstanding').textContent = fmt(outstanding);
+      document.getElementById('stat-invoices').textContent = current.length;
+      document.getElementById('stat-aov').textContent = aov ? fmt(aov) : '—';
+      document.getElementById('stat-customers').textContent = uniqueCustomers;
+
+      renderChart(current, from, to, range);
+      renderOwing();
+    }
+
+    function renderChart(invs, from, to, range) {
+      var wrap = document.getElementById('chart-wrap');
+      if (invs.length === 0) {
+        wrap.innerHTML = '<div style="width:100%;display:flex;align-items:center;justify-content:center;color:#A3A29C;font-size:13px">No data for this period</div>';
+        return;
+      }
+
+      // Group by day/week/month depending on range
+      var groups = {};
+      invs.forEach(function(inv) {
+        if (!inv.date) return;
+        var d = new Date(inv.date);
+        var key;
+        if (range === 'today' || range === '7d') {
+          key = d.toLocaleDateString('en-GB', {weekday:'short'});
+        } else if (range === '30d' || range === '90d') {
+          key = d.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
+        } else {
+          key = d.toLocaleDateString('en-GB', {month:'short',year:'2-digit'});
+        }
+        groups[key] = (groups[key] || 0) + (inv.amount || 0);
+      });
+
+      var keys = Object.keys(groups);
+      var vals = keys.map(function(k){ return groups[k]; });
+      var max = Math.max.apply(null, vals) || 1;
+
+      wrap.innerHTML = keys.map(function(k, i) {
+        var h = Math.max(4, Math.round((vals[i]/max)*160));
+        return '<div class="chart-col"><div class="chart-bar" style="height:'+h+'px" title="'+k+': '+fmt(vals[i])+'"></div><div class="chart-lbl">'+k+'</div></div>';
       }).join('');
     }
 
-    document.getElementById('range-scroll').addEventListener('click', function(e) {
-      const pill = e.target.closest('.range-pill');
+    function renderOwing() {
+      var owing = invoices.filter(isOutstanding).sort(function(a,b){ return (b.amount||0)-(a.amount||0); }).slice(0,5);
+      var el = document.getElementById('owing-list');
+      if (owing.length === 0) {
+        el.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:#A3A29C">No outstanding invoices 🎉</div>';
+        return;
+      }
+      el.innerHTML = owing.map(function(inv) {
+        var status = (payStatus[inv.id]||{}).status || inv.status || 'unpaid';
+        var isOv = status === 'overdue';
+        var ini = (inv.customer||'?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
+        return '<div class="owing-item">'
+          + '<div class="owing-avatar">' + ini + '</div>'
+          + '<div class="owing-info">'
+          + '<div class="owing-name">' + (inv.customer||'Unknown') + '</div>'
+          + '<span class="status-dot ' + (isOv?'overdue':'upcoming') + '"></span>'
+          + '<span class="owing-days ' + (isOv?'overdue':'upcoming') + '">' + (isOv?'Overdue':'Unpaid') + '</span>'
+          + '</div>'
+          + '<div class="owing-amount">' + fmt(inv.amount) + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    // ── Range pill clicks ──
+    document.getElementById('range-pills').addEventListener('click', function(e) {
+      var pill = e.target.closest('.range-pill');
       if (!pill) return;
-      const range = pill.dataset.range;
+      var range = pill.dataset.range;
       if (range === 'custom') {
         document.getElementById('custom-popup').classList.toggle('open');
-        document.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.range-pill').forEach(function(p){p.classList.remove('active');});
         pill.classList.add('active');
         return;
       }
       document.getElementById('custom-popup').classList.remove('open');
-      document.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.range-pill').forEach(function(p){p.classList.remove('active');});
       pill.classList.add('active');
-      renderRange(range);
+      activeRange = range;
+      render(range);
     });
 
-    function applyCustomRange() {
-      const from = document.getElementById('cr-from').value;
-      const to = document.getElementById('cr-to').value;
-      if (!from || !to) return;
-      document.getElementById('hero-label').textContent = `Total earned · ${from} to ${to}`;
-      // TODO: in production, query Supabase invoices between these dates
-      renderRange('30d');
-      document.getElementById('hero-label').textContent = `Total earned · ${from} to ${to}`;
+    function applyCustom() {
+      var f = document.getElementById('cr-from').value;
+      var t = document.getElementById('cr-to').value;
+      if (!f || !t) return;
+      customFrom = new Date(f);
+      customTo = new Date(t);
+      customTo.setHours(23,59,59);
+      render('custom', customFrom, customTo);
       document.getElementById('custom-popup').classList.remove('open');
     }
 
-    renderRange('7d');
-
-    async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? (first + ' ' + last).trim() : (data.user.email ? data.user.email.split('@')[0] : '');
-      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (data.user.email ? data.user.email.charAt(0).toUpperCase() : '?');
-      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
-
-      // Show empty state since no real data exists yet
-      document.getElementById('hero-value').textContent = '£0';
-      document.getElementById('hero-label').textContent = 'Total earned · last 7 days';
-      document.getElementById('hero-compare-pill').innerHTML = '<i class="ti ti-minus"></i>—';
-      document.getElementById('hero-compare-pill').className = 'compare-pill';
-      document.getElementById('hero-compare-text').textContent = 'no data yet';
-      document.getElementById('stat-outstanding').textContent = '£0';
-      document.getElementById('stat-invoices').textContent = '0';
-      document.getElementById('stat-aov').textContent = '£0';
-      document.getElementById('stat-paidtime').textContent = '—';
-      document.getElementById('chart-wrap').innerHTML = '<div style="width:100%;display:flex;align-items:center;justify-content:center;height:100%;color:#A3A29C;font-size:13px">No data yet — send your first invoice to see earnings here</div>';
-      document.getElementById('owing-list').innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#A3A29C">No outstanding invoices</div>';
-    }
-    loadUser();
-
     document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        const m = document.getElementById('plus-menu');
-        if (m) m.classList.remove('open');
-      }
+      if (!e.target.closest('.nav-plus-wrap')) { var m=document.getElementById('plus-menu'); if(m) m.classList.remove('open'); }
     });
+
+    // ── Init ──
+    render('7d');
   </script>
 
 </body>
