@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -161,7 +161,6 @@
   <div class="hero-bar" id="mob-hero" style="display:none">
     <div class="hero-greet" id="hero-greet">Good morning,</div>
     <div class="hero-name" id="hero-name"></div>
-    <a href="create-invoice.html" class="btn-new-mob"><i class="ti ti-plus"></i> New invoice</a>
   </div>
 
   <div class="db">
@@ -302,7 +301,43 @@
         + stepsHtml
         + '<div style="padding:10px 16px;text-align:right">'
         + '<a href="dashboard.html?skip=true" style="font-size:11px;color:#A3A29C;text-decoration:none">Dismiss</a>'
-        + '</div></div>';
+        + '</div></div>'
+        + '<div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">'
+
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:14px 16px;border-bottom:1px solid #F0EFEA">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:1px">Quick actions</div>'
+        + '<div style="font-size:12px;color:#8B8A84">Everything you need, one tap away</div>'
+        + '</div>'
+        + '<a href="create-invoice.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-plus" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Create invoice</div><div style="font-size:12px;color:#8B8A84">Send a payment link to a customer</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+
+        + '<a href="customers.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-user-plus" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Add a customer</div><div style="font-size:12px;color:#8B8A84">Save their details for fast invoicing</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+
+        + '<a href="jobs.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-briefcase" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Schedule a job</div><div style="font-size:12px;color:#8B8A84">Plan your week and set reminders</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+
+        + '<a href="onboarding-payments.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-brand-stripe" style="font-size:17px;color:#635BFF"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Connect Stripe</div><div style="font-size:12px;color:#8B8A84">Get paid directly into your bank</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '</div>'
+
+        + '<div style="background:#0A2540;border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px">'
+        + '<div style="width:40px;height:40px;border-radius:50%;background:rgba(93,202,165,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-bulb" style="font-size:20px;color:#5DCAA5"></i></div>'
+        + '<div>'
+        + '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">Did you know?</div>'
+        + '<div style="font-size:12px;color:#8FA8C2;line-height:1.5">Tradespeople who send invoices within 24 hours of completing a job get paid 3x faster on average.</div>'
+        + '</div></div>'
+
+        + '</div>';
 
       document.getElementById('main-content').innerHTML =
         '<div style="max-width:540px">'
