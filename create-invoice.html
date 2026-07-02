@@ -142,6 +142,13 @@
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+  
+    /* ── Mobile distortion fix ── */
+    html { overflow-x: hidden; }
+    body { overflow-x: hidden; max-width: 100vw; }
+    * { max-width: 100%; }
+    img, video, iframe, table { max-width: 100%; }
+
   </style>
 </head>
 <body>
@@ -505,12 +512,12 @@
 
   <nav class="bottom-nav" style="display:none" id="mob-bottom-nav">
     <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-    <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+    <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
     <div class="nav-plus-wrap">
-      <a href="#" class="nav-plus active" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
+      <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
       <div class="plus-menu" id="plus-menu">
         <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-        <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+        <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
       </div>
     </div>
     <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>

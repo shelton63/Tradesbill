@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -94,6 +94,15 @@
     .bottom-nav { display: none; }
 
     @media (max-width: 768px) {
+      /* Prevent table overflow on mobile */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: unset; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .range-scroll { -webkit-overflow-scrolling: touch; }
+      .board { grid-template-columns: 1fr; }
+      .top-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
@@ -128,6 +137,13 @@
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
+  
+    /* ── Mobile distortion fix ── */
+    html { overflow-x: hidden; }
+    body { overflow-x: hidden; max-width: 100vw; }
+    * { max-width: 100%; }
+    img, video, iframe, table { max-width: 100%; }
+
   </style>
 </head>
 <body>
@@ -158,6 +174,7 @@
         <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
         <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
         <div class="sb-section-label">Reports</div>
         <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
         <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
@@ -199,12 +216,12 @@
       <!-- MOBILE BOTTOM NAV -->
       <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item active"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="invoices.html" class="nav-item"><i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
         <div class="nav-plus-wrap">
           <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
           <div class="plus-menu" id="plus-menu">
             <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="customers.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-user-plus"></i></div><span class="plus-menu-text">New customer</span></a>
+            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
           </div>
         </div>
         <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
