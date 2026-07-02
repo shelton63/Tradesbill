@@ -7,58 +7,54 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: hidden; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
     .db { display: flex; min-height: 100vh; }
-
     .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; }
+    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
     .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
     .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
     .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
-
     .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; font-family: inherit; }
     .btn-new:hover { background: #061A30; }
-    .content { padding: 24px 28px; }
-
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .content { padding: 24px 28px; flex: 1; }
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
     .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
     .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; }
     .stat-value { font-size: 22px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
-
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .search-wrap { position: relative; flex: 1; }
     .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; }
-    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; }
+    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
     .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filter-tab { padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-tab { padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; }
     .filter-tab.active { background: #0A2540; color: #fff; border-color: #0A2540; }
-    .filter-tab:hover:not(.active) { background: #F0EFEA; }
-
-    .table-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
+    .table-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead { background: #FAFAF8; }
-    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #8B8A84; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E5E3DC; }
+    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #8B8A84; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E5E3DC; white-space: nowrap; }
     td { padding: 13px 16px; color: #1A1A18; border-bottom: 1px solid #F0EFEA; }
     tr:last-child td { border-bottom: none; }
     tr.inv-row:hover td { background: #FAFAF8; cursor: pointer; }
@@ -69,38 +65,43 @@
     .av-amber{background:#FBF3E3;color:#C28A1E} .av-coral{background:#FAECE7;color:#993C1D}
     .av-purple{background:#EEEDFE;color:#3C3489}
     .cust-name-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
-
     .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
     .badge-paid { background: #E1F5EE; color: #0F6E56; }
+    .badge-partial { background: #FBF3E3; color: #C28A1E; }
     .badge-unpaid { background: #FBF3E3; color: #C28A1E; }
     .badge-overdue { background: #FDEDED; color: #D14343; }
     .badge-draft { background: #F0EFEA; color: #6B6A65; }
-    .badge i { font-size: 12px; }
-
     .action-btns { display: flex; gap: 6px; }
     .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8B8A84; text-decoration: none; }
     .icon-btn:hover { background: #F0EFEA; color: #0A2540; border-color: #0A2540; }
     .icon-btn i { font-size: 15px; }
-
-    .empty-state { text-align: center; padding: 60px 20px; }
-    .empty-icon { width: 64px; height: 64px; border-radius: 50%; background: #EEF3F8; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-    .empty-icon i { font-size: 28px; color: #0A2540; }
-    .empty-state h3 { font-size: 16px; font-weight: 600; color: #061A30; margin-bottom: 6px; }
-    .empty-state p { font-size: 13px; color: #6B6A65; margin-bottom: 18px; }
-
+    /* Payment modal */
+    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
+    .pay-modal-overlay.open { display:flex; }
+    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
+    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
+    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
+    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
+    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; }
+    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
+    .pay-status-opt.selected { border-color:var(--c); background:var(--bg); }
+    .pay-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .pay-lbl { font-size:14px; font-weight:600; color:#061A30; }
+    .pay-desc { font-size:12px; color:#8B8A84; }
+    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .pay-method-btn { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:4px; }
+    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
+    .pay-partial-wrap { margin-bottom:14px; display:none; }
+    .pay-partial-wrap label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
+    .pay-partial-wrap input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
+    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
+    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
-
     @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
@@ -108,67 +109,30 @@
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; }
+      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; text-decoration: none; }
       .content { padding: 14px 16px; }
       .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
       .stat-value { font-size: 18px; }
       th:nth-child(3), td:nth-child(3) { display: none; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
       .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
       .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
       .plus-menu-item:last-child { border-bottom: none; }
       .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
-  
-    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
-    .pay-modal-overlay.open { display:flex; }
-    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
-    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
-    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
-    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
-    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:13px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; transition:all 0.12s; }
-    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
-    .pay-status-opt.selected { border-color:var(--opt-color); background:var(--opt-bg); }
-    .pay-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .pay-status-label { font-size:14px; font-weight:600; color:#061A30; }
-    .pay-status-desc { font-size:12px; color:#8B8A84; margin-top:1px; }
-    .pay-method-row { margin-bottom:14px; }
-    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
-    .pay-method-btn { padding:7px 13px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px; }
-    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
-    .pay-partial-row { margin-bottom:14px; display:none; }
-    .pay-partial-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-partial-row input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
-    .pay-partial-row input:focus { border-color:#0A2540; box-shadow:0 0 0 3px rgba(10,37,64,0.08); }
-    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
-    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .badge-partial { background:#FBF3E3; color:#C28A1E; }
-    .badge i { font-size:8px; vertical-align:1px; }
   </style>
 </head>
 <body>
-
   <div class="mobile-topbar">
     <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
     <a href="create-invoice.html" class="mob-add-btn"><i class="ti ti-plus"></i> New</a>
@@ -190,7 +154,7 @@
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name">Loading...</div><div class="sb-user-plan">Free trial</div></div></a></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
     </nav>
 
     <div class="main">
@@ -200,40 +164,63 @@
       </div>
 
       <div class="content">
-        <div class="stats">
-          <div class="stat"><div class="stat-label">Total invoices</div><div class="stat-value" id="stat-total">0</div></div>
-          <div class="stat"><div class="stat-label">Paid</div><div class="stat-value" id="stat-paid">0</div></div>
-          <div class="stat"><div class="stat-label">Unpaid</div><div class="stat-value" id="stat-unpaid">0</div></div>
-          <div class="stat"><div class="stat-label">Overdue</div><div class="stat-value" id="stat-overdue">0</div></div>
+
+        <!-- EMPTY STATE — shown to new users -->
+        <div id="empty-view">
+          <div style="max-width:480px;margin:0 auto;padding:20px 0 40px;text-align:center">
+            <div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-file-invoice" style="font-size:28px;color:#0A2540"></i></div>
+            <div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Send your first invoice</div>
+            <div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto 24px">Create a professional invoice in 60 seconds. Add your customer, describe the job — TradesBill generates a Stripe payment link so customers pay instantly by card or Apple Pay.</div>
+            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:18px;text-align:left">
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-send" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Send by email or WhatsApp</div><div style="font-size:12px;color:#8B8A84">Share a payment link directly with your customer</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-credit-card" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Card, Apple Pay & bank transfer</div><div style="font-size:12px;color:#8B8A84">Customers pay instantly — money lands in your bank</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px">
+                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-bell" style="font-size:17px;color:#0A2540"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Get notified the moment it's paid</div><div style="font-size:12px;color:#8B8A84">You'll receive an instant notification when payment lands</div></div>
+              </div>
+            </div>
+            <a href="create-invoice.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create your first invoice</a>
+          </div>
         </div>
 
-        <div class="toolbar">
-          <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search by customer or invoice number..." oninput="filterInvoices(this.value)" /></div>
-        </div>
-        <div class="filter-tabs" style="margin-bottom:16px">
-          <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
-          <div class="filter-tab" onclick="setFilter(this,'paid')">Paid</div>
-          <div class="filter-tab" onclick="setFilter(this,'unpaid')">Unpaid</div>
-          <div class="filter-tab" onclick="setFilter(this,'overdue')">Overdue</div>
-          <div class="filter-tab" onclick="setFilter(this,'draft')">Draft</div>
+        <!-- DATA VIEW — shown once invoices exist -->
+        <div id="data-view" style="display:none">
+          <div class="stats">
+            <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="st-total">0</div></div>
+            <div class="stat"><div class="stat-label">Paid</div><div class="stat-value" id="st-paid">0</div></div>
+            <div class="stat"><div class="stat-label">Unpaid</div><div class="stat-value" id="st-unpaid">0</div></div>
+            <div class="stat"><div class="stat-label">Overdue</div><div class="stat-value" id="st-overdue">0</div></div>
+          </div>
+          <div class="toolbar">
+            <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search invoices..." oninput="filterInvoices(this.value)" /></div>
+          </div>
+          <div class="filter-tabs">
+            <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
+            <div class="filter-tab" onclick="setFilter(this,'paid')">Paid</div>
+            <div class="filter-tab" onclick="setFilter(this,'partial')">Partial</div>
+            <div class="filter-tab" onclick="setFilter(this,'unpaid')">Unpaid</div>
+            <div class="filter-tab" onclick="setFilter(this,'overdue')">Overdue</div>
+            <div class="filter-tab" onclick="setFilter(this,'draft')">Draft</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Invoice</th><th>Customer</th><th>Job</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
+              <tbody id="inv-body"></tbody>
+            </table>
+          </div>
         </div>
 
-        <div id="empty-state-wrap" style=""><div style="max-width:480px;margin:0 auto;padding:20px 0 40px"><div style="text-align:center;padding:28px 0 24px"><div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-file-invoice" style="font-size:28px;color:#0A2540"></i></div><div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Send your first invoice</div><div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto">Create a professional invoice in under 60 seconds. Add your customer, describe the job, set the amount — TradesBill generates a Stripe payment link so your customer can pay instantly by card or Apple Pay.</div></div><div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px"><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-send" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Send by email or WhatsApp</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Share a payment link directly with your customer</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-credit-card" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Card & Apple Pay</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Customers pay instantly — no bank details needed</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-bell" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Get notified instantly</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">We'll alert you the moment payment lands</div></div></div><div style="padding:12px 0;border:none"></div></div><a href="create-invoice.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create your first invoice</a></div></div>
-        <div id="table-section" style="display:none">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Invoice</th><th>Customer</th><th>Job</th><th>Amount</th><th>Sent</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="inv-body"></tbody>
-          </table>
-        </div>
       </div>
 
-        </div>
       <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item active"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
         <div class="nav-plus-wrap">
           <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
           <div class="plus-menu" id="plus-menu">
@@ -247,113 +234,7 @@
     </div>
   </div>
 
-  <script>
-    function initials(first, last, email) {
-      const f = (first || '').trim().charAt(0).toUpperCase();
-      const l = (last || '').trim().charAt(0).toUpperCase();
-      if (f && l) return f + l;
-      if (f) return f;
-      if (email) return email.charAt(0).toUpperCase();
-      return '?';
-    }
-
-    async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
-      const meta = data.user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? `${first} ${last}`.trim() : (data.user.email ? data.user.email.split('@')[0] : 'there');
-      const sbAvatar = document.getElementById('sb-avatar');
-      const sbName = document.getElementById('sb-user-name');
-      if (sbAvatar) sbAvatar.textContent = initials(first, last, data.user.email);
-      if (sbName) sbName.textContent = fullName;
-    }
-    loadUser();
-
-    function filterInvoices(q) {
-      q = q.toLowerCase();
-      document.querySelectorAll('#inv-body tr').forEach(r => {
-        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    }
-
-    function setFilter(el, status) {
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      document.querySelectorAll('#inv-body tr').forEach(r => {
-        r.style.display = (status === 'all' || r.dataset.status === status) ? '' : 'none';
-      });
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        document.getElementById('plus-menu').classList.remove('open');
-      }
-    });
-
-    var _payTargetId = null;
-    var _payStatuses = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
-
-    function openPayModal(id, currentStatus) {
-      _payTargetId = id;
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      var cur = document.querySelector('.pay-status-opt[data-status="' + (currentStatus || 'unpaid') + '"]');
-      if (cur) cur.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = currentStatus === 'partial' ? 'block' : 'none';
-      document.getElementById('pay-partial-amt').value = _payStatuses[id] ? (_payStatuses[id].partialAmt || '') : '';
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      var savedMethod = _payStatuses[id] ? _payStatuses[id].method : 'card';
-      var mBtn = document.querySelector('.pay-method-btn[data-method="' + savedMethod + '"]');
-      if (mBtn) mBtn.classList.add('active');
-      document.getElementById('pay-modal').classList.add('open');
-    }
-
-    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
-
-    function selectPayStatus(el) {
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      el.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
-    }
-
-    function selectPayMethod(el) {
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      el.classList.add('active');
-    }
-
-    function savePayStatus() {
-      var sel = document.querySelector('.pay-status-opt.selected');
-      if (!sel) return;
-      var status = sel.dataset.status;
-      var mBtn = document.querySelector('.pay-method-btn.active');
-      var method = mBtn ? mBtn.dataset.method : 'card';
-      var partial = status === 'partial' ? document.getElementById('pay-partial-amt').value : null;
-      _payStatuses[_payTargetId] = { status: status, method: method, partialAmt: partial, updatedAt: new Date().toISOString() };
-      localStorage.setItem('tb_pay_statuses', JSON.stringify(_payStatuses));
-      var badge = document.querySelector('[data-pay-id="' + _payTargetId + '"] .dyn-badge');
-      if (badge) badge.outerHTML = buildBadge(status);
-      closePayModal();
-    }
-
-    var _badgeCls = { paid:'badge-paid', partial:'badge-partial', unpaid:'badge-unpaid', overdue:'badge-overdue', draft:'badge-draft' };
-    var _badgeLbl = { paid:'Paid', partial:'Partial paid', unpaid:'Unpaid', overdue:'Overdue', draft:'Draft' };
-    var _badgeIcon = { paid:'ti-circle-check', partial:'ti-clock-pause', unpaid:'ti-clock', overdue:'ti-alert-circle', draft:'ti-pencil' };
-
-    function buildBadge(status) {
-      var cls = _badgeCls[status] || 'badge-unpaid';
-      var lbl = _badgeLbl[status] || status;
-      var icon = _badgeIcon[status] || 'ti-circle';
-      return '<span class="badge dyn-badge ' + cls + '"><i class="ti ' + icon + '"></i> ' + lbl + '</span>';
-    }
-
-    function currentStatus(id, fallback) {
-      return _payStatuses[id] ? _payStatuses[id].status : (fallback || 'unpaid');
-    }
-
-    document.getElementById('pay-modal').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
-  </script>
-
+  <!-- PAYMENT STATUS MODAL -->
   <div class="pay-modal-overlay" id="pay-modal">
     <div class="pay-modal">
       <div class="pay-modal-header">
@@ -362,34 +243,34 @@
       </div>
       <div style="padding:20px">
         <div class="pay-status-opts">
-          <div class="pay-status-opt" data-status="paid" style="--opt-color:#1D9E75;--opt-bg:#F0FAF6" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#1D9E75"></div>
-            <div><div class="pay-status-label">Paid in full</div><div class="pay-status-desc">Full amount received</div></div>
+          <div class="pay-status-opt" data-status="paid" style="--c:#1D9E75;--bg:#F0FAF6" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#1D9E75"></div>
+            <div><div class="pay-lbl">Paid in full</div><div class="pay-desc">Full amount received</div></div>
           </div>
-          <div class="pay-status-opt" data-status="partial" style="--opt-color:#C28A1E;--opt-bg:#FBF9F0" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#C28A1E"></div>
-            <div><div class="pay-status-label">Partially paid</div><div class="pay-status-desc">Deposit or part payment received</div></div>
+          <div class="pay-status-opt" data-status="partial" style="--c:#C28A1E;--bg:#FBF9F0" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#C28A1E"></div>
+            <div><div class="pay-lbl">Partially paid</div><div class="pay-desc">Deposit or part payment received</div></div>
           </div>
-          <div class="pay-status-opt" data-status="unpaid" style="--opt-color:#D14343;--opt-bg:#FEF5F5" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#D14343"></div>
-            <div><div class="pay-status-label">Unpaid</div><div class="pay-status-desc">No payment received yet</div></div>
+          <div class="pay-status-opt" data-status="unpaid" style="--c:#C28A1E;--bg:#FBF9F0" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#C28A1E"></div>
+            <div><div class="pay-lbl">Unpaid</div><div class="pay-desc">No payment received yet</div></div>
           </div>
-          <div class="pay-status-opt" data-status="overdue" style="--opt-color:#991F1F;--opt-bg:#FEF0F0" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#991F1F"></div>
-            <div><div class="pay-status-label">Overdue</div><div class="pay-status-desc">Payment is past due</div></div>
+          <div class="pay-status-opt" data-status="overdue" style="--c:#D14343;--bg:#FEF5F5" onclick="selectPayStatus(this)">
+            <div class="pay-dot" style="background:#D14343"></div>
+            <div><div class="pay-lbl">Overdue</div><div class="pay-desc">Payment is past due</div></div>
           </div>
         </div>
-        <div class="pay-partial-row" id="pay-partial-row">
+        <div class="pay-partial-wrap" id="pay-partial-wrap">
           <label>Amount received so far (£)</label>
           <input type="number" id="pay-partial-amt" placeholder="e.g. 500" min="0" />
         </div>
         <div class="pay-method-row">
           <label>Payment method</label>
           <div class="pay-method-btns">
-            <button class="pay-method-btn active" data-method="card" onclick="selectPayMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
-            <button class="pay-method-btn" data-method="cash" onclick="selectPayMethod(this)"><i class="ti ti-cash"></i> Cash</button>
-            <button class="pay-method-btn" data-method="bank" onclick="selectPayMethod(this)"><i class="ti ti-building-bank"></i> Bank transfer</button>
-            <button class="pay-method-btn" data-method="mixed" onclick="selectPayMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
+            <button class="pay-method-btn active" data-method="card" onclick="selMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
+            <button class="pay-method-btn" data-method="cash" onclick="selMethod(this)"><i class="ti ti-cash"></i> Cash</button>
+            <button class="pay-method-btn" data-method="bank" onclick="selMethod(this)"><i class="ti ti-building-bank"></i> Bank</button>
+            <button class="pay-method-btn" data-method="mixed" onclick="selMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
           </div>
         </div>
       </div>
@@ -400,5 +281,153 @@
     </div>
   </div>
 
+  <script>
+    // ── Stored statuses (persists in localStorage until Supabase invoices table is live) ──
+    var _ps = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
+    var _stored = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+    var _payTarget = null;
+
+    var BADGE = {
+      paid:    { cls:'badge-paid',    lbl:'Paid',         icon:'ti-circle-check' },
+      partial: { cls:'badge-partial', lbl:'Partial paid', icon:'ti-clock-pause'  },
+      unpaid:  { cls:'badge-unpaid',  lbl:'Unpaid',       icon:'ti-clock'        },
+      overdue: { cls:'badge-overdue', lbl:'Overdue',      icon:'ti-alert-circle' },
+      draft:   { cls:'badge-draft',   lbl:'Draft',        icon:'ti-pencil'       },
+    };
+
+    function makeBadge(status) {
+      var b = BADGE[status] || BADGE.unpaid;
+      return '<span class="badge dyn-badge ' + b.cls + '"><i class="ti ' + b.icon + '"></i> ' + b.lbl + '</span>';
+    }
+
+    function fmt(n) { return '£' + Number(n).toLocaleString('en-GB'); }
+
+    // ── Auth ──
+    async function loadUser() {
+      try {
+        var r = await supabase.auth.getUser();
+        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
+        var m = r.data.user.user_metadata || {};
+        var first = m.first_name || m.given_name || '';
+        var last  = m.last_name  || m.family_name || '';
+        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first||last) ? (first+' '+last).trim() : r.data.user.email.split('@')[0];
+      } catch(e) {}
+      renderView();
+    }
+
+    // ── Render ──
+    function renderView() {
+      if (_stored.length === 0) {
+        document.getElementById('empty-view').style.display = 'block';
+        document.getElementById('data-view').style.display = 'none';
+      } else {
+        document.getElementById('empty-view').style.display = 'none';
+        document.getElementById('data-view').style.display = 'block';
+        renderTable(_stored);
+        updateStats(_stored);
+      }
+    }
+
+    function updateStats(invs) {
+      document.getElementById('st-total').textContent = invs.length;
+      document.getElementById('st-paid').textContent = invs.filter(function(i){return (_ps[i.id]||{status:i.status}).status==='paid';}).length;
+      document.getElementById('st-unpaid').textContent = invs.filter(function(i){var s=(_ps[i.id]||{status:i.status}).status;return s==='unpaid';}).length;
+      document.getElementById('st-overdue').textContent = invs.filter(function(i){var s=(_ps[i.id]||{status:i.status}).status;return s==='overdue';}).length;
+    }
+
+    function renderTable(invs) {
+      var av_colors = ['av-blue','av-teal','av-amber','av-coral','av-purple'];
+      var body = document.getElementById('inv-body');
+      if (!body) return;
+      if (invs.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#8B8A84;font-size:13px">No invoices match this filter</td></tr>';
+        return;
+      }
+      body.innerHTML = invs.map(function(inv, idx) {
+        var status = (_ps[inv.id] || {status: inv.status || 'unpaid'}).status;
+        var av = av_colors[idx % av_colors.length];
+        var ini = (inv.customer||'?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
+        return '<tr class="inv-row" data-pay-id="' + inv.id + '" data-status="' + status + '">'
+          + '<td><span class="inv-num">#' + inv.id + '</span></td>'
+          + '<td><div class="cust-cell"><div class="avatar ' + av + '">' + ini + '</div><span class="cust-name-text">' + (inv.customer||'—') + '</span></div></td>'
+          + '<td>' + (inv.job||'—') + '</td>'
+          + '<td>' + fmt(inv.amount||0) + '</td>'
+          + '<td>' + (inv.date||'—') + '</td>'
+          + '<td>' + makeBadge(status) + '</td>'
+          + '<td><div class="action-btns"><button class="icon-btn" title="Update payment status" onclick="openPayModal(\'' + inv.id + '\',\'' + status + '\')"><i class="ti ti-cash"></i></button><a href="#" class="icon-btn"><i class="ti ti-dots"></i></a></div></td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function filterInvoices(q) {
+      var filtered = _stored.filter(function(i){ return JSON.stringify(i).toLowerCase().includes(q.toLowerCase()); });
+      renderTable(filtered);
+    }
+
+    function setFilter(el, status) {
+      document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active');});
+      el.classList.add('active');
+      var filtered = status === 'all' ? _stored : _stored.filter(function(i){
+        return ((_ps[i.id]||{status:i.status||'unpaid'}).status) === status;
+      });
+      renderTable(filtered);
+    }
+
+    // ── Payment modal ──
+    function openPayModal(id, currentStatus) {
+      _payTarget = id;
+      document.querySelectorAll('.pay-status-opt').forEach(function(o){o.classList.remove('selected');});
+      var saved = _ps[id] ? _ps[id].status : currentStatus;
+      var cur = document.querySelector('.pay-status-opt[data-status="' + saved + '"]');
+      if (cur) cur.classList.add('selected');
+      document.getElementById('pay-partial-wrap').style.display = saved === 'partial' ? 'block' : 'none';
+      document.getElementById('pay-partial-amt').value = _ps[id] ? (_ps[id].partialAmt||'') : '';
+      document.querySelectorAll('.pay-method-btn').forEach(function(b){b.classList.remove('active');});
+      var savedM = _ps[id] ? _ps[id].method : 'card';
+      var mb = document.querySelector('.pay-method-btn[data-method="'+savedM+'"]');
+      if (mb) mb.classList.add('active');
+      document.getElementById('pay-modal').classList.add('open');
+    }
+
+    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+
+    function selectPayStatus(el) {
+      document.querySelectorAll('.pay-status-opt').forEach(function(o){o.classList.remove('selected');});
+      el.classList.add('selected');
+      document.getElementById('pay-partial-wrap').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
+    }
+
+    function selMethod(el) {
+      document.querySelectorAll('.pay-method-btn').forEach(function(b){b.classList.remove('active');});
+      el.classList.add('active');
+    }
+
+    function savePayStatus() {
+      var sel = document.querySelector('.pay-status-opt.selected');
+      if (!sel) return;
+      var status = sel.dataset.status;
+      var mb = document.querySelector('.pay-method-btn.active');
+      _ps[_payTarget] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status==='partial' ? document.getElementById('pay-partial-amt').value : null };
+      localStorage.setItem('tb_pay_statuses', JSON.stringify(_ps));
+      // Update badge in table
+      var row = document.querySelector('[data-pay-id="' + _payTarget + '"]');
+      if (row) {
+        var badge = row.querySelector('.dyn-badge');
+        if (badge) { var b=BADGE[status]||BADGE.unpaid; badge.className='badge dyn-badge '+b.cls; badge.innerHTML='<i class="ti '+b.icon+'"></i> '+b.lbl; }
+        row.dataset.status = status;
+      }
+      updateStats(_stored);
+      closePayModal();
+    }
+
+    document.getElementById('pay-modal').addEventListener('click', function(e){ if(e.target===this) closePayModal(); });
+    document.addEventListener('click', function(e){
+      if (!e.target.closest('.nav-plus-wrap')) { var m=document.getElementById('plus-menu'); if(m) m.classList.remove('open'); }
+    });
+
+    loadUser();
+  </script>
 </body>
 </html>
