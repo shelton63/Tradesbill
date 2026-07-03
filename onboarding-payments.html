@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -87,6 +87,13 @@
       .connect-card { padding: 22px; }
       .cc-features { grid-template-columns: 1fr; }
     }
+  
+    /* ── Mobile distortion fix ── */
+    html { overflow-x: hidden; }
+    body { overflow-x: hidden; max-width: 100vw; }
+    * { max-width: 100%; }
+    img, video, iframe, table { max-width: 100%; }
+
   </style>
 </head>
 <body>
@@ -164,9 +171,15 @@
     <div class="alt-card">
       <div class="alt-header">
         <div class="alt-icon"><i class="ti ti-building-bank"></i></div>
-        <div class="alt-title">Prefer bank transfer only?</div>
+        <div class="alt-title">Bank transfer <span style="font-size:11px;font-weight:700;background:#FBF3E3;color:#C28A1E;padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle">Manual</span></div>
       </div>
-      <p class="alt-desc">Add your bank details and they'll appear on every invoice so customers can pay you directly by bank transfer.</p>
+      <p class="alt-desc">Your sort code and account number will appear on every invoice so customers can pay you directly via bank transfer from their own banking app.</p>
+      <div style="display:flex;gap:8px;margin-bottom:14px;padding:11px 13px;background:#FBF3E3;border:1px solid #F5D9A0;border-radius:9px">
+        <i class="ti ti-alert-circle" style="font-size:17px;color:#C28A1E;flex-shrink:0;margin-top:1px"></i>
+        <div style="font-size:12px;color:#854F0B;line-height:1.5">
+          <strong>This is a manual process.</strong> Customers transfer money themselves using their bank app — you won't get an instant notification and it can take 1–3 working days. We recommend connecting Stripe above for instant card & Apple Pay payments.
+        </div>
+      </div>
       <button class="btn-alt" onclick="toggleBank()"><i class="ti ti-chevron-down" id="bank-chevron"></i> Add bank details</button>
       <div class="bank-fields" id="bank-fields" style="margin-top:14px">
         <div class="field"><label>Account name</label><input type="text" id="acc-name" placeholder="Hughes Plumbing Ltd" /></div>
@@ -231,9 +244,58 @@
       const name = document.getElementById('acc-name').value.trim();
       const sort = document.getElementById('sort-code').value.trim();
       const acc = document.getElementById('acc-number').value.trim();
-      if (!name || !sort || !acc) { alert('Please fill in all bank details.'); return; }
+
+      if (!name) { showBankError('Please enter your account name.'); return; }
+      if (sort.replace(/-/g, '').length < 6) { showBankError('Please enter a valid 6-digit sort code.'); return; }
+      if (acc.length < 8) { showBankError('Please enter a valid 8-digit account number.'); return; }
+
+      const btn = event.target;
+      btn.textContent = 'Saving...';
+      btn.disabled = true;
+
       await supabase.auth.updateUser({ data: { bank_account_name: name, bank_sort_code: sort, bank_account_number: acc } });
-      alert('Bank details saved!');
+
+      btn.textContent = 'Saved!';
+      btn.style.background = '#1D9E75';
+
+      let msg = document.getElementById('bank-success');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.id = 'bank-success';
+        msg.style.cssText = 'display:flex;align-items:center;gap:8px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:9px;padding:11px 14px;margin-top:12px;font-size:13px;color:#085041;font-weight:600';
+        msg.innerHTML = '<i class="ti ti-circle-check" style="font-size:17px;flex-shrink:0"></i> Bank details saved — they\'ll appear on your invoices.';
+        btn.after(msg);
+      }
+
+      // Show continue button
+      let cont = document.getElementById('bank-continue');
+      if (!cont) {
+        cont = document.createElement('a');
+        cont.id = 'bank-continue';
+        cont.href = 'create-invoice.html';
+        cont.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:13px;border-radius:9px;font-size:14px;font-weight:700;margin-top:10px';
+        cont.innerHTML = '<i class="ti ti-arrow-right" style="font-size:17px"></i> Continue — create your first invoice';
+        msg.after(cont);
+      }
+
+      setTimeout(() => {
+        btn.textContent = 'Save bank details';
+        btn.style.background = '#0A2540';
+        btn.disabled = false;
+      }, 3000);
+    }
+
+    function showBankError(msg) {
+      let el = document.getElementById('bank-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'bank-error';
+        el.style.cssText = 'display:flex;align-items:center;gap:8px;background:#FDEDED;border:1px solid #F09595;border-radius:9px;padding:11px 14px;margin-top:12px;font-size:13px;color:#D14343;font-weight:600';
+        el.innerHTML = '<i class="ti ti-alert-circle" style="font-size:17px;flex-shrink:0"></i><span></span>';
+        document.getElementById('bank-fields').appendChild(el);
+      }
+      el.querySelector('span').textContent = msg;
+      el.style.display = 'flex';
     }
 
     async function checkUser() {
