@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
+  <script src="db.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
@@ -484,6 +485,20 @@
         if (!response.ok || !data.success) {
           throw new Error(data.error || 'Failed to create payment link');
         }
+
+        // Save invoice to Supabase
+        try {
+          await DB.saveInvoice({
+            isNew: true,
+            number: num,
+            customer_name: name,
+            job: job,
+            amount: totalPounds,
+            status: 'unpaid',
+            stripe_payment_link: data.paymentUrl,
+            date: new Date().toISOString().split('T')[0]
+          });
+        } catch(dbErr) { console.warn('Invoice save error:', dbErr); }
 
         // Success — show the payment link
         showSendSuccess(data.paymentUrl, name, totalText, email);

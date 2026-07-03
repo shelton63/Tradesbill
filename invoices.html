@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
+  <script src="db.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { overflow-x: hidden; }
@@ -282,9 +283,7 @@
   </div>
 
   <script>
-    // ── Stored statuses (persists in localStorage until Supabase invoices table is live) ──
-    var _ps = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
-    var _stored = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+    var _stored = [];
     var _payTarget = null;
 
     var BADGE = {
@@ -314,6 +313,12 @@
         var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
         var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first||last) ? (first+' '+last).trim() : r.data.user.email.split('@')[0];
       } catch(e) {}
+      await loadInvoices();
+    }
+
+    // ── Load from Supabase ──
+    async function loadInvoices() {
+      _stored = await DB.getInvoices();
       renderView();
     }
 
@@ -332,9 +337,9 @@
 
     function updateStats(invs) {
       document.getElementById('st-total').textContent = invs.length;
-      document.getElementById('st-paid').textContent = invs.filter(function(i){return (_ps[i.id]||{status:i.status}).status==='paid';}).length;
-      document.getElementById('st-unpaid').textContent = invs.filter(function(i){var s=(_ps[i.id]||{status:i.status}).status;return s==='unpaid';}).length;
-      document.getElementById('st-overdue').textContent = invs.filter(function(i){var s=(_ps[i.id]||{status:i.status}).status;return s==='overdue';}).length;
+      document.getElementById('st-paid').textContent = invs.filter(function(i){return i.status==='paid';}).length;
+      document.getElementById('st-unpaid').textContent = invs.filter(function(i){return i.status==='unpaid';}).length;
+      document.getElementById('st-overdue').textContent = invs.filter(function(i){return i.status==='overdue';}).length;
     }
 
     function renderTable(invs) {
@@ -346,7 +351,7 @@
         return;
       }
       body.innerHTML = invs.map(function(inv, idx) {
-        var status = (_ps[inv.id] || {status: inv.status || 'unpaid'}).status;
+        var status = inv.status || 'unpaid';
         var av = av_colors[idx % av_colors.length];
         var ini = (inv.customer||'?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
         return '<tr class="inv-row" data-pay-id="' + inv.id + '" data-status="' + status + '">'
@@ -370,7 +375,7 @@
       document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active');});
       el.classList.add('active');
       var filtered = status === 'all' ? _stored : _stored.filter(function(i){
-        return ((_ps[i.id]||{status:i.status||'unpaid'}).status) === status;
+        return (i.status || 'unpaid') === status;
       });
       renderTable(filtered);
     }
@@ -404,13 +409,16 @@
       el.classList.add('active');
     }
 
-    function savePayStatus() {
+    async function savePayStatus() {
       var sel = document.querySelector('.pay-status-opt.selected');
       if (!sel) return;
       var status = sel.dataset.status;
       var mb = document.querySelector('.pay-method-btn.active');
       _ps[_payTarget] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status==='partial' ? document.getElementById('pay-partial-amt').value : null };
-      localStorage.setItem('tb_pay_statuses', JSON.stringify(_ps));
+      // Save to Supabase
+      await DB.updateInvoiceStatus(_payTarget, status, mb ? mb.dataset.method : 'card', status === 'partial' ? document.getElementById('pay-partial-amt').value : null);
+      // Update local array
+      _stored = _stored.map(function(i){ return i.id === _payTarget ? {...i, status: status} : i; });
       // Update badge in table
       var row = document.querySelector('[data-pay-id="' + _payTarget + '"]');
       if (row) {
