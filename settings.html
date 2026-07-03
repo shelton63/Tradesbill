@@ -5,128 +5,176 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings — TradesBill</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: hidden; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
     .db { display: flex; min-height: 100vh; }
     .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); text-decoration: none; }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
     .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
     .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; }
+    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
+    .sb-user:hover { background: rgba(255,255,255,0.08); }
     .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
     .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
     .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; }
+    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-save { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; }
-    .btn-save:hover { background: #0A2540; }
-    .content { padding: 24px 28px; }
-    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 22px; }
-    .card-full { grid-column: 1 / -1; }
-    .card-title { font-size: 14px; font-weight: 600; color: #061A30; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .content { padding: 24px 28px; max-width: 760px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; background: #F0EFEA; border-radius: 10px; padding: 3px; margin-bottom: 24px; width: fit-content; }
+    .tab { padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #6B6A65; cursor: pointer; border: none; background: transparent; font-family: inherit; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .tab.active { background: #fff; color: #061A30; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .tab i { font-size: 15px; }
+
+    /* Cards */
+    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #061A30; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
     .card-title i { font-size: 18px; color: #0A2540; }
-    .card-desc { font-size: 12px; color: #8B8A84; margin-bottom: 18px; }
-    .logo-upload { border: 1.5px dashed #E5E3DC; border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; background: #F8F7F3; transition: all 0.15s; }
-    .logo-upload:hover { border-color: #0A2540; background: #EEF3F8; }
-    .logo-preview { width: 80px; height: 80px; border-radius: 10px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; overflow: hidden; }
-    .logo-preview i { font-size: 32px; color: #0A2540; }
-    .logo-preview img { width: 80px; height: 80px; object-fit: contain; display: none; }
-    .logo-upload p { font-size: 13px; color: #6B6A65; margin-bottom: 4px; }
-    .logo-upload span { font-size: 11px; color: #8B8A84; }
-    .upload-btn { display: inline-flex; align-items: center; gap: 6px; background: #0A2540; color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer; margin-top: 12px; }
-    .upload-btn:hover { background: #0A2540; }
+    .card-desc { font-size: 13px; color: #6B6A65; margin-bottom: 18px; line-height: 1.5; }
     .field { margin-bottom: 14px; }
     .field:last-child { margin-bottom: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
-    .field textarea { resize: vertical; min-height: 72px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 14px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
+    .field textarea { min-height: 70px; resize: vertical; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #FAFAF8; }
+    .btn-save { padding: 10px 22px; border-radius: 9px; border: none; background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-save:hover { background: #061A30; }
+    .btn-save.saved { background: #1D9E75; }
+    .btn-secondary { padding: 10px 18px; border-radius: 9px; border: 1px solid #E5E3DC; background: #fff; color: #061A30; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-secondary:hover { background: #F0EFEA; }
+    .btn-danger { padding: 10px 18px; border-radius: 9px; border: 1px solid #F09595; background: #FDEDED; color: #D14343; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+    /* Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #F0EFEA; }
     .toggle-row:last-child { border-bottom: none; }
-    .toggle-label p { font-size: 13px; color: #1A1A18; }
-    .toggle-label span { font-size: 11px; color: #8B8A84; }
-    .toggle { width: 42px; height: 24px; border-radius: 14px; background: #0A2540; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
-    .toggle.off { background: #E5E3DC; }
-    .toggle-dot { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; right: 3px; transition: right 0.15s, left 0.15s; }
-    .toggle.off .toggle-dot { right: auto; left: 3px; }
-    .stripe-connected { display: flex; align-items: center; gap: 10px; background: #E1F5EE; border: 1px solid #9FE1CB; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
-    .stripe-connected i { color: #1D9E75; font-size: 20px; }
-    .stripe-connected p { font-size: 13px; font-weight: 600; color: #085041; }
-    .stripe-connected span { font-size: 11px; color: #0F6E56; }
-    .danger-card { border-color: #F09595; }
-    .btn-danger { background: transparent; color: #D14343; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid #F09595; cursor: pointer; }
-    .btn-danger:hover { background: #FCEBEB; }
+    .toggle-label p { font-size: 13px; font-weight: 600; color: #061A30; margin-bottom: 2px; }
+    .toggle-label span { font-size: 12px; color: #8B8A84; }
+    .toggle { width: 38px; height: 21px; border-radius: 11px; background: #0A2540; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s; }
+    .toggle.off { background: #D3D1C7; }
+    .toggle-dot { width: 17px; height: 17px; border-radius: 50%; background: #fff; position: absolute; top: 2px; right: 2px; transition: right 0.2s, left 0.2s; }
+    .toggle.off .toggle-dot { right: auto; left: 2px; }
+
+    /* Logo upload */
+    .logo-upload { border: 1.5px dashed #D3D1C7; border-radius: 12px; padding: 18px; text-align: center; cursor: pointer; background: #F8F7F3; margin-bottom: 16px; transition: all 0.15s; }
+    .logo-upload:hover { border-color: #0A2540; background: #EEF3F8; }
+    .logo-preview { width: 56px; height: 56px; border-radius: 10px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; overflow: hidden; }
+    .logo-preview i { font-size: 24px; color: #0A2540; }
+    .logo-preview img { width: 56px; height: 56px; object-fit: contain; display: none; }
+
+    /* Stripe card */
+    .stripe-card { background: #0A2540; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+
+    /* Plan cards */
+    .plan-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .plan-card { border: 1.5px solid #E5E3DC; border-radius: 14px; padding: 18px; position: relative; cursor: pointer; transition: border-color 0.15s; }
+    .plan-card:hover { border-color: #0A2540; }
+    .plan-card.current { border-color: #0A2540; background: #F4F7FB; }
+    .plan-card.popular { border-color: #0A2540; }
+    .popular-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #0A2540; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .plan-name { font-size: 14px; font-weight: 700; color: #061A30; margin-bottom: 4px; }
+    .plan-price { font-size: 22px; font-weight: 700; color: #061A30; letter-spacing: -0.01em; margin-bottom: 10px; }
+    .plan-price span { font-size: 13px; font-weight: 400; color: #8B8A84; }
+    .plan-feature { font-size: 12px; color: #6B6A65; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+    .plan-feature i { font-size: 13px; color: #1D9E75; flex-shrink: 0; }
+    .plan-btn { width: 100%; margin-top: 14px; padding: 9px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; border: 1.5px solid #0A2540; background: #fff; color: #0A2540; }
+    .plan-btn.primary { background: #0A2540; color: #fff; border: none; }
+    .plan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .plan-current-badge { display: inline-flex; align-items: center; gap: 4px; background: #E1F5EE; color: #0F6E56; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; margin-bottom: 8px; }
+
+    /* Team */
+    .user-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F0EFEA; }
+    .user-row:last-child { border-bottom: none; }
+    .user-av { width: 34px; height: 34px; border-radius: 50%; background: #EEF3F8; color: #0A2540; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-info { flex: 1; }
+    .user-name { font-size: 13px; font-weight: 600; color: #061A30; }
+    .user-role { font-size: 12px; color: #8B8A84; }
+    .role-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; background: #EEF3F8; color: #0A2540; }
+
+    /* Trial banner */
+    .trial-banner { background: linear-gradient(135deg, #0A2540 0%, #163d6b 100%); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .trial-left i { font-size: 22px; color: #5DCAA5; margin-bottom: 6px; display: block; }
+    .trial-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+    .trial-sub { font-size: 13px; color: #8FA8C2; }
+    .trial-days { font-size: 28px; font-weight: 700; color: #5DCAA5; letter-spacing: -0.02em; }
+    .trial-days-label { font-size: 11px; color: #8FA8C2; margin-top: 2px; }
+
+    /* Cancel flow */
+    .cancel-reason { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+    .reason-opt { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1.5px solid #E5E3DC; border-radius: 10px; cursor: pointer; font-size: 13px; color: #1A1A18; }
+    .reason-opt:hover { border-color: #0A2540; background: #F4F7FB; }
+    .reason-opt input { flex-shrink: 0; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.45); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 18px 22px; border-bottom: 1px solid #F0EFEA; display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #061A30; }
+    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #F0EFEA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B6A65; font-size: 18px; }
+    .modal-body { padding: 22px; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid #F0EFEA; display: flex; gap: 10px; justify-content: flex-end; }
+    .discount-banner { background: linear-gradient(135deg, #0A2540, #163d6b); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px; }
+
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
     @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
       .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
+      .mob-logo { display: flex; align-items: center; gap: 7px; text-decoration: none; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-save { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
       .content { padding: 14px 16px; }
-      .settings-grid { grid-template-columns: 1fr; }
-      .card-full { grid-column: 1; }
+      .plan-grid { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; }
+      .tabs { overflow-x: auto; width: 100%; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i { color: #0A2540; }
-      .nav-item.active span { color: #0A2540; font-weight: 600; }
+      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
       .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
       .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; cursor: pointer; text-decoration: none; }
+      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
       .plus-menu-item:last-child { border-bottom: none; }
       .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
       .plus-menu-icon i { color: #0A2540; font-size: 17px; }
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
   </style>
 </head>
 <body>
   <div class="mobile-topbar">
-    <a href="dashboard.html" class="mob-logo" style="text-decoration:none"><i class="ti ti-file-invoice"></i><span>TradesBill</span></div>
-    <button class="mob-save" onclick="saveSettings()">Save</button>
+    <a href="dashboard.html" class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></a>
   </div>
 
   <div class="db">
     <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></a>
+      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></a>
       <div class="sb-nav">
         <div class="sb-section-label">Main</div>
         <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
@@ -140,97 +188,213 @@
         <div class="sb-section-label">Account</div>
         <a href="settings.html" class="sb-item active"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user" style="text-decoration:none"><div class="sb-avatar" id="sb-avatar">..</div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan" id="sb-user-plan">Free plan</div></div></a></div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan" id="sb-user-plan">Free trial</div></div></a></div>
     </nav>
 
     <div class="main">
-      <div class="topbar">
-        <h1>Settings</h1>
-        <button class="btn-save" onclick="saveSettings()">Save changes</button>
-      </div>
+      <div class="topbar"><h1>Settings</h1></div>
       <div class="content">
-        <div class="settings-grid">
 
-          <div class="card card-full">
-            <div class="card-title"><i class="ti ti-building"></i> Business details</div>
-            <div class="card-desc">This appears on all your invoices and quotes</div>
-            <div class="field-row">
-              <div class="field"><label>Business name</label><input type="text" id="field-business" placeholder="e.g. Hughes Plumbing Ltd" /></div>
-              <div class="field"><label>Trade type</label><select><option>Plumber</option><option>Builder</option><option>Electrician</option><option>Roofer</option><option>Carpenter</option><option>Other</option></select></div>
-            </div>
-            <div class="field-row">
-              <div class="field"><label>Email address</label><input type="email" id="field-email" placeholder="your@email.com" /></div>
-              <div class="field"><label>Phone number</label><input type="tel" id="field-phone" placeholder="e.g. 07700 900123" /></div>
-            </div>
-            <div class="field"><label>Business address</label><textarea id="field-address" placeholder="Your business address"></textarea></div>
-            <div class="field-row">
-              <div class="field"><label>VAT number</label><input type="text" id="field-vat" placeholder="GB 123 456 789 (optional)" /></div>
-              <div class="field"><label>Company number</label><input type="text" id="field-company-num" placeholder="12345678 (optional)" /></div>
-            </div>
+        <!-- Trial banner -->
+        <div class="trial-banner" id="trial-banner" style="display:none">
+          <div class="trial-left">
+            <i class="ti ti-clock"></i>
+            <div class="trial-title">Free trial active</div>
+            <div class="trial-sub">Upgrade to keep full access after your trial ends</div>
           </div>
+          <div style="text-align:center">
+            <div class="trial-days" id="trial-days">14</div>
+            <div class="trial-days-label">days left</div>
+          </div>
+          <button onclick="showTab('plan')" style="background:#5DCAA5;color:#061A30;border:none;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Upgrade now</button>
+        </div>
 
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('business')" id="tab-business"><i class="ti ti-building"></i> Business</button>
+          <button class="tab" onclick="showTab('payments')" id="tab-payments"><i class="ti ti-credit-card"></i> Payments</button>
+          <button class="tab" onclick="showTab('team')" id="tab-team"><i class="ti ti-users"></i> Team</button>
+          <button class="tab" onclick="showTab('security')" id="tab-security"><i class="ti ti-shield-lock"></i> Security</button>
+          <button class="tab" onclick="showTab('plan')" id="tab-plan"><i class="ti ti-star"></i> Plan</button>
+        </div>
+
+        <!-- BUSINESS TAB -->
+        <div id="section-business">
           <div class="card">
-            <div class="card-title"><i class="ti ti-photo"></i> Business logo</div>
-            <div class="card-desc">Your logo appears on every invoice you send</div>
+            <div class="card-title"><i class="ti ti-building"></i> Business details</div>
+            <div class="card-desc">This appears on every invoice you send.</div>
             <div class="logo-upload" onclick="document.getElementById('logo-input').click()">
-              <div class="logo-preview">
-                <i class="ti ti-building" id="logo-icon"></i>
-                <img id="logo-img" alt="Business logo" />
-              </div>
-              <p id="logo-text">Click to upload your logo</p>
-              <span>PNG, JPG or SVG · Max 2MB</span><br/>
-              <button class="upload-btn" type="button"><i class="ti ti-upload"></i> Choose file</button>
+              <div class="logo-preview"><i class="ti ti-building" id="logo-icon"></i><img id="logo-img" alt="Logo" /></div>
+              <p id="logo-text" style="font-size:13px;font-weight:600;color:#6B6A65">Add your business logo</p>
+              <span style="font-size:11px;color:#8B8A84">PNG or JPG · click to upload</span>
             </div>
             <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="previewLogo(event)" />
-          </div>
-
-          <div class="card">
-            <div class="card-title"><i class="ti ti-file-invoice"></i> Invoice preferences</div>
-            <div class="card-desc">Default settings applied to every new invoice</div>
-            <div class="field"><label>Invoice prefix</label><input type="text" value="INV-" /></div>
-            
-            <div class="field"><label>Default VAT rate</label><select><option>0%</option><option selected>20% (Standard)</option><option>5% (Reduced)</option></select></div>
-            <div class="field"><label>Invoice footer note</label><textarea id="field-footer" placeholder="e.g. Thank you for your business! We appreciate your payment."></textarea></div>
-          </div>
-
-          <div class="card card-full">
-            <div class="card-title"><i class="ti ti-bell"></i> Notifications & reminders</div>
-            <div class="card-desc">Automate your chasing so you never have to send an awkward text</div>
-            <div class="toggle-row"><div class="toggle-label"><p>Email me when an invoice is paid</p><span>Get notified the moment money lands</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
-            
-            
-            <div class="toggle-row"><div class="toggle-label"><p>Weekly earnings summary</p><span>Email every Monday with your week's numbers</span></div><div class="toggle off" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
-          </div>
-
-          <div class="card">
-            <div class="card-title"><i class="ti ti-credit-card"></i> Stripe payments</div>
-            <div class="card-desc">Accept card payments directly into your bank account</div>
-
-            <div id="stripe-status-wrap">
-              <!-- Populated by loadUser() based on real Supabase metadata -->
+            <div class="field"><label>Business name</label><input type="text" id="field-business" placeholder="e.g. Hughes Plumbing Ltd" /></div>
+            <div class="field"><label>Trade type</label>
+              <select id="field-trade">
+                <option value="">Select your trade...</option>
+                <option>Plumber</option><option>Builder</option><option>Electrician</option>
+                <option>Roofer</option><option>Carpenter</option><option>Painter & Decorator</option>
+                <option>Gas Engineer</option><option>Landscaper</option><option>General Contractor</option><option>Other</option>
+              </select>
             </div>
+            <div class="field-row">
+              <div class="field"><label>Phone</label><input type="tel" id="field-phone" placeholder="07700 900123" /></div>
+              <div class="field"><label>VAT number <span style="font-weight:400;color:#8B8A84">(optional)</span></label><input type="text" id="field-vat" placeholder="GB 123 456 789" /></div>
+            </div>
+            <div class="field"><label>Business address</label><textarea id="field-address" placeholder="14 Elm Street, Manchester, M1 4BT"></textarea></div>
+            <div class="field"><label>Email address</label><input type="email" id="field-email" placeholder="your@email.com" /></div>
+            <div class="field"><label>Invoice footer note <span style="font-weight:400;color:#8B8A84">(optional)</span></label><textarea id="field-footer" placeholder="e.g. Thank you for your business!"></textarea></div>
+            <div class="btn-row"><button class="btn-save" id="btn-save-biz" onclick="saveBusiness()">Save changes</button></div>
+          </div>
+        </div>
 
+        <!-- PAYMENTS TAB -->
+        <div id="section-payments" style="display:none">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-brand-stripe"></i> Stripe payments</div>
+            <div class="card-desc">Accept card payments, Apple Pay and bank transfer directly into your account.</div>
+            <div id="stripe-status-wrap"></div>
             <div id="stripe-toggles" style="display:none">
               <div class="toggle-row"><div class="toggle-label"><p>Accept Apple Pay & Google Pay</p><span>Faster checkout for customers</span></div><div class="toggle" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
               <div class="toggle-row"><div class="toggle-label"><p>Pass Stripe fee to customer</p><span>Adds ~1.5% to invoice total</span></div><div class="toggle off" onclick="this.classList.toggle('off')"><div class="toggle-dot"></div></div></div>
             </div>
           </div>
-
           <div class="card">
-            <div class="card-title"><i class="ti ti-lock"></i> Account & security</div>
-            <div class="card-desc">Manage your login and password</div>
-            <div class="field"><label>Email address</label><input type="email" id="field-account-email" placeholder="your@email.com" /></div>
-            <div class="field"><label>New password</label><input type="password" placeholder="Leave blank to keep current" /></div>
-            <div class="field"><label>Confirm new password</label><input type="password" placeholder="Repeat new password" /></div>
+            <div class="card-title"><i class="ti ti-building-bank"></i> Bank transfer details</div>
+            <div class="card-desc">Appear on invoices as an alternative payment option.</div>
+            <div class="field"><label>Account name</label><input type="text" id="field-acc-name" placeholder="Hughes Plumbing Ltd" /></div>
+            <div class="field-row">
+              <div class="field"><label>Sort code</label><input type="text" id="field-sort" placeholder="12-34-56" maxlength="8" inputmode="numeric" oninput="fmtSort(this)" /></div>
+              <div class="field"><label>Account number</label><input type="text" id="field-accnum" placeholder="12345678" maxlength="8" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'').slice(0,8)" /></div>
+            </div>
+            <div class="btn-row"><button class="btn-save" onclick="saveBank()">Save bank details</button></div>
           </div>
-
-          <div class="card card-full danger-card">
-            <div class="card-title"><i class="ti ti-alert-triangle" style="color:#D14343"></i> Danger zone</div>
-            <div class="card-desc">These actions are permanent and cannot be undone</div>
-            <button class="btn-danger">Delete my account and all data</button>
-          </div>
-
         </div>
+
+        <!-- TEAM TAB -->
+        <div id="section-team" style="display:none">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-users"></i> Team members</div>
+            <div class="card-desc" id="team-desc">Add team members who can access TradesBill.</div>
+            <div id="user-list"></div>
+            <div class="btn-row">
+              <button class="btn-save" id="btn-invite" onclick="openInviteModal()"><i class="ti ti-user-plus"></i> Invite team member</button>
+            </div>
+            <div id="team-limit-note" style="margin-top:12px;padding:10px 13px;background:#FBF3E3;border-radius:9px;font-size:12px;color:#C28A1E;display:none">
+              <i class="ti ti-alert-circle"></i> You've reached your plan's user limit. <a href="#" onclick="showTab('plan'); return false;" style="color:#C28A1E;font-weight:700">Upgrade your plan</a> to add more.
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY TAB -->
+        <div id="section-security" style="display:none">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-lock"></i> Change password</div>
+            <div class="card-desc">Choose a strong password of at least 8 characters.</div>
+            <div class="field"><label>New password</label><input type="password" id="field-newpw" placeholder="New password" /></div>
+            <div class="field"><label>Confirm new password</label><input type="password" id="field-confirmpw" placeholder="Confirm password" /></div>
+            <div id="pw-msg" style="font-size:13px;margin-top:8px;display:none"></div>
+            <div class="btn-row"><button class="btn-save" onclick="changePassword()">Update password</button></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-shield-check"></i> Two-factor authentication</div>
+            <div class="card-desc">Use Google Authenticator to add an extra layer of security to your account.</div>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <p>Enable 2FA with Google Authenticator</p>
+                <span>Scan a QR code with the Google Authenticator app</span>
+              </div>
+              <div class="toggle off" id="toggle-2fa" onclick="toggle2FA()"><div class="toggle-dot"></div></div>
+            </div>
+            <div id="qr-section" style="display:none;margin-top:16px;text-align:center">
+              <div style="background:#F0EFEA;border-radius:12px;padding:24px;display:inline-block;margin-bottom:12px">
+                <i class="ti ti-qrcode" style="font-size:80px;color:#0A2540"></i>
+              </div>
+              <p style="font-size:13px;color:#6B6A65;margin-bottom:12px">Scan this QR code with Google Authenticator, then enter the 6-digit code below to confirm.</p>
+              <div style="display:flex;gap:8px;max-width:280px;margin:0 auto">
+                <input type="text" id="field-2fa-code" placeholder="000000" maxlength="6" style="flex:1;padding:10px;border:1px solid #E5E3DC;border-radius:9px;font-size:16px;text-align:center;letter-spacing:4px;font-family:inherit" />
+                <button onclick="verify2FA()" style="background:#0A2540;color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">Verify</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-logout"></i> Sessions</div>
+            <div class="card-desc">Sign out of all devices if you think your account has been compromised.</div>
+            <div class="btn-row">
+              <button class="btn-secondary" onclick="signOutAll()"><i class="ti ti-logout"></i> Sign out all devices</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAN TAB -->
+        <div id="section-plan" style="display:none">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-star"></i> Your plan</div>
+            <div class="card-desc">Upgrade anytime. Cancel or downgrade whenever you want — no lock-in.</div>
+
+            <div class="plan-grid">
+              <!-- Starter -->
+              <div class="plan-card" id="plan-starter">
+                <div class="plan-name">Starter</div>
+                <div class="plan-price">£29<span>/month</span></div>
+                <div class="plan-feature"><i class="ti ti-check"></i> 2 users</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> 200 invoices/month</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Full CRM</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Jobs & calendar</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Email support</div>
+                <button class="plan-btn" id="btn-starter" onclick="upgradePlan('starter', 29)">Get Starter</button>
+              </div>
+
+              <!-- Pro — Most Popular -->
+              <div class="plan-card popular" id="plan-pro" style="padding-top:26px">
+                <div class="popular-badge">⭐ Most popular</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">£79<span>/month</span></div>
+                <div class="plan-feature"><i class="ti ti-check"></i> 10 users</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Unlimited invoices</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Unlimited customers</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Auto reminders</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Priority support</div>
+                <button class="plan-btn primary" id="btn-pro" onclick="upgradePlan('pro', 79)">Get Pro</button>
+              </div>
+
+              <!-- Business -->
+              <div class="plan-card" id="plan-business">
+                <div class="plan-name">Business</div>
+                <div class="plan-price">£149<span>/month</span></div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Unlimited users</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Everything in Pro</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Priority support</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Future AI features</div>
+                <div class="plan-feature"><i class="ti ti-check"></i> Dedicated account manager</div>
+                <button class="plan-btn" id="btn-business" onclick="upgradePlan('business', 149)">Get Business</button>
+              </div>
+            </div>
+
+            <div style="background:#EEF3F8;border-radius:10px;padding:12px 14px;font-size:12px;color:#0A2540;display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <i class="ti ti-shield-check" style="font-size:16px;flex-shrink:0"></i>
+              Pay securely by card, Apple Pay or Google Pay · Cancel anytime · No lock-in contracts
+            </div>
+          </div>
+
+          <div class="card" id="cancel-section" style="display:none">
+            <div class="card-title" style="color:#D14343"><i class="ti ti-alert-circle" style="color:#D14343"></i> Cancel or downgrade</div>
+            <div class="card-desc">We're sorry to see you go. Before you leave, can you tell us why?</div>
+            <div class="cancel-reason" id="cancel-reasons">
+              <label class="reason-opt"><input type="radio" name="reason" value="too_expensive" /> Too expensive</label>
+              <label class="reason-opt"><input type="radio" name="reason" value="missing_features" /> Missing features I need</label>
+              <label class="reason-opt"><input type="radio" name="reason" value="not_using" /> Not using it enough</label>
+              <label class="reason-opt"><input type="radio" name="reason" value="switching" /> Switching to another tool</label>
+              <label class="reason-opt"><input type="radio" name="reason" value="other" /> Other reason</label>
+            </div>
+            <div class="btn-row">
+              <button class="btn-secondary" onclick="offerDiscount()">Continue cancellation</button>
+              <button class="btn-save" onclick="document.getElementById('cancel-section').style.display='none'">Keep my plan</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <nav class="bottom-nav">
@@ -249,116 +413,313 @@
     </div>
   </div>
 
+  <!-- INVITE MODAL -->
+  <div class="modal-overlay" id="invite-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Invite team member</div>
+        <button class="modal-close" onclick="closeInvite()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label>Email address</label><input type="email" id="invite-email" placeholder="colleague@email.com" /></div>
+        <div class="field"><label>Role</label>
+          <select id="invite-role">
+            <option value="member">Member — can create invoices and view customers</option>
+            <option value="admin">Admin — full access except billing</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeInvite()">Cancel</button>
+        <button class="btn-save" onclick="sendInvite()">Send invite</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCOUNT MODAL -->
+  <div class="modal-overlay" id="discount-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Wait — here's a special offer</div>
+        <button class="modal-close" onclick="document.getElementById('discount-modal').classList.remove('open')"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="discount-banner">
+          <div style="font-size:28px;font-weight:700;color:#5DCAA5;margin-bottom:4px">30% OFF</div>
+          <div style="font-size:14px;color:#fff;margin-bottom:4px">for the next 2 months</div>
+          <div style="font-size:12px;color:#8FA8C2">No commitment — cancel anytime after</div>
+        </div>
+        <p style="font-size:13px;color:#6B6A65;line-height:1.6;margin-bottom:16px">We'd hate to lose you. Stay on your current plan for 30% off for the next 2 months — then it goes back to the normal price, or you can cancel anytime.</p>
+        <div class="btn-row" style="flex-direction:column">
+          <button class="btn-save" style="width:100%" onclick="acceptDiscount()">Yes, I'll take 30% off</button>
+          <button class="btn-secondary" style="width:100%" onclick="confirmCancel()">No thanks, cancel my plan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function previewLogo(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        document.getElementById('logo-icon').style.display = 'none';
-        const img = document.getElementById('logo-img');
-        img.src = ev.target.result;
-        img.style.display = 'block';
-        document.getElementById('logo-text').textContent = 'Logo uploaded — click to change';
-      };
-      reader.readAsDataURL(file);
-    }
-    function saveSettings() {
-      const btns = document.querySelectorAll('.btn-save, .mob-save');
-      btns.forEach(b => { b.textContent = 'Saved!'; b.style.background = '#1D9E75'; });
-      setTimeout(() => {
-        document.querySelectorAll('.btn-save').forEach(b => { b.textContent = 'Save changes'; b.style.background = '#0A2540'; });
-        document.querySelectorAll('.mob-save').forEach(b => { b.textContent = 'Save'; b.style.background = ''; });
-      }, 2000);
-    }
+    var _meta = {};
+    var _plan = 'trial';
+    var PLAN_LIMITS = { trial: 2, starter: 2, pro: 10, business: 999 };
+    var PLAN_NAMES = { trial: 'Free trial', starter: 'Starter', pro: 'Pro', business: 'Business' };
 
+    // ── Auth ──
     async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) { window.location.href = 'login.html'; return; }
+      try {
+        var r = await supabase.auth.getUser();
+        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
+        var user = r.data.user;
+        _meta = user.user_metadata || {};
+        _plan = _meta.plan || 'trial';
 
-      const user = data.user;
-      const meta = user.user_metadata || {};
-      const first = meta.first_name || meta.given_name || '';
-      const last = meta.last_name || meta.family_name || '';
-      const fullName = (first || last) ? (first + ' ' + last).trim() : (user.email ? user.email.split('@')[0] : '');
-      const ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (user.email ? user.email.charAt(0).toUpperCase() : '?');
+        var first = _meta.first_name || _meta.given_name || '';
+        var last  = _meta.last_name  || _meta.family_name || '';
+        var fullName = (first||last) ? (first+' '+last).trim() : (user.email ? user.email.split('@')[0] : '');
+        var ini = ((first.charAt(0))+(last.charAt(0))).toUpperCase() || (user.email ? user.email.charAt(0).toUpperCase() : '?');
+        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
+        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
+        var pl = document.getElementById('sb-user-plan'); if (pl) pl.textContent = PLAN_NAMES[_plan] || 'Free trial';
 
-      // Sidebar
-      const av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-      const nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = fullName;
-      const plan = document.getElementById('sb-user-plan');
-      if (plan) plan.textContent = meta.plan === 'pro' ? 'Pro plan' : meta.plan === 'business' ? 'Business plan' : 'Free plan';
-
-      // Business details — pull from onboarding metadata
-      function fill(id, value) { const el = document.getElementById(id); if (el && value) el.value = value; }
-      fill('field-business', meta.business_name);
-      fill('field-email', user.email);
-      fill('field-phone', meta.phone);
-      fill('field-vat', meta.vat_number);
-      fill('field-company-num', meta.company_number);
-      fill('field-account-email', user.email);
-      if (meta.business_address) {
-        const el = document.getElementById('field-address');
-        if (el) el.value = meta.business_address;
-      }
-
-      // Trade type select
-      if (meta.trade_type) {
-        const sel = document.querySelector('select');
-        if (sel) sel.value = meta.trade_type;
-      }
-
-      // Logo
-      if (meta.logo_url) {
-        const icon = document.getElementById('logo-icon'); if (icon) icon.style.display = 'none';
-        const img = document.getElementById('logo-img'); if (img) { img.src = meta.logo_url; img.style.display = 'block'; }
-        const txt = document.getElementById('logo-text'); if (txt) txt.textContent = 'Logo added — click to change';
-      }
-
-      // Stripe status — render correct card based on real metadata
-      const stripeWrap = document.getElementById('stripe-status-wrap');
-      const stripeToggles = document.getElementById('stripe-toggles');
-      if (stripeWrap) {
-        if (meta.stripe_connected) {
-          // Connected — show green card and toggles
-          stripeWrap.innerHTML = `
-            <div style="display:flex;align-items:center;gap:10px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:13px 14px;margin-bottom:14px">
-              <i class="ti ti-circle-check" style="color:#1D9E75;font-size:22px;flex-shrink:0"></i>
-              <div>
-                <p style="font-size:13px;font-weight:700;color:#085041">Stripe connected</p>
-                <span style="font-size:12px;color:#0F6E56">Payments go straight to your bank</span>
-              </div>
-              <a href="onboarding-payments.html" style="margin-left:auto;font-size:12px;color:#0F6E56;font-weight:700;text-decoration:none;white-space:nowrap">Manage →</a>
-            </div>`;
-          if (stripeToggles) stripeToggles.style.display = 'block';
-        } else {
-          // Not connected — show the TradesBill × Stripe prompt
-          stripeWrap.innerHTML = `
-            <div style="background:#0A2540;border-radius:12px;padding:18px;margin-bottom:4px">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-                <div style="width:38px;height:38px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                  <i class="ti ti-brand-stripe" style="color:#fff;font-size:20px"></i>
-                </div>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid into your bank</div>
-                  <div style="font-size:12px;color:#8FA8C2;line-height:1.4">TradesBill partners with Stripe so your customers can pay by card, Apple Pay or bank transfer — and the money lands straight in your account.</div>
-                </div>
-              </div>
-              <a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:700">
-                <i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it's free
-              </a>
-            </div>`;
-          if (stripeToggles) stripeToggles.style.display = 'none';
+        // Pre-fill business fields
+        function fill(id, val) { var el=document.getElementById(id); if(el&&val) el.value=val; }
+        fill('field-business', _meta.business_name);
+        fill('field-email', user.email);
+        fill('field-phone', _meta.phone);
+        fill('field-vat', _meta.vat_number);
+        fill('field-address', _meta.business_address);
+        fill('field-trade', _meta.trade_type);
+        fill('field-acc-name', _meta.bank_account_name);
+        fill('field-sort', _meta.bank_sort_code);
+        fill('field-accnum', _meta.bank_account_number);
+        if (_meta.logo_url) {
+          document.getElementById('logo-icon').style.display = 'none';
+          var img = document.getElementById('logo-img'); img.src = _meta.logo_url; img.style.display = 'block';
+          document.getElementById('logo-text').textContent = 'Logo added — click to change';
         }
-      }
+
+        // Trial countdown
+        if (_plan === 'trial') {
+          var signupDate = new Date(user.created_at);
+          var now = new Date();
+          var daysUsed = Math.floor((now - signupDate) / (1000*60*60*24));
+          var daysLeft = Math.max(0, 14 - daysUsed);
+          var banner = document.getElementById('trial-banner');
+          if (banner) { banner.style.display = 'flex'; }
+          var daysEl = document.getElementById('trial-days');
+          if (daysEl) daysEl.textContent = daysLeft;
+        }
+
+        // Stripe status
+        var wrap = document.getElementById('stripe-status-wrap');
+        var toggles = document.getElementById('stripe-toggles');
+        if (wrap) {
+          if (_meta.stripe_connected) {
+            wrap.innerHTML = '<div style="display:flex;align-items:center;gap:10px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:13px 14px;margin-bottom:14px"><i class="ti ti-circle-check" style="color:#1D9E75;font-size:22px;flex-shrink:0"></i><div><p style="font-size:13px;font-weight:700;color:#085041">Stripe connected</p><span style="font-size:12px;color:#0F6E56">Payments go straight to your bank</span></div><a href="onboarding-payments.html" style="margin-left:auto;font-size:12px;color:#0F6E56;font-weight:700;text-decoration:none">Manage →</a></div>';
+            if (toggles) toggles.style.display = 'block';
+          } else {
+            wrap.innerHTML = '<div style="background:#0A2540;border-radius:12px;padding:18px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:38px;height:38px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-brand-stripe" style="color:#fff;font-size:20px"></i></div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid into your bank</div><div style="font-size:12px;color:#8FA8C2;line-height:1.4">TradesBill partners with Stripe so your customers can pay by card, Apple Pay or bank transfer.</div></div></div><a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:700"><i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it\'s free</a></div>';
+          }
+        }
+
+        // Plan tab — mark current plan
+        updatePlanUI();
+
+        // Team tab
+        renderTeam();
+
+      } catch(e) { console.error(e); }
     }
     loadUser();
 
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        const m = document.getElementById('plus-menu');
-        if (m) m.classList.remove('open');
+    // ── Tabs ──
+    function showTab(name) {
+      ['business','payments','team','security','plan'].forEach(function(t) {
+        document.getElementById('section-'+t).style.display = t===name ? 'block' : 'none';
+        document.getElementById('tab-'+t).classList.toggle('active', t===name);
+      });
+    }
+
+    // ── Logo ──
+    var logoDataUrl = null;
+    function previewLogo(e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        logoDataUrl = ev.target.result;
+        document.getElementById('logo-icon').style.display = 'none';
+        var img = document.getElementById('logo-img'); img.src = logoDataUrl; img.style.display = 'block';
+        document.getElementById('logo-text').textContent = 'Logo added — click to change';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ── Save business ──
+    async function saveBusiness() {
+      var btn = document.getElementById('btn-save-biz');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      var data = {
+        business_name: document.getElementById('field-business').value.trim(),
+        trade_type: document.getElementById('field-trade').value,
+        phone: document.getElementById('field-phone').value.trim(),
+        vat_number: document.getElementById('field-vat').value.trim(),
+        business_address: document.getElementById('field-address').value.trim(),
+      };
+      if (logoDataUrl) data.logo_url = logoDataUrl;
+      await supabase.auth.updateUser({ data: data });
+      btn.textContent = 'Saved!'; btn.classList.add('saved');
+      setTimeout(function() { btn.textContent = 'Save changes'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
+    }
+
+    // ── Save bank ──
+    function fmtSort(input) {
+      var d = input.value.replace(/\D/g,'').slice(0,6);
+      var f = d.match(/.{1,2}/g);
+      input.value = f ? f.join('-') : d;
+      if (d.length === 6) document.getElementById('field-accnum').focus();
+    }
+    async function saveBank() {
+      await supabase.auth.updateUser({ data: {
+        bank_account_name: document.getElementById('field-acc-name').value.trim(),
+        bank_sort_code: document.getElementById('field-sort').value.trim(),
+        bank_account_number: document.getElementById('field-accnum').value.trim()
+      }});
+      alert('Bank details saved!');
+    }
+
+    // ── Password ──
+    async function changePassword() {
+      var pw = document.getElementById('field-newpw').value;
+      var confirm = document.getElementById('field-confirmpw').value;
+      var msg = document.getElementById('pw-msg');
+      msg.style.display = 'block';
+      if (pw.length < 8) { msg.style.color='#D14343'; msg.textContent='Password must be at least 8 characters.'; return; }
+      if (pw !== confirm) { msg.style.color='#D14343'; msg.textContent='Passwords do not match.'; return; }
+      var { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) { msg.style.color='#D14343'; msg.textContent=error.message; }
+      else { msg.style.color='#1D9E75'; msg.textContent='Password updated successfully!'; document.getElementById('field-newpw').value=''; document.getElementById('field-confirmpw').value=''; }
+    }
+
+    // ── 2FA ──
+    function toggle2FA() {
+      var t = document.getElementById('toggle-2fa');
+      t.classList.toggle('off');
+      document.getElementById('qr-section').style.display = t.classList.contains('off') ? 'none' : 'block';
+    }
+    function verify2FA() {
+      var code = document.getElementById('field-2fa-code').value;
+      if (code.length === 6) { alert('2FA verified! (Connect to Supabase Auth MFA to make this live)'); document.getElementById('qr-section').style.display='none'; }
+      else { alert('Please enter a valid 6-digit code.'); }
+    }
+    async function signOutAll() {
+      await supabase.auth.signOut({ scope: 'global' });
+      window.location.href = 'login.html';
+    }
+
+    // ── Plan ──
+    function updatePlanUI() {
+      var plans = ['starter','pro','business'];
+      plans.forEach(function(p) {
+        var card = document.getElementById('plan-'+p);
+        var btn = document.getElementById('btn-'+p);
+        if (!card || !btn) return;
+        if (_plan === p) {
+          card.classList.add('current');
+          btn.innerHTML = '<span class="plan-current-badge"><i class="ti ti-check" style="font-size:12px"></i> Current plan</span>';
+          btn.disabled = true;
+          btn.className = 'plan-btn';
+          document.getElementById('cancel-section').style.display = 'block';
+        } else {
+          card.classList.remove('current');
+          btn.disabled = false;
+        }
+      });
+    }
+
+    async function upgradePlan(plan, price) {
+      window.location.href = 'upgrade.html#plan-' + plan;
+    }
+
+    // ── Cancel / discount ──
+    function offerDiscount() {
+      document.getElementById('discount-modal').classList.add('open');
+    }
+    function acceptDiscount() {
+      document.getElementById('discount-modal').classList.remove('open');
+      // TODO: Pass coupon ID to Stripe once created in Stripe Dashboard
+      // Create a coupon in Stripe: 30% off, 2 repeating months, code e.g. STAY30
+      window.location.href = 'upgrade.html?discount=STAY30';
+    }
+    async function confirmCancel() {
+      document.getElementById('discount-modal').classList.remove('open');
+      await supabase.auth.updateUser({ data: { plan: 'free', plan_cancelled: new Date().toISOString() } });
+      _plan = 'free';
+      updatePlanUI();
+      alert('Your plan has been cancelled. You\'ll retain access until the end of your billing period.');
+    }
+
+    // ── Team ──
+    var _teamMembers = JSON.parse(localStorage.getItem('tb_team') || '[]');
+
+    function renderTeam() {
+      var limit = PLAN_LIMITS[_plan] || 2;
+      var listEl = document.getElementById('user-list');
+      var descEl = document.getElementById('team-desc');
+      var noteEl = document.getElementById('team-limit-note');
+      var btnEl  = document.getElementById('btn-invite');
+      if (descEl) descEl.textContent = 'You can have up to ' + limit + ' users on your ' + (PLAN_NAMES[_plan]||'current') + ' plan.';
+
+      // Always show the account owner
+      var owner = { name: (document.getElementById('sb-user-name')||{}).textContent||'You', role: 'Owner', ini: (document.getElementById('sb-avatar')||{}).textContent||'?' };
+      var rows = [owner].concat(_teamMembers);
+      if (listEl) {
+        listEl.innerHTML = rows.map(function(m) {
+          return '<div class="user-row">'
+            + '<div class="user-av">' + (m.ini||m.email.charAt(0).toUpperCase()) + '</div>'
+            + '<div class="user-info"><div class="user-name">' + (m.name||m.email) + '</div><div class="user-role">' + (m.email||'') + '</div></div>'
+            + '<span class="role-badge">' + (m.role||'Member') + '</span>'
+            + (m.role !== 'Owner' ? '<button onclick="removeMember(\''+m.email+'\')" style="background:none;border:none;cursor:pointer;color:#A3A29C;font-size:15px"><i class="ti ti-x"></i></button>' : '')
+            + '</div>';
+        }).join('');
       }
+
+      var atLimit = _teamMembers.length + 1 >= limit;
+      if (noteEl) noteEl.style.display = atLimit ? 'block' : 'none';
+      if (btnEl)  btnEl.disabled = atLimit;
+    }
+
+    function openInviteModal() {
+      var limit = PLAN_LIMITS[_plan] || 2;
+      if (_teamMembers.length + 1 >= limit) { alert('You\'ve reached your plan\'s user limit. Upgrade to add more team members.'); return; }
+      document.getElementById('invite-modal').classList.add('open');
+      document.getElementById('invite-email').value = '';
+    }
+    function closeInvite() { document.getElementById('invite-modal').classList.remove('open'); }
+    function sendInvite() {
+      var email = document.getElementById('invite-email').value.trim();
+      var role  = document.getElementById('invite-role').value;
+      if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+      _teamMembers.push({ email: email, role: role.charAt(0).toUpperCase()+role.slice(1), ini: email.charAt(0).toUpperCase() });
+      localStorage.setItem('tb_team', JSON.stringify(_teamMembers));
+      closeInvite();
+      renderTeam();
+      alert('Invite sent to ' + email + '! (Connect Supabase Auth to send real email invites)');
+    }
+    function removeMember(email) {
+      if (!confirm('Remove ' + email + ' from your team?')) return;
+      _teamMembers = _teamMembers.filter(function(m) { return m.email !== email; });
+      localStorage.setItem('tb_team', JSON.stringify(_teamMembers));
+      renderTeam();
+    }
+
+    // Modal click-outside
+    ['invite-modal','discount-modal'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('click', function(e) { if (e.target===this) this.classList.remove('open'); });
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-plus-wrap')) { var m=document.getElementById('plus-menu'); if(m) m.classList.remove('open'); }
     });
   </script>
 </body>

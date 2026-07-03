@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upgrade — TradesBill</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
+    .nav { background: #0A2540; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: #fff; text-decoration: none; }
+    .nav-logo i { color: #5DCAA5; }
+    .nav-back { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; display: flex; align-items: center; gap: 5px; }
+    .nav-back:hover { color: #fff; }
+    .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+    .hero { text-align: center; margin-bottom: 48px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: #E1F5EE; color: #0F6E56; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; }
+    .hero h1 { font-size: 32px; font-weight: 700; color: #061A30; margin-bottom: 10px; letter-spacing: -0.02em; }
+    .hero p { font-size: 15px; color: #6B6A65; line-height: 1.6; max-width: 480px; margin: 0 auto; }
+    .plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 48px; }
+    .plan { background: #fff; border: 1px solid #E5E3DC; border-radius: 18px; padding: 28px; position: relative; }
+    .plan.popular { border: 2px solid #0A2540; }
+    .popular-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #0A2540; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; white-space: nowrap; }
+    .plan-name { font-size: 14px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .plan-price { font-size: 36px; font-weight: 700; color: #061A30; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .plan-price span { font-size: 16px; font-weight: 500; color: #8B8A84; }
+    .plan-desc { font-size: 13px; color: #6B6A65; margin-bottom: 20px; line-height: 1.5; }
+    .plan-divider { border: none; border-top: 1px solid #F0EFEA; margin-bottom: 20px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .plan-features li { display: flex; align-items: center; gap: 9px; font-size: 13px; color: #1A1A18; }
+    .plan-features li i { font-size: 16px; color: #1D9E75; flex-shrink: 0; }
+    .plan-features li.muted { color: #A3A29C; }
+    .plan-features li.muted i { color: #D3D1C7; }
+    .btn-plan { width: 100%; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-outline { background: #fff; color: #0A2540; border: 1.5px solid #0A2540; }
+    .btn-outline:hover { background: #EEF3F8; }
+    .btn-primary { background: #0A2540; color: #fff; }
+    .btn-primary:hover { background: #061A30; }
+    .btn-loading { opacity: 0.7; cursor: not-allowed; }
+
+    /* Payment modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.45); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 20px; width: 100%; max-width: 440px; overflow: hidden; }
+    .modal-header { background: #0A2540; padding: 20px 24px; }
+    .modal-plan-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .modal-plan-price { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .modal-plan-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    .modal-body { padding: 24px; }
+    .pay-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .pay-method { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid #E5E3DC; border-radius: 12px; cursor: pointer; transition: all 0.12s; }
+    .pay-method:hover { border-color: #0A2540; background: #F4F7FB; }
+    .pay-method.selected { border-color: #0A2540; background: #EEF3F8; }
+    .pay-method-icon { width: 38px; height: 38px; border-radius: 9px; background: #F0EFEA; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pay-method-icon i { font-size: 20px; color: #0A2540; }
+    .pay-method-label { font-size: 14px; font-weight: 600; color: #061A30; }
+    .pay-method-sub { font-size: 12px; color: #8B8A84; }
+    .modal-note { display: flex; align-items: flex-start; gap: 8px; background: #F8F7F3; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 12px; color: #6B6A65; line-height: 1.5; }
+    .modal-note i { font-size: 15px; color: #8B8A84; flex-shrink: 0; margin-top: 1px; }
+    .btn-checkout { width: 100%; padding: 14px; border-radius: 11px; border: none; background: #0A2540; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-checkout:hover { background: #061A30; }
+    .modal-cancel { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #8B8A84; cursor: pointer; text-decoration: none; }
+
+    /* Retention modal */
+    .retention-modal { max-width: 420px; }
+    .retention-icon { width: 56px; height: 56px; background: #FBF3E3; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .retention-icon i { font-size: 28px; color: #C28A1E; }
+    .discount-badge { background: #0A2540; color: #fff; font-size: 22px; font-weight: 700; padding: 14px 24px; border-radius: 14px; text-align: center; margin-bottom: 14px; letter-spacing: -0.01em; }
+    .discount-sub { font-size: 13px; color: #6B6A65; text-align: center; margin-bottom: 20px; line-height: 1.6; }
+    .btn-accept-discount { width: 100%; padding: 13px; border-radius: 10px; border: none; background: #1D9E75; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+    .btn-decline { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #E5E3DC; background: #fff; color: #6B6A65; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+    /* Compare table */
+    .compare { background: #fff; border: 1px solid #E5E3DC; border-radius: 16px; overflow: hidden; margin-bottom: 48px; }
+    .compare table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .compare th { text-align: left; padding: 14px 20px; font-size: 12px; font-weight: 700; color: #8B8A84; border-bottom: 1px solid #F0EFEA; }
+    .compare th:not(:first-child) { text-align: center; }
+    .compare td { padding: 12px 20px; border-bottom: 1px solid #F0EFEA; color: #1A1A18; }
+    .compare td:not(:first-child) { text-align: center; }
+    .compare tr:last-child td { border-bottom: none; }
+    .compare .check { color: #1D9E75; font-size: 16px; }
+    .compare .cross { color: #D3D1C7; font-size: 16px; }
+    .compare .highlight { background: #FAFAF8; }
+
+    /* FAQ */
+    .faq { max-width: 600px; margin: 0 auto; }
+    .faq h2 { font-size: 22px; font-weight: 700; color: #061A30; text-align: center; margin-bottom: 24px; }
+    .faq-item { background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+    .faq-q { padding: 16px 18px; font-size: 14px; font-weight: 600; color: #061A30; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .faq-q:hover { background: #FAFAF8; }
+    .faq-a { display: none; padding: 0 18px 16px; font-size: 13px; color: #6B6A65; line-height: 1.6; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-chevron { transition: transform 0.2s; }
+
+    @media (max-width: 768px) {
+      .nav { padding: 14px 16px; }
+      .page { padding: 24px 16px 60px; }
+      .hero h1 { font-size: 24px; }
+      .plans { grid-template-columns: 1fr; }
+      .plan.popular { order: -1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="dashboard.html" class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</a>
+    <a href="dashboard.html" class="nav-back"><i class="ti ti-arrow-left"></i> Back to dashboard</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="hero">
+      <div class="hero-badge"><i class="ti ti-star"></i> Upgrade your plan</div>
+      <h1>Simple pricing for UK tradespeople</h1>
+      <p>No hidden fees. Cancel anytime. Start free — upgrade when you're ready.</p>
+    </div>
+
+    <div class="plans">
+
+      <!-- STARTER -->
+      <div class="plan" id="plan-starter">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">£29<span>/month</span></div>
+        <div class="plan-desc">Perfect for sole traders just getting started with digital invoicing.</div>
+        <hr class="plan-divider" />
+        <ul class="plan-features">
+          <li><i class="ti ti-check"></i> 200 invoices/month</li>
+          <li><i class="ti ti-check"></i> 2 users</li>
+          <li><i class="ti ti-check"></i> Full CRM & customers</li>
+          <li><i class="ti ti-check"></i> Jobs & calendar</li>
+          <li><i class="ti ti-check"></i> Card & Apple Pay</li>
+          <li><i class="ti ti-check"></i> Email support</li>
+          <li class="muted"><i class="ti ti-x"></i> Unlimited invoices</li>
+          <li class="muted"><i class="ti ti-x"></i> Priority support</li>
+          <li class="muted"><i class="ti ti-x"></i> AI features</li>
+        </ul>
+        <button class="btn-plan btn-outline" onclick="openPayModal('starter','£29/month','Starter')">Get started</button>
+      </div>
+
+      <!-- PRO (recommended) -->
+      <div class="plan popular" id="plan-pro">
+        <div class="popular-badge">⭐ Most popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">£79<span>/month</span></div>
+        <div class="plan-desc">For busy tradespeople who want unlimited invoicing and a growing team.</div>
+        <hr class="plan-divider" />
+        <ul class="plan-features">
+          <li><i class="ti ti-check"></i> Unlimited invoices</li>
+          <li><i class="ti ti-check"></i> 10 users</li>
+          <li><i class="ti ti-check"></i> Full CRM & customers</li>
+          <li><i class="ti ti-check"></i> Jobs & calendar</li>
+          <li><i class="ti ti-check"></i> Card & Apple Pay</li>
+          <li><i class="ti ti-check"></i> Automatic reminders</li>
+          <li><i class="ti ti-check"></i> Priority support</li>
+          <li class="muted"><i class="ti ti-x"></i> AI features</li>
+          <li class="muted"><i class="ti ti-x"></i> Dedicated account manager</li>
+        </ul>
+        <button class="btn-plan btn-primary" onclick="openPayModal('pro','£79/month','Pro')"><i class="ti ti-star"></i> Get Pro</button>
+      </div>
+
+      <!-- BUSINESS -->
+      <div class="plan" id="plan-business">
+        <div class="plan-name">Business</div>
+        <div class="plan-price">£149<span>/month</span></div>
+        <div class="plan-desc">For established trade businesses with multiple staff and high volume.</div>
+        <hr class="plan-divider" />
+        <ul class="plan-features">
+          <li><i class="ti ti-check"></i> Unlimited everything</li>
+          <li><i class="ti ti-check"></i> 25 users</li>
+          <li><i class="ti ti-check"></i> Full CRM & customers</li>
+          <li><i class="ti ti-check"></i> Jobs & calendar</li>
+          <li><i class="ti ti-check"></i> Card & Apple Pay</li>
+          <li><i class="ti ti-check"></i> Automatic reminders</li>
+          <li><i class="ti ti-check"></i> Priority support</li>
+          <li><i class="ti ti-check"></i> Future AI features</li>
+          <li><i class="ti ti-check"></i> Dedicated account manager</li>
+        </ul>
+        <button class="btn-plan btn-outline" onclick="openPayModal('business','£149/month','Business')">Get Business</button>
+      </div>
+
+    </div>
+
+    <!-- COMPARE TABLE -->
+    <div class="compare" style="margin-bottom:40px">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40%">Feature</th>
+            <th>Starter <div style="font-weight:700;color:#061A30">£29/mo</div></th>
+            <th style="background:#FAFAF8">Pro <div style="font-weight:700;color:#061A30">£79/mo</div></th>
+            <th>Business <div style="font-weight:700;color:#061A30">£149/mo</div></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Invoices</td><td>200/mo</td><td class="highlight" style="font-weight:700">Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>Users</td><td>2</td><td class="highlight">10</td><td>25</td></tr>
+          <tr><td>Customers & CRM</td><td><i class="ti ti-check check"></i></td><td class="highlight"><i class="ti ti-check check"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>Jobs & calendar</td><td><i class="ti ti-check check"></i></td><td class="highlight"><i class="ti ti-check check"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>Card & Apple Pay</td><td><i class="ti ti-check check"></i></td><td class="highlight"><i class="ti ti-check check"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>Auto reminders</td><td><i class="ti ti-x cross"></i></td><td class="highlight"><i class="ti ti-check check"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>Priority support</td><td><i class="ti ti-x cross"></i></td><td class="highlight"><i class="ti ti-check check"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>AI features</td><td><i class="ti ti-x cross"></i></td><td class="highlight"><i class="ti ti-x cross"></i></td><td><i class="ti ti-check check"></i></td></tr>
+          <tr><td>Account manager</td><td><i class="ti ti-x cross"></i></td><td class="highlight"><i class="ti ti-x cross"></i></td><td><i class="ti ti-check check"></i></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h2>Common questions</h2>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">Can I cancel anytime? <i class="ti ti-chevron-down faq-chevron"></i></div>
+        <div class="faq-a">Yes — cancel anytime from Settings → Plan. No long-term contracts, no exit fees. Your account stays active until the end of the billing period.</div>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">What happens when my free trial ends? <i class="ti ti-chevron-down faq-chevron"></i></div>
+        <div class="faq-a">You'll still be able to log in and see your data, but you won't be able to send new invoices until you upgrade. No data is ever deleted.</div>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">Do you take a cut of my payments? <i class="ti ti-chevron-down faq-chevron"></i></div>
+        <div class="faq-a">No — TradesBill doesn't take any cut. Stripe's standard processing fee applies (typically 1.5% for UK cards), but that goes to Stripe, not us.</div>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">Can I change plans later? <i class="ti ti-chevron-down faq-chevron"></i></div>
+        <div class="faq-a">Yes — upgrade or downgrade at any time. If you upgrade mid-cycle, you only pay the difference. Downgrades take effect at the next billing date.</div>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">Is my payment data secure? <i class="ti ti-chevron-down faq-chevron"></i></div>
+        <div class="faq-a">All payments are processed by Stripe — the same technology used by Amazon, Apple, and millions of other businesses. We never store your card details.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div class="modal-overlay" id="pay-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-plan-name" id="modal-plan-name">Pro plan</div>
+        <div class="modal-plan-price" id="modal-plan-price">£79</div>
+        <div class="modal-plan-sub">per month · cancel anytime</div>
+      </div>
+      <div class="modal-body">
+        <div class="pay-methods">
+          <div class="pay-method selected" onclick="selectPayMethod(this,'card')">
+            <div class="pay-method-icon"><i class="ti ti-credit-card"></i></div>
+            <div><div class="pay-method-label">Pay by card</div><div class="pay-method-sub">Visa, Mastercard, Amex</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'apple')">
+            <div class="pay-method-icon"><i class="ti ti-brand-apple"></i></div>
+            <div><div class="pay-method-label">Apple Pay</div><div class="pay-method-sub">One-tap payment</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'google')">
+            <div class="pay-method-icon"><i class="ti ti-brand-google"></i></div>
+            <div><div class="pay-method-label">Google Pay</div><div class="pay-method-sub">One-tap payment</div></div>
+          </div>
+        </div>
+        <div class="modal-note">
+          <i class="ti ti-shield-check"></i>
+          <span>Secured by Stripe. Your first charge is today. You can cancel anytime from Settings → Plan.</span>
+        </div>
+        <button class="btn-checkout" id="checkout-btn" onclick="startCheckout()">
+          <i class="ti ti-lock"></i> Subscribe now
+        </button>
+        <a class="modal-cancel" onclick="closePayModal()">Cancel</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- RETENTION MODAL -->
+  <div class="modal-overlay" id="retention-modal">
+    <div class="modal retention-modal">
+      <div class="modal-body" style="padding:28px;text-align:center">
+        <div class="retention-icon"><i class="ti ti-heart"></i></div>
+        <h3 style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Before you go...</h3>
+        <p style="font-size:13px;color:#6B6A65;margin-bottom:20px;line-height:1.5">We'd hate to see you leave. As a thank you for giving TradesBill a try, here's an exclusive offer:</p>
+        <div class="discount-badge">30% off for 2 months</div>
+        <div class="discount-sub">That's <strong id="discount-price">£55.30/month</strong> instead of <span id="original-price">£79/month</span><br>for your first 2 months — then normal price.</div>
+        <button class="btn-accept-discount" onclick="acceptDiscount()"><i class="ti ti-tag"></i> Yes — claim my 30% discount</button>
+        <button class="btn-decline" onclick="declineDiscount()">No thanks, I still want to cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var selectedPlan = 'pro';
+    var selectedPayMethod = 'card';
+
+    // TODO: Replace with your real Stripe Price IDs once created in Stripe Dashboard
+    var PRICE_IDS = {
+      starter:  'price_STARTER_ID_HERE',   // £29/month
+      pro:      'price_PRO_ID_HERE',        // £79/month
+      business: 'price_BUSINESS_ID_HERE'   // £149/month
+    };
+
+    var PRICES = { starter: 29, pro: 79, business: 149 };
+
+    function openPayModal(plan, priceLabel, planName) {
+      selectedPlan = plan;
+      document.getElementById('modal-plan-name').textContent = planName + ' plan';
+      document.getElementById('modal-plan-price').textContent = priceLabel.split('/')[0];
+      document.getElementById('pay-modal').classList.add('open');
+    }
+
+    function closePayModal() {
+      document.getElementById('pay-modal').classList.remove('open');
+    }
+
+    function selectPayMethod(el, method) {
+      selectedPayMethod = method;
+      document.querySelectorAll('.pay-method').forEach(function(m) { m.classList.remove('selected'); });
+      el.classList.add('selected');
+    }
+
+    async function startCheckout() {
+      const btn = document.getElementById('checkout-btn');
+      btn.classList.add('btn-loading');
+      btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite"></i> Redirecting to Stripe...';
+
+      try {
+        // Get current user email for Stripe
+        const { data } = await supabase.auth.getUser();
+        const email = data && data.user ? data.user.email : '';
+
+        // TODO: Once Price IDs are added, this calls your Vercel serverless function
+        // which creates a Stripe Checkout Session and returns a redirect URL
+        const res = await fetch('/api/create-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            priceId: PRICE_IDS[selectedPlan],
+            plan: selectedPlan,
+            paymentMethod: selectedPayMethod,
+            customerEmail: email,
+            successUrl: window.location.origin + '/dashboard.html?upgraded=true',
+            cancelUrl: window.location.origin + '/upgrade.html'
+          })
+        });
+
+        const result = await res.json();
+        if (result.url) {
+          window.location.href = result.url;
+        } else {
+          throw new Error(result.error || 'Could not create checkout session');
+        }
+      } catch(e) {
+        btn.classList.remove('btn-loading');
+        btn.innerHTML = '<i class="ti ti-lock"></i> Subscribe now';
+        alert('Something went wrong: ' + e.message + '\n\nMake sure your Stripe Price IDs are configured.');
+      }
+    }
+
+    // Retention offer
+    function openRetention(plan) {
+      selectedPlan = plan;
+      var price = PRICES[plan] || 79;
+      var discounted = (price * 0.7).toFixed(2);
+      document.getElementById('discount-price').textContent = '£' + discounted + '/month';
+      document.getElementById('original-price').textContent = '£' + price + '/month';
+      document.getElementById('retention-modal').classList.add('open');
+    }
+
+    function acceptDiscount() {
+      document.getElementById('retention-modal').classList.remove('open');
+      // TODO: Apply discount coupon via Stripe coupon code (30% off, 2 months duration)
+      openPayModal(selectedPlan, '£' + (PRICES[selectedPlan] * 0.7).toFixed(0) + '/month (discounted)', 'Discounted');
+    }
+
+    function declineDiscount() {
+      document.getElementById('retention-modal').classList.remove('open');
+      window.location.href = 'settings.html';
+    }
+
+    // Close modals on overlay click
+    ['pay-modal','retention-modal'].forEach(function(id) {
+      document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+      });
+    });
+
+    // Check if user already has a plan
+    async function checkPlan() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data || !data.user) return;
+        const plan = data.user.user_metadata.plan;
+        if (plan && plan !== 'free') {
+          // Highlight current plan
+          var el = document.getElementById('plan-' + plan);
+          if (el) {
+            var btn = el.querySelector('.btn-plan');
+            if (btn) { btn.textContent = '✓ Current plan'; btn.disabled = true; btn.style.opacity = '0.6'; }
+          }
+        }
+      } catch(e) {}
+    }
+    checkPlan();
+  </script>
+</body>
+</html>
