@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -488,6 +488,10 @@
           throw new Error(data.error || 'Failed to create payment link');
         }
 
+        // Bump the counter in localStorage
+        var usedNum = parseInt(num.replace(/[^0-9]/g, ''));
+        if (usedNum) localStorage.setItem('pi_last_inv_num', usedNum.toString());
+
         // Save invoice to Supabase
         try {
           await DB.saveInvoice({
@@ -577,6 +581,51 @@
     document.getElementById('inv-notes').addEventListener('input', updatePreview);
 
     // Check Stripe connection on load
+    // ── Auto-increment invoice number ──
+    async function getNextInvoiceNumber() {
+      try {
+        // Get the highest existing invoice number from Supabase
+        var { data, error } = await supabase
+          .from('invoices')
+          .select('number')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (error || !data || data.length === 0) {
+          return '#1001';
+        }
+
+        // Extract numeric parts and find the max
+        var maxNum = 1000;
+        data.forEach(function(inv) {
+          if (!inv.number) return;
+          var match = inv.number.toString().replace(/[^0-9]/g, '');
+          if (match) {
+            var n = parseInt(match);
+            if (n > maxNum) maxNum = n;
+          }
+        });
+
+        return '#' + (maxNum + 1);
+      } catch(e) {
+        // Fallback to localStorage counter if Supabase fails
+        var last = parseInt(localStorage.getItem('pi_last_inv_num') || '1000');
+        return '#' + (last + 1);
+      }
+    }
+
+    async function setAutoInvoiceNumber() {
+      var field = document.getElementById('inv-num');
+      var preview = document.getElementById('prev-num');
+      if (!field || field.value) return; // don't overwrite if already set
+      var num = await getNextInvoiceNumber();
+      field.value = num;
+      if (preview) preview.textContent = num;
+      // Save to localStorage as backup
+      var n = parseInt(num.replace(/[^0-9]/g, ''));
+      if (n) localStorage.setItem('pi_last_inv_num', n.toString());
+    }
+
     async function checkStripe() {
       try {
         const { data } = await supabase.auth.getUser();
@@ -624,6 +673,7 @@
       } catch(e) {}
     }
     checkStripe();
+    setAutoInvoiceNumber();
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.nav-plus-wrap')) {
