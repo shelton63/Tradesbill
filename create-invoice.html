@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -237,43 +237,81 @@
           <div class="card-title"><i class="ti ti-briefcase"></i> Job details</div>
           <div class="field">
             <label>Job description <span style="color:#D14343">*</span></label>
-            <input type="text" id="job-desc" placeholder="e.g. Bathroom refit" autocomplete="off", boiler installation..." oninput="updatePreview()" />
+            <input type="text" id="job-desc" placeholder="e.g. Bathroom refit, boiler installation..." autocomplete="off" oninput="updatePreview()" />
           </div>
           <div class="field" style="margin-bottom:0">
             <label>Invoice number</label>
-            <input type="text" id="inv-num" placeholder="e.g. INV-001" autocomplete="off" oninput="updatePreview()" />
+            <input type="text" id="inv-num" placeholder="#1001" autocomplete="off" oninput="updatePreview()" />
+          </div>
+        </div>
+
+        <!-- AMOUNT SECTION — simple by default -->
+        <div class="card" id="simple-amount-card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span><i class="ti ti-currency-pound"></i> Amount</span>
+            <button type="button" onclick="switchToDetailed()" style="font-size:11px;font-weight:600;color:#0A2540;background:#EEF3F8;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px">
+              <i class="ti ti-list" style="font-size:13px"></i> Add line items
+            </button>
+          </div>
+          <div class="field">
+            <label>Total amount <span style="color:#D14343">*</span></label>
+            <div style="position:relative">
+              <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:#6B6A65;font-weight:600">£</span>
+              <input type="number" id="simple-amount" placeholder="0.00" min="0" step="0.01" autocomplete="off"
+                style="padding-left:30px;width:100%;padding-top:11px;padding-bottom:11px;padding-right:13px;border:1px solid #E5E3DC;border-radius:9px;font-size:18px;font-weight:600;font-family:inherit;color:#061A30;background:#fff;outline:none"
+                oninput="updateSimpleAmount()" />
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>VAT</label>
+            <select id="simple-vat" onchange="updateSimpleAmount(); saveVatPref(this.value)" style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;color:#1A1A18;background:#fff;outline:none">
+              <option value="0" selected>No VAT (0%)</option>
+              <option value="5">5% VAT</option>
+              <option value="20">20% VAT</option>
+            </select>
+          </div>
+          <div id="simple-total-row" style="display:none;margin-top:14px;padding:12px 14px;background:#F4F7FB;border-radius:9px;display:none;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;color:#6B6A65;font-weight:600">Total due</span>
+            <span id="simple-total-display" style="font-size:18px;font-weight:700;color:#061A30">£0.00</span>
+          </div>
+        </div>
+
+        <!-- DETAILED LINE ITEMS — hidden by default -->
+        <div id="detailed-amount-card" style="display:none">
+          <div class="card">
+            <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+              <span><i class="ti ti-list"></i> Line items</span>
+              <button type="button" onclick="switchToSimple()" style="font-size:11px;font-weight:600;color:#6B6A65;background:#F0EFEA;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px">
+                <i class="ti ti-arrow-left" style="font-size:13px"></i> Simple mode
+              </button>
+            </div>
+            <div id="lines"></div>
+            <button class="btn-add" onclick="addLine()" id="add-job-btn">
+              <i class="ti ti-plus"></i> Add item
+            </button>
+          </div>
+          <div class="totals-card">
+            <div class="tot-row"><span>Subtotal</span><span id="sub">£0.00</span></div>
+            <div class="tot-row" style="margin-top:4px">
+              <span>VAT
+                <select class="vat-select" id="vat" onchange="calcAll(); saveVatPref(this.value)">
+                  <option value="0" selected>0%</option>
+                  <option value="5">5%</option>
+                  <option value="20">20%</option>
+                </select>
+              </span>
+              <span id="vatamt">£0.00</span>
+            </div>
+            <hr class="tot-divider" />
+            <div class="tot-final"><span>Total due</span><span id="total">£0.00</span></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><i class="ti ti-list"></i> Jobs & items</div>
-          <div id="lines"></div>
-          <button class="btn-add" onclick="addLine()" id="add-job-btn">
-            <i class="ti ti-plus"></i> Add job
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><i class="ti ti-notes"></i> Notes (optional)</div>
+          <div class="card-title"><i class="ti ti-notes"></i> Notes <span style="font-size:11px;color:#8B8A84;font-weight:400">(optional)</span></div>
           <div class="field" style="margin-bottom:0">
             <textarea id="inv-notes" placeholder="e.g. Thank you for your business!"></textarea>
           </div>
-        </div>
-
-        <div class="totals-card">
-          <div class="tot-row"><span>Subtotal</span><span id="sub">£0.00</span></div>
-          <div class="tot-row" style="margin-top:4px">
-            <span>VAT
-              <select class="vat-select" id="vat" onchange="calcAll()">
-                <option value="0" selected>0%</option>
-                <option value="5">5%</option>
-                <option value="20">20%</option>
-              </select>
-            </span>
-            <span id="vatamt">£0.00</span>
-          </div>
-          <hr class="tot-divider" />
-          <div class="tot-final"><span>Total due</span><span id="total">£0.00</span></div>
         </div>
 
         <div id="stripe-prompt" style="display:none;background:#0A2540;border-radius:14px;padding:18px;margin-bottom:14px">
@@ -424,7 +462,55 @@
       }
     }
 
-    var contactMode = 'email';
+    var invoiceMode = 'simple'; // 'simple' or 'detailed'
+
+    function switchToDetailed() {
+      invoiceMode = 'detailed';
+      document.getElementById('simple-amount-card').style.display = 'none';
+      document.getElementById('detailed-amount-card').style.display = 'block';
+      if (document.querySelectorAll('#lines .line-item').length === 0) addLine();
+    }
+
+    function switchToSimple() {
+      invoiceMode = 'simple';
+      document.getElementById('simple-amount-card').style.display = 'block';
+      document.getElementById('detailed-amount-card').style.display = 'none';
+    }
+
+    function updateSimpleAmount() {
+      var amt = parseFloat(document.getElementById('simple-amount').value) || 0;
+      var vatRate = parseInt(document.getElementById('simple-vat').value) || 0;
+      var vatAmt = amt * vatRate / 100;
+      var total = amt + vatAmt;
+      var row = document.getElementById('simple-total-row');
+      var display = document.getElementById('simple-total-display');
+      if (amt > 0) {
+        row.style.display = 'flex';
+        display.textContent = '£' + total.toFixed(2);
+      } else {
+        row.style.display = 'none';
+      }
+      // Update live preview total
+      var prevTotal = document.getElementById('total');
+      if (prevTotal) prevTotal.textContent = '£' + total.toFixed(2);
+      var prevSub = document.getElementById('sub');
+      if (prevSub) prevSub.textContent = '£' + amt.toFixed(2);
+      var prevVat = document.getElementById('vatamt');
+      if (prevVat) prevVat.textContent = '£' + vatAmt.toFixed(2);
+    }
+
+    function getInvoiceTotal() {
+      if (invoiceMode === 'simple') {
+        var amt = parseFloat(document.getElementById('simple-amount').value) || 0;
+        var vatRate = parseInt(document.getElementById('simple-vat').value) || 0;
+        return amt + (amt * vatRate / 100);
+      } else {
+        var t = document.getElementById('total');
+        return parseFloat((t ? t.textContent : '0').replace('£','').replace(',','')) || 0;
+      }
+    }
+
+    var invoiceMode = 'simple';
 
     function switchContactTab(mode) {
       contactMode = mode;
@@ -450,20 +536,21 @@
       const phone = contactMode === 'whatsapp' ? document.getElementById('cust-phone').value.trim() : '';
       const num   = document.getElementById('inv-num').value.trim();
       const job   = document.getElementById('job-desc').value.trim();
-      const totalText   = document.getElementById('total').textContent;
-      const totalPounds = parseFloat(totalText.replace('£','').replace(',','')) || 0;
+      const totalPounds = getInvoiceTotal();
       const totalPence  = Math.round(totalPounds * 100);
+      const totalText   = '£' + totalPounds.toFixed(2);
       const btn = document.getElementById('send-btn');
 
       if (!name) { showSendError('Please enter the customer\'s name.'); return; }
       if (contactMode === 'email' && (!email || !email.includes('@'))) {
         showSendError('Please enter a valid email address.'); return;
       }
-      if (contactMode === 'whatsapp' && !phone) {
-        showSendError('Please enter the customer\'s WhatsApp number.'); return;
+      if (invoiceMode === 'simple' && !document.getElementById('simple-amount').value) {
+        showSendError('Please enter the invoice amount.'); return;
       }
-      if (!job) { showSendError('Please add a job description.'); return; }
-      if (document.querySelectorAll('#lines .line-item').length === 0) { showSendError('Please add at least one job or item.'); return; }
+      if (invoiceMode === 'detailed' && document.querySelectorAll('#lines .line-item').length === 0) {
+        showSendError('Please add at least one job or item.'); return;
+      }
       if (totalPence < 50) { showSendError('Invoice total must be at least £0.50.'); return; }
 
       btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite"></i> Creating payment link...';
@@ -626,6 +713,20 @@
       if (n) localStorage.setItem('pi_last_inv_num', n.toString());
     }
 
+    // ── VAT preference memory ──
+    function saveVatPref(val) {
+      localStorage.setItem('pi_vat_pref', val);
+    }
+
+    function loadVatPref() {
+      var pref = localStorage.getItem('pi_vat_pref');
+      if (!pref) return;
+      var simpleVat = document.getElementById('simple-vat');
+      var detailVat = document.getElementById('vat');
+      if (simpleVat) simpleVat.value = pref;
+      if (detailVat) detailVat.value = pref;
+    }
+
     async function checkStripe() {
       try {
         const { data } = await supabase.auth.getUser();
@@ -674,6 +775,7 @@
     }
     checkStripe();
     setAutoInvoiceNumber();
+    loadVatPref();
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.nav-plus-wrap')) {
