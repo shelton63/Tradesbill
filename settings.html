@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Settings — TradesBill</title>
+  <title>Settings — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -169,12 +171,12 @@
 </head>
 <body>
   <div class="mobile-topbar">
-    <a href="dashboard.html" class="mob-logo"><i class="ti ti-file-invoice"></i><span>TradesBill</span></a>
+    <a href="dashboard.html" class="mob-logo"><i class="ti ti-file-invoice"></i><span>Primo Invoice</span></a>
   </div>
 
   <div class="db">
     <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">TradesBill</span></a>
+      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
       <div class="sb-nav">
         <div class="sb-section-label">Main</div>
         <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
@@ -276,7 +278,7 @@
         <div id="section-team" style="display:none">
           <div class="card">
             <div class="card-title"><i class="ti ti-users"></i> Team members</div>
-            <div class="card-desc" id="team-desc">Add team members who can access TradesBill.</div>
+            <div class="card-desc" id="team-desc">Add team members who can access Primo Invoice.</div>
             <div id="user-list"></div>
             <div class="btn-row">
               <button class="btn-save" id="btn-invite" onclick="openInviteModal()"><i class="ti ti-user-plus"></i> Invite team member</button>
@@ -524,7 +526,7 @@
             wrap.innerHTML = '<div style="display:flex;align-items:center;gap:10px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:13px 14px;margin-bottom:14px"><i class="ti ti-circle-check" style="color:#1D9E75;font-size:22px;flex-shrink:0"></i><div><p style="font-size:13px;font-weight:700;color:#085041">Stripe connected</p><span style="font-size:12px;color:#0F6E56">Payments go straight to your bank</span></div><div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0"><a href="onboarding-payments.html" style="font-size:12px;color:#0F6E56;font-weight:700;text-decoration:none">Manage →</a><button onclick="changeStripeAccount()" style="font-size:12px;color:#D14343;font-weight:700;background:none;border:none;cursor:pointer;font-family:inherit">Change account</button></div></div>';
             if (toggles) toggles.style.display = 'block';
           } else {
-            wrap.innerHTML = '<div style="background:#0A2540;border-radius:12px;padding:18px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:38px;height:38px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-brand-stripe" style="color:#fff;font-size:20px"></i></div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid into your bank</div><div style="font-size:12px;color:#8FA8C2;line-height:1.4">TradesBill partners with Stripe so your customers can pay by card, Apple Pay or bank transfer.</div></div></div><a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:700"><i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it\'s free</a></div>';
+            wrap.innerHTML = '<div style="background:#0A2540;border-radius:12px;padding:18px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:38px;height:38px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-brand-stripe" style="color:#fff;font-size:20px"></i></div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Get paid into your bank</div><div style="font-size:12px;color:#8FA8C2;line-height:1.4">Primo Invoice partners with Stripe so your customers can pay by card, Apple Pay or bank transfer.</div></div></div><a href="onboarding-payments.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#635BFF;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:14px;font-weight:700"><i class="ti ti-plug-connected" style="font-size:17px"></i> Connect Stripe — it\'s free</a></div>';
           }
         }
 
