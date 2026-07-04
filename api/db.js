@@ -4,6 +4,40 @@
 
 var DB = {
 
+  // ─── AUTO NUMBER ──────────────────────────────────────
+  async getNextNumber(type) {
+    // type: 'invoice' or 'quote'
+    var table = type === 'quote' ? 'quotes' : 'invoices';
+    var prefix = type === 'quote' ? 'Q' : '';
+    var localKey = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
+    var startFrom = type === 'quote' ? 1000 : 1000;
+
+    try {
+      var { data, error } = await supabase
+        .from(table)
+        .select('number')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      var maxNum = startFrom;
+      if (!error && data && data.length > 0) {
+        data.forEach(function(row) {
+          if (!row.number) return;
+          var match = row.number.toString().replace(/[^0-9]/g, '');
+          if (match) { var n = parseInt(match); if (n > maxNum) maxNum = n; }
+        });
+      }
+      var next = maxNum + 1;
+      localStorage.setItem(localKey, next.toString());
+      return prefix ? ('#' + prefix + next) : ('#' + next);
+    } catch(e) {
+      var last = parseInt(localStorage.getItem(localKey) || startFrom.toString());
+      var next = last + 1;
+      localStorage.setItem(localKey, next.toString());
+      return prefix ? ('#' + prefix + next) : ('#' + next);
+    }
+  },
+
   // ─── CUSTOMERS ───────────────────────────────────────
   async getCustomers() {
     var { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
