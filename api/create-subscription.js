@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
     } else {
       customer = await stripe.customers.create({
         email: customerEmail,
-        metadata: { plan, source: 'TradesBill' }
+        metadata: { plan, source: 'Primo Invoice' }
       });
     }
 
@@ -42,9 +42,9 @@ module.exports = async function handler(req, res) {
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
       subscription_data: {
-        metadata: { plan, source: 'TradesBill' }
+        metadata: { plan, source: 'Primo Invoice' }
       },
-      metadata: { plan, customerEmail, source: 'TradesBill' }
+      metadata: { plan, customerEmail, source: 'Primo Invoice' }
     };
 
     // Apply retention discount coupon if provided

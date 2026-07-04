@@ -1,4 +1,4 @@
-// db.js — Shared TradesBill database layer
+// db.js — Shared Primo Invoice database layer
 // Include this on every page: <script src="db.js"></script>
 // Requires supabase client to already be initialised as window.supabase
 
