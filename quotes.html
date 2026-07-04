@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -177,7 +177,7 @@
     <div class="main">
       <div class="topbar">
         <h1>Quotes</h1>
-        <button class="btn-new"><i class="ti ti-plus"></i> New quote</button>
+        <button class="btn-new" onclick="openQuoteModal()"><i class="ti ti-plus"></i> New quote</button>
       </div>
 
       <div class="content">
@@ -411,6 +411,228 @@
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
     });
+  </script>
+
+  <!-- CREATE QUOTE MODAL -->
+  <div class="pay-modal-overlay" id="quote-modal">
+    <div class="pay-modal" style="max-width:500px;max-height:92vh;overflow-y:auto">
+      <div class="pay-modal-header" style="background:#0A2540;padding:18px 22px">
+        <div style="font-size:15px;font-weight:700;color:#fff" id="qm-title">New quote</div>
+        <button class="pay-modal-close" onclick="closeQuoteModal()" style="background:rgba(255,255,255,0.15);color:#fff"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+
+        <!-- Customer -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Customer name <span style="color:#D14343">*</span></label>
+          <input type="text" id="qm-customer" placeholder="e.g. Mark Taylor" autocomplete="off"
+            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
+        </div>
+
+        <!-- Job -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Job description <span style="color:#D14343">*</span></label>
+          <input type="text" id="qm-job" placeholder="e.g. Bathroom refit, boiler installation..." autocomplete="off"
+            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
+        </div>
+
+        <!-- Amount -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Quote amount <span style="color:#D14343">*</span></label>
+          <div style="position:relative">
+            <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:#6B6A65;font-weight:600">£</span>
+            <input type="number" id="qm-amount" placeholder="0.00" min="0" step="0.01" autocomplete="off"
+              style="padding-left:30px;width:100%;padding-top:11px;padding-bottom:11px;padding-right:13px;border:1px solid #E5E3DC;border-radius:9px;font-size:18px;font-weight:600;font-family:inherit;color:#061A30;background:#fff;outline:none"
+              oninput="updateQuoteTotal()" />
+          </div>
+        </div>
+
+        <!-- VAT -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">VAT</label>
+          <select id="qm-vat" onchange="updateQuoteTotal(); saveVatPref(this.value)"
+            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;color:#1A1A18;background:#fff;outline:none">
+            <option value="0">No VAT (0%)</option>
+            <option value="5">5% VAT</option>
+            <option value="20">20% VAT</option>
+          </select>
+        </div>
+
+        <!-- Breakdown -->
+        <div id="qm-breakdown" style="display:none;background:#F4F7FB;border-radius:9px;padding:12px 14px;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:13px;color:#6B6A65">Subtotal</span>
+            <span id="qm-sub" style="font-size:13px;color:#6B6A65">£0.00</span>
+          </div>
+          <div id="qm-vat-row" style="display:none;justify-content:space-between">
+            <span id="qm-vat-label" style="font-size:13px;color:#6B6A65">VAT (20%)</span>
+            <span id="qm-vat-amt" style="font-size:13px;color:#6B6A65">£0.00</span>
+          </div>
+          <div style="border-top:1px solid #E5E3DC;padding-top:6px;display:flex;justify-content:space-between">
+            <span style="font-size:14px;font-weight:700;color:#061A30">Total</span>
+            <span id="qm-total" style="font-size:18px;font-weight:700;color:#061A30">£0.00</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Notes <span style="font-size:11px;font-weight:400;color:#A3A29C">(optional)</span></label>
+          <textarea id="qm-notes" placeholder="e.g. Valid for 30 days. Includes labour and materials."
+            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;min-height:70px;resize:vertical;outline:none"></textarea>
+        </div>
+
+        <!-- Quote number -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Quote number</label>
+          <input type="text" id="qm-number" autocomplete="off"
+            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
+        </div>
+
+        <!-- Error -->
+        <div id="qm-error" style="display:none;background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 13px;font-size:13px"></div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;padding-top:4px">
+          <button onclick="closeQuoteModal()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          <button onclick="saveQuote()" style="flex:2;padding:11px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" id="qm-save-btn">Save quote</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── VAT pref memory (shared with invoices) ──
+    function saveVatPref(val) { localStorage.setItem('pi_vat_pref', val); }
+    function loadVatPref() {
+      var pref = localStorage.getItem('pi_vat_pref');
+      if (pref) { var el = document.getElementById('qm-vat'); if (el) el.value = pref; }
+    }
+
+    function updateQuoteTotal() {
+      var amt = parseFloat(document.getElementById('qm-amount').value) || 0;
+      var vatRate = parseInt(document.getElementById('qm-vat').value) || 0;
+      var vatAmt = amt * vatRate / 100;
+      var total = amt + vatAmt;
+      var breakdown = document.getElementById('qm-breakdown');
+      if (amt > 0) {
+        breakdown.style.display = 'flex';
+        document.getElementById('qm-sub').textContent = '£' + amt.toFixed(2);
+        var vatRow = document.getElementById('qm-vat-row');
+        if (vatRate > 0) {
+          vatRow.style.display = 'flex';
+          document.getElementById('qm-vat-label').textContent = 'VAT (' + vatRate + '%)';
+          document.getElementById('qm-vat-amt').textContent = '£' + vatAmt.toFixed(2);
+        } else {
+          vatRow.style.display = 'none';
+        }
+        document.getElementById('qm-total').textContent = '£' + total.toFixed(2);
+      } else {
+        breakdown.style.display = 'none';
+      }
+    }
+
+    async function getNextQuoteNumber() {
+      try {
+        var { data } = await supabase.from('quotes').select('number').order('created_at', { ascending: false }).limit(50);
+        var max = 1000;
+        (data || []).forEach(function(q) {
+          if (!q.number) return;
+          var n = parseInt(q.number.toString().replace(/[^0-9]/g, ''));
+          if (n > max) max = n;
+        });
+        return '#Q' + (max + 1);
+      } catch(e) {
+        var last = parseInt(localStorage.getItem('pi_last_q_num') || '1000');
+        return '#Q' + (last + 1);
+      }
+    }
+
+    async function openQuoteModal() {
+      document.getElementById('qm-customer').value = '';
+      document.getElementById('qm-job').value = '';
+      document.getElementById('qm-amount').value = '';
+      document.getElementById('qm-notes').value = '';
+      document.getElementById('qm-breakdown').style.display = 'none';
+      document.getElementById('qm-error').style.display = 'none';
+      document.getElementById('qm-save-btn').textContent = 'Save quote';
+      loadVatPref();
+      var num = await getNextQuoteNumber();
+      document.getElementById('qm-number').value = num;
+      document.getElementById('quote-modal').classList.add('open');
+      setTimeout(function(){ document.getElementById('qm-customer').focus(); }, 100);
+    }
+
+    function closeQuoteModal() {
+      document.getElementById('quote-modal').classList.remove('open');
+    }
+
+    async function saveQuote() {
+      var customer = document.getElementById('qm-customer').value.trim();
+      var job      = document.getElementById('qm-job').value.trim();
+      var amt      = parseFloat(document.getElementById('qm-amount').value) || 0;
+      var vatRate  = parseInt(document.getElementById('qm-vat').value) || 0;
+      var total    = amt + (amt * vatRate / 100);
+      var notes    = document.getElementById('qm-notes').value.trim();
+      var number   = document.getElementById('qm-number').value.trim();
+      var errEl    = document.getElementById('qm-error');
+
+      if (!customer) { errEl.textContent = 'Please enter a customer name.'; errEl.style.display = 'block'; return; }
+      if (!job)      { errEl.textContent = 'Please add a job description.';  errEl.style.display = 'block'; return; }
+      if (amt <= 0)  { errEl.textContent = 'Please enter a quote amount.';   errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+
+      var btn = document.getElementById('qm-save-btn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+
+      try {
+        var { data: { user } } = await supabase.auth.getUser();
+        var { data, error } = await supabase.from('quotes').insert({
+          user_id: user.id,
+          customer_name: customer,
+          job: job,
+          amount: total,
+          number: number,
+          notes: notes || null,
+          status: 'pending',
+          date: new Date().toISOString().split('T')[0]
+        }).select().single();
+
+        if (error) throw error;
+
+        // Save number to localStorage
+        var n = parseInt(number.replace(/[^0-9]/g, ''));
+        if (n) localStorage.setItem('pi_last_q_num', n.toString());
+
+        closeQuoteModal();
+        showQuoteTable();
+        addQuoteRow(data);
+      } catch(e) {
+        errEl.textContent = 'Could not save quote: ' + e.message;
+        errEl.style.display = 'block';
+      }
+      btn.textContent = 'Save quote'; btn.disabled = false;
+    }
+
+    function addQuoteRow(q) {
+      var tbody = document.getElementById('q-body');
+      if (!tbody) return;
+      var ini = (q.customer_name || '?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
+      var row = document.createElement('tr');
+      row.className = 'q-row';
+      row.dataset.status = q.status || 'pending';
+      row.dataset.payId = q.id;
+      row.innerHTML = '<td><span class="q-num">' + (q.number || '') + '</span></td>'
+        + '<td><div class="cust-cell"><div class="avatar av-blue">' + ini + '</div><span class="cust-name-text">' + q.customer_name + '</span></div></td>'
+        + '<td>' + (q.job || '—') + '</td>'
+        + '<td>£' + Number(q.amount).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>'
+        + '<td>Just now</td>'
+        + '<td><span class="badge dyn-badge badge-pending"><i class="ti ti-clock"></i> Pending</span></td>'
+        + '<td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a>'
+        + '<button class="icon-btn" title="Payment status" onclick="openPayModal(\'' + q.id + '\',\'pending\')"><i class="ti ti-cash"></i></button></div></td>';
+      tbody.insertBefore(row, tbody.firstChild);
+    }
+
+    document.getElementById('quote-modal').addEventListener('click', function(e) { if (e.target === this) closeQuoteModal(); });
   </script>
 
 </body>
