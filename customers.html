@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -18,6 +18,59 @@
     }
   </script>
   <script src="db.js"></script>
+  <script>
+    if (typeof DB === 'undefined') {
+      window.DB = {
+        getNextNumber: async function(type) {
+          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
+          var last = parseInt(localStorage.getItem(key) || '1000');
+          var next = last + 1; localStorage.setItem(key, next.toString());
+          return (type === 'quote' ? '#Q' : '#') + next;
+        },
+        saveInvoice: async function(inv) {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
+          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
+          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
+        },
+        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
+        updateInvoiceStatus: async function(id, status, method) {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var inv = invs.find(function(i){ return i.id == id; });
+          if (inv) { inv.status = status; if (method) inv.payment_method = method; }
+          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
+        },
+        saveCustomer: async function(c) {
+          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+          var idx = custs.findIndex(function(x){ return x.id === c.id; });
+          if (idx > -1) custs[idx] = c; else custs.unshift(c);
+          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
+        },
+        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
+        deleteCustomer: async function(id) {
+          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
+        },
+        saveQuote: async function(q) {
+          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
+          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
+        },
+        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
+        saveJob: async function(j) {
+          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
+          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
+          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
+        },
+        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
+        getEarningsSummary: async function() {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var paid = invs.filter(function(i){ return i.status==='paid'; });
+          return { totalEarned: paid.reduce(function(a,i){ return a+Number(i.amount||0); },0), invoiceCount: invs.length, paidCount: paid.length };
+        }
+      };
+    }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
