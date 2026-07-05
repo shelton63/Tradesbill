@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -968,27 +968,28 @@
 
     async function checkStripe() {
       try {
-        // If keys not set, use localStorage fallback
-        if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE') {
+        // Check localStorage first for instant result
+        if (localStorage.getItem('pi_stripe_connected') === 'true') {
+          var sp = document.getElementById('stripe-prompt');
+          if (sp) sp.style.display = 'none';
           loadBusinessFromStorage();
           return;
         }
-
+        if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE') { loadBusinessFromStorage(); return; }
         const { data } = await supabase.auth.getUser();
         if (!data || !data.user) { loadBusinessFromStorage(); return; }
         const meta = data.user.user_metadata || {};
-
-        // Cache metadata in localStorage for fallback
         if (meta.business_name) localStorage.setItem('pi_biz_meta', JSON.stringify(meta));
-
         applyBusinessMeta(meta);
-
-        if (!meta.stripe_connected) {
-          document.getElementById('stripe-prompt').style.display = 'block';
+        if (meta.stripe_connected) {
+          localStorage.setItem('pi_stripe_connected', 'true');
+          var sp = document.getElementById('stripe-prompt');
+          if (sp) sp.style.display = 'none';
+        } else {
+          var sp = document.getElementById('stripe-prompt');
+          if (sp) sp.style.display = 'block';
         }
-      } catch(e) {
-        loadBusinessFromStorage();
-      }
+      } catch(e) { loadBusinessFromStorage(); }
     }
 
     function loadBusinessFromStorage() {
