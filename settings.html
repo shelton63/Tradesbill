@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -154,7 +154,12 @@
       .content { padding: 14px 16px; }
       .plan-grid { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; }
-      .tabs { overflow-x: auto; width: 100%; }
+      .tabs { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; white-space: nowrap; border-radius: 10px; }
+      .tab-btn { white-space: nowrap; font-size: 12px; padding: 7px 12px; }
+      .section-card, .settings-block { padding: 16px; }
+      .settings-block h3 { font-size: 14px; }
+      .two-col { grid-template-columns: 1fr !important; }
+      input, select, textarea { font-size: 16px !important; } /* prevents iOS zoom */
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }

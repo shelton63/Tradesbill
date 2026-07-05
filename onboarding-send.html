@@ -1,188 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Send your first invoice — TradesBill</title>
+  <title>Send your first invoice — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
-
-    .nav { background: #0A2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    html, body { min-height: 100vh; overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%);
+      display: flex; flex-direction: column; }
+    .nav { padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+    .nav-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .nav-logo i { color: #5DCAA5; }
-
-    .progress-bar { background: #0A2540; padding: 14px 40px; }
-    .progress-track { max-width: 480px; margin: 0 auto; display: flex; align-items: center; }
-    .pstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .pdot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-    .pdot.done { background: #5DCAA5; color: #061A30; }
-    .pdot.active { background: #fff; color: #0A2540; }
-    .pline { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-top: -18px; }
-    .pline.done { background: #5DCAA5; }
-
-    .page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px; }
-    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E3DC; width: 100%; max-width: 480px; padding: 36px; }
-
-    h1 { font-size: 21px; font-weight: 700; color: #061A30; margin-bottom: 6px; }
-    .subtitle { font-size: 14px; color: #6B6A65; margin-bottom: 24px; line-height: 1.5; }
-
-    .invoice-preview { background: #F8F7F3; border: 1px solid #E5E3DC; border-radius: 14px; padding: 18px; margin-bottom: 22px; }
-    .preview-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; }
-    .preview-row span:first-child { color: #8B8A84; }
-    .preview-row span:last-child { color: #1A1A18; font-weight: 600; text-align: right; }
-    .preview-divider { border: none; border-top: 1px solid #E5E3DC; margin: 8px 0; }
-    .preview-total { display: flex; justify-content: space-between; padding-top: 4px; }
-    .preview-total span:first-child { font-size: 14px; font-weight: 700; color: #061A30; }
-    .preview-total span:last-child { font-size: 18px; font-weight: 700; color: #0A2540; }
-
-    .btn-send { width: 100%; padding: 15px; background: #0A2540; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .btn-send:hover { background: #0A2540; }
-    .btn-send:disabled { background: #7AADD4; cursor: not-allowed; }
-
-    .skip-link { text-align: center; }
-    .skip-link a { font-size: 13px; color: #8B8A84; text-decoration: none; }
-    .skip-link a:hover { color: #0A2540; }
-
-    /* Success state */
-    .success-wrap { display: none; text-align: center; }
-    .success-icon { width: 80px; height: 80px; border-radius: 50%; background: #E1F5EE; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-    .success-icon i { font-size: 38px; color: #1D9E75; }
-    .success-wrap h1 { margin-bottom: 10px; }
-    .success-stats { display: flex; gap: 10px; justify-content: center; margin: 22px 0; }
-    .success-stat { background: #F8F7F3; border-radius: 10px; padding: 12px 16px; text-align: center; flex: 1; }
-    .success-stat-value { font-size: 18px; font-weight: 700; color: #061A30; }
-    .success-stat-label { font-size: 11px; color: #8B8A84; margin-top: 2px; }
-    .btn-dashboard { width: 100%; padding: 15px; background: #0A2540; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-dashboard:hover { background: #0A2540; }
-
-    .footer { background: #061A30; padding: 18px 40px; text-align: center; }
-    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
-
-    @media (max-width: 480px) {
-      .nav, .progress-bar { padding: 14px 20px; }
-      .card { padding: 26px 22px; }
-    }
+    .progress-wrap { padding: 4px 40px 20px; position: relative; z-index: 1; }
+    .progress-steps { display: flex; align-items: center; max-width: 440px; margin: 0 auto; }
+    .p-step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .p-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .p-dot.done { background: #5DCAA5; color: #061A30; }
+    .p-dot.active { background: #fff; color: #0A2540; }
+    .p-lbl { font-size: 10px; font-weight: 600; }
+    .p-lbl.done { color: #5DCAA5; } .p-lbl.active { color: #fff; }
+    .p-line { flex: 1; height: 2px; margin-bottom: 18px; }
+    .p-line.done { background: #5DCAA5; }
+    .page { flex: 1; display: flex; justify-content: center; padding: 0 20px 32px; position: relative; z-index: 1; }
+    .card { background: #fff; border-radius: 20px; width: 100%; max-width: 520px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+    .card-header { background: linear-gradient(135deg, #061A30, #0A2540); padding: 22px 28px; display: flex; align-items: center; gap: 14px; }
+    .hdr-icon { width: 42px; height: 42px; border-radius: 11px; background: rgba(93,202,165,0.2); display: flex; align-items: center; justify-content: center; }
+    .hdr-icon i { font-size: 21px; color: #5DCAA5; }
+    .hdr-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .hdr-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .card-body { padding: 26px 28px; }
+    .preview-box { background: #F8F7F3; border: 1px solid #E5E3DC; border-radius: 13px; padding: 16px 18px; margin-bottom: 20px; }
+    .prev-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+    .prev-row span:first-child { color: #8B8A84; }
+    .prev-row span:last-child { color: #1A1A18; font-weight: 600; text-align: right; max-width: 60%; }
+    .prev-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #E5E3DC; margin-top: 8px; padding-top: 10px; }
+    .prev-total span:first-child { font-size: 14px; font-weight: 700; color: #061A30; }
+    .prev-total span:last-child { font-size: 20px; font-weight: 700; color: #0A2540; }
+    .btn-send { width: 100%; padding: 15px; background: #5DCAA5; color: #061A30; font-size: 15px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .btn-send:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-skip { width: 100%; padding: 11px; background: transparent; color: #A3A29C; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; text-decoration: underline; }
+    /* Payment link success */
+    .link-box { background: #F8F7F3; border: 1px solid #E5E3DC; border-radius: 11px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .link-box input { flex: 1; border: none; background: transparent; font-size: 12px; color: #0A2540; outline: none; font-family: inherit; min-width: 0; }
+    .btn-copy { background: #0A2540; color: #fff; border: none; padding: 8px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .action-btn { padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
+    .action-btn-dash { background: #0A2540; color: #fff; }
+    .action-btn-cash { background: #F8F7F3; color: #1A1A18; border: 1px solid #E5E3DC; }
+    .footer { padding: 14px; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.3); }
+    @media (max-width: 560px) { .nav { padding: 14px 16px; } .progress-wrap { padding: 4px 16px 16px; } .card-body { padding: 20px; } .action-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
   <nav class="nav">
-    <div class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</div>
+    <a href="/" class="nav-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</a>
   </nav>
-
-  <div class="progress-bar" id="progress-bar">
-    <div class="progress-track">
-      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
-      <div class="pline done"></div>
-      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
-      <div class="pline done"></div>
-      <div class="pstep"><div class="pdot done"><i class="ti ti-check" style="font-size:13px"></i></div></div>
-      <div class="pline done"></div>
-      <div class="pstep"><div class="pdot active">4</div></div>
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:13px"></i></div><div class="p-lbl done">Business</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:13px"></i></div><div class="p-lbl done">Payments</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot done"><i class="ti ti-check" style="font-size:13px"></i></div><div class="p-lbl done">Invoice</div></div>
+      <div class="p-line done"></div>
+      <div class="p-step"><div class="p-dot active">4</div><div class="p-lbl active">Send</div></div>
     </div>
   </div>
-
   <div class="page">
     <div class="card">
-
-      <div id="send-wrap">
-        <h1>Send your first invoice</h1>
-        <p class="subtitle">Here's a quick look — once you're happy, send it straight to your customer.</p>
-
-        <div class="invoice-preview">
-          <div class="preview-row"><span>Customer</span><span id="prev-name">—</span></div>
-          <div class="preview-row"><span>Email</span><span id="prev-email">—</span></div>
-          <div class="preview-row"><span>Job</span><span id="prev-job">—</span></div>
-          <hr class="preview-divider" />
-          <div class="preview-total"><span>Total due</span><span id="prev-amount">£0.00</span></div>
-        </div>
-
-        <button class="btn-send" id="send-btn" onclick="sendFirstInvoice()">
-          <i class="ti ti-send"></i> Send invoice
-        </button>
-
-        <div class="skip-link">
-          <a href="dashboard.html?skip_onboarding=true">I'll send this later</a>
-        </div>
+      <div class="card-header">
+        <div class="hdr-icon"><i class="ti ti-send" id="hdr-icon-i"></i></div>
+        <div><div class="hdr-title" id="hdr-title">Review & send</div><div class="hdr-sub" id="hdr-sub">Once you're happy, send it straight to your customer</div></div>
       </div>
-
-      <div class="success-wrap" id="success-wrap">
-        <div class="success-icon"><i class="ti ti-confetti"></i></div>
-        <h1>You're all set!</h1>
-        <p class="subtitle">Your first invoice is on its way. You'll get notified the moment it's paid.</p>
-
-        <div class="success-stats">
-          <div class="success-stat">
-            <div class="success-stat-value">1</div>
-            <div class="success-stat-label">Invoice sent</div>
-          </div>
-          <div class="success-stat">
-            <div class="success-stat-value">4</div>
-            <div class="success-stat-label">Free invoices left</div>
-          </div>
+      <div class="card-body" id="card-body">
+        <!-- Preview -->
+        <div class="preview-box" id="preview-box">
+          <div class="prev-row"><span>Customer</span><span id="prev-name">—</span></div>
+          <div class="prev-row" id="prev-contact-row"><span id="prev-contact-label">Email</span><span id="prev-contact">—</span></div>
+          <div class="prev-row"><span>Job</span><span id="prev-job">—</span></div>
+          <div class="prev-row" id="prev-vat-row" style="display:none"><span id="prev-vat-label">VAT (20%)</span><span id="prev-vat-amt">£0.00</span></div>
+          <div class="prev-total"><span>Total due</span><span id="prev-total">£0.00</span></div>
         </div>
-
-        <button class="btn-dashboard" onclick="window.location.href='dashboard.html'">
-          Go to my dashboard <i class="ti ti-arrow-right"></i>
+        <button class="btn-send" id="send-btn" onclick="sendInvoice()">
+          <i class="ti ti-send"></i> <span id="send-label">Send invoice</span>
         </button>
+        <button class="btn-skip" onclick="skipToDashboard()">I'll send this later</button>
       </div>
-
     </div>
   </div>
-
-  <footer class="footer">
-    <p>© 2026 TradesBill &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
-  </footer>
+  <div class="footer"><p>© 2026 Primo Invoice · Payments powered by Stripe</p></div>
 
   <script>
-    function fmt(n) { return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+    var draft = {};
 
-    async function loadDraft() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) {
-        window.location.href = 'login.html';
+    function fmt(n) { return '£' + Number(n||0).toFixed(2); }
+
+    function loadDraft() {
+      try {
+        draft = JSON.parse(sessionStorage.getItem('ob_invoice') || '{}');
+      } catch(e) { draft = {}; }
+
+      if (!draft.customer) {
+        // Nothing in sessionStorage — redirect back
+        window.location.href = 'onboarding-invoice.html';
         return;
       }
-      const meta = data.user.user_metadata || {};
-      document.getElementById('prev-name').textContent = meta.first_invoice_customer || '—';
-      document.getElementById('prev-email').textContent = meta.first_invoice_email || '—';
-      document.getElementById('prev-job').textContent = meta.first_invoice_job || '—';
-      document.getElementById('prev-amount').textContent = fmt(meta.first_invoice_amount || 0);
+
+      document.getElementById('prev-name').textContent = draft.customer || '—';
+      document.getElementById('prev-job').textContent  = draft.job || '—';
+
+      // Contact
+      var isWa = draft.contactMode === 'whatsapp';
+      document.getElementById('prev-contact-label').textContent = isWa ? 'WhatsApp' : 'Email';
+      document.getElementById('prev-contact').textContent = isWa ? (draft.phone || '—') : (draft.email || '—');
+
+      // VAT
+      if (draft.vat > 0) {
+        var vatAmt = (draft.amount * draft.vat / 100);
+        document.getElementById('prev-vat-row').style.display = 'flex';
+        document.getElementById('prev-vat-label').textContent = 'VAT (' + draft.vat + '%)';
+        document.getElementById('prev-vat-amt').textContent = fmt(vatAmt);
+      }
+      document.getElementById('prev-total').textContent = fmt(draft.total || draft.amount);
+
+      // Update send button label
+      document.getElementById('send-label').textContent = 'Send invoice — ' + fmt(draft.total || draft.amount);
     }
     loadDraft();
 
-    async function sendFirstInvoice() {
-      const btn = document.getElementById('send-btn');
-      btn.innerHTML = 'Sending...';
+    async function sendInvoice() {
+      var btn = document.getElementById('send-btn');
       btn.disabled = true;
+      document.getElementById('send-label').textContent = 'Creating payment link…';
 
-      // TODO: In production this creates a real invoice row in Supabase and
-      // triggers a Stripe Payment Link + email send via your backend function.
-      // For now we mark onboarding complete so the dashboard shows real-data mode.
+      try {
+        // Create Stripe payment link
+        var res = await fetch('/api/create-payment-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: Math.round((draft.total || draft.amount) * 100),
+            currency: 'gbp',
+            customerName: draft.customer,
+            description: draft.job
+          })
+        });
+        var result = await res.json();
+        if (!result.paymentUrl && !result.url) throw new Error(result.error || 'Could not create payment link');
+        var payUrl = result.paymentUrl || result.url;
 
-      await supabase.auth.updateUser({
-        data: {
-          onboarding_step: 'complete',
-          onboarding_complete: true,
-          invoices_sent_count: 1
-        }
-      });
+        // Save invoice to Supabase + localStorage
+        var invoiceRecord = {
+          id: Date.now().toString(),
+          number: '#1001',
+          customer_name: draft.customer,
+          customer: draft.customer,
+          job: draft.job,
+          amount: draft.total || draft.amount,
+          status: 'unpaid',
+          stripe_payment_link: payUrl,
+          date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString()
+        };
 
-      setTimeout(() => {
-        document.getElementById('send-wrap').style.display = 'none';
-        document.getElementById('progress-bar').style.display = 'none';
-        document.getElementById('success-wrap').style.display = 'block';
-      }, 800);
+        try {
+          var { data: { user } } = await supabase.auth.getUser();
+          await supabase.from('invoices').insert({ ...invoiceRecord, user_id: user.id });
+          // Auto-create customer
+          await supabase.from('customers').insert({ user_id: user.id, name: draft.customer, email: draft.email || null, phone: draft.phone || null, created_at: new Date().toISOString() });
+          await supabase.auth.updateUser({ data: { onboarding_complete: true, trial_start: new Date().toISOString() } });
+        } catch(e) { console.warn('Supabase save failed:', e.message); }
+
+        // Always save to localStorage fallback
+        var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        invs.unshift(invoiceRecord);
+        localStorage.setItem('tb_invoices', JSON.stringify(invs));
+
+        showSuccess(payUrl);
+
+      } catch(e) {
+        btn.disabled = false;
+        document.getElementById('send-label').textContent = 'Send invoice — ' + fmt(draft.total || draft.amount);
+        showError(e.message);
+      }
+    }
+
+    function showSuccess(payUrl) {
+      document.getElementById('hdr-icon-i').className = 'ti ti-circle-check';
+      document.getElementById('hdr-title').textContent = 'Invoice created!';
+      document.getElementById('hdr-sub').textContent = 'Share the payment link with your customer';
+
+      var isWa = draft.contactMode === 'whatsapp';
+      var waMsg = encodeURIComponent('Hi ' + draft.customer + ', here is your invoice for ' + fmt(draft.total || draft.amount) + '.\n\nPay by card or Apple Pay:\n' + payUrl + '\n\nThank you!');
+      var waNum = (draft.phone || '').replace(/\s+/g,'').replace(/^0/,'44');
+
+      document.getElementById('card-body').innerHTML =
+        '<p style="font-size:13px;color:#6B6A65;margin-bottom:14px">Copy the payment link below and send it to <strong style="color:#061A30">' + draft.customer + '</strong>.</p>'
+
+        // Payment link copy box
+        + '<div class="link-box">'
+        + '<i class="ti ti-link" style="font-size:16px;color:#A3A29C;flex-shrink:0"></i>'
+        + '<input type="text" id="pay-link-input" value="' + payUrl + '" readonly onclick="this.select()" />'
+        + '<button class="btn-copy" onclick="copyLink()">Copy</button>'
+        + '</div>'
+
+        // Action buttons
+        + '<div class="action-grid">'
+        + (isWa && waNum
+          ? '<a href="https://wa.me/' + waNum + '?text=' + waMsg + '" target="_blank" class="action-btn" style="background:#25D366;color:#fff"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i> Send on WhatsApp</a>'
+          : '<a href="mailto:' + (draft.email||'') + '?subject=Invoice - ' + fmt(draft.total||draft.amount) + '&body=Hi ' + draft.customer + ',%0D%0A%0D%0AHere is your payment link:%0D%0A%0D%0A' + payUrl + '%0D%0A%0D%0ATotal: ' + fmt(draft.total||draft.amount) + '%0D%0A%0D%0AThank you!" class="action-btn" style="background:#0A2540;color:#fff"><i class="ti ti-mail" style="font-size:16px"></i> Send by email</a>'
+          )
+        + '<button onclick="markCashPaid()" class="action-btn action-btn-cash"><i class="ti ti-cash" style="font-size:16px"></i> Mark as cash paid</button>'
+        + '</div>'
+
+        + '<button onclick="window.location.href=\'dashboard.html\'" class="action-btn action-btn-dash" style="width:100%;margin-top:4px"><i class="ti ti-layout-dashboard" style="font-size:16px"></i> Go to dashboard</button>';
+
+      // Auto-open WhatsApp on mobile
+      if (isWa && waNum) {
+        setTimeout(function(){ window.open('https://wa.me/' + waNum + '?text=' + waMsg, '_blank'); }, 600);
+      }
+    }
+
+    function copyLink() {
+      var inp = document.getElementById('pay-link-input');
+      if (!inp) return;
+      inp.select();
+      try { document.execCommand('copy'); } catch(e) { navigator.clipboard && navigator.clipboard.writeText(inp.value); }
+      var btn = inp.nextElementSibling;
+      btn.textContent = 'Copied!';
+      btn.style.background = '#1D9E75';
+      setTimeout(function(){ btn.textContent = 'Copy'; btn.style.background = '#0A2540'; }, 2000);
+    }
+
+    async function markCashPaid() {
+      // Mark the latest invoice as cash paid in localStorage
+      var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+      if (invs.length > 0) {
+        invs[0].status = 'paid';
+        invs[0].payment_method = 'cash';
+        localStorage.setItem('tb_invoices', JSON.stringify(invs));
+      }
+      try {
+        var { data: { user } } = await supabase.auth.getUser();
+        await supabase.from('invoices').update({ status: 'paid', payment_method: 'cash' }).eq('user_id', user.id).order('created_at', { ascending: false }).limit(1);
+      } catch(e) {}
+      window.location.href = 'dashboard.html';
+    }
+
+    function showError(msg) {
+      var existing = document.getElementById('ob-error');
+      if (existing) existing.remove();
+      var el = document.createElement('div');
+      el.id = 'ob-error';
+      el.style.cssText = 'background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 14px;font-size:13px;margin-bottom:12px';
+      el.textContent = msg;
+      document.getElementById('send-btn').before(el);
+    }
+
+    async function skipTodashboard() {
+      try { await supabase.auth.updateUser({ data: { onboarding_complete: true, trial_start: new Date().toISOString() } }); } catch(e) {}
+      window.location.href = 'dashboard.html';
     }
   </script>
-
 </body>
 </html>

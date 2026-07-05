@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -110,7 +110,7 @@
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 14px 16px; position: sticky; top: 0; z-index: 200; }
       .mob-logo { display: flex; align-items: center; gap: 7px; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
@@ -177,7 +177,10 @@
 
   <!-- MOBILE TOP BAR -->
   <div class="mobile-topbar">
-    <div class="mob-logo"><i class="ti ti-file-invoice"></i><span>Primo Invoice</span></div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:1px" id="mob-greet-time">Good morning</div>
+      <div style="font-size:17px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
+    </div>
     <div class="mob-right">
       <i class="ti ti-bell mob-bell"></i>
       <a href="settings.html" class="mob-avatar" id="mob-avatar"></a>
@@ -677,6 +680,9 @@
         var mobAvatar = document.getElementById('mob-avatar'); if (mobAvatar) mobAvatar.textContent = ini;
         var heroName = document.getElementById('hero-name'); if (heroName) heroName.textContent = first || fullName;
         var heroGreet = document.getElementById('hero-greet'); if (heroGreet) heroGreet.textContent = greeting();
+        // Mobile topbar greeting
+        var mobGreetName = document.getElementById('mob-greet-name'); if (mobGreetName) mobGreetName.textContent = first || fullName;
+        var mobGreetTime = document.getElementById('mob-greet-time'); if (mobGreetTime) mobGreetTime.textContent = greeting();
         var mobHero = document.getElementById('mob-hero');
         if (mobHero && window.innerWidth <= 768) mobHero.style.display = 'block';
 

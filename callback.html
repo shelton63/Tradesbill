@@ -2,124 +2,68 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Confirming your account — Primo Invoice</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0A2540;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 40px 36px;
-      text-align: center;
-      max-width: 380px;
-      width: 90%;
-    }
-    .icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 30px;
-    }
-    .icon-loading { background: #EEF3F8; animation: pulse 1.2s ease-in-out infinite; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; border-radius: 20px; padding: 44px 36px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+    .icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+    .icon-spin { background: #EEF3F8; animation: spin 1s linear infinite; }
     .icon-success { background: #E1F5EE; }
-    .icon-error { background: #FCEBEB; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-    h2 { font-size: 20px; font-weight: 600; color: #061A30; margin-bottom: 8px; }
+    .icon-error { background: #FDEDED; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    h2 { font-size: 20px; font-weight: 700; color: #061A30; margin-bottom: 8px; }
     p { font-size: 14px; color: #6B6A65; line-height: 1.6; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #B5D4F4;
-      border-top-color: #0A2540;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 24px;
-      background: #0A2540;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .btn { display: inline-block; margin-top: 20px; padding: 12px 28px; background: #0A2540; color: #fff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #E5E3DC; border-top-color: #0A2540; border-radius: 50%; animation: spin 0.8s linear infinite; }
   </style>
 </head>
 <body>
   <div class="card" id="card">
-    <div class="icon icon-loading" id="icon">
-      <div class="spinner"></div>
-    </div>
-    <h2 id="title">Confirming your account...</h2>
-    <p id="msg">Please wait a moment while we verify your email.</p>
+    <div class="icon icon-spin" id="icon"><div class="spinner"></div></div>
+    <h2 id="title">Confirming your account…</h2>
+    <p id="msg">Please wait while we verify your email.</p>
   </div>
 
   <script>
     async function handleCallback() {
       try {
-        if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE' || SUPABASE_KEY === 'YOUR_ANON_KEY_HERE') {
-          throw new Error('Supabase keys not set in callback.html. Open the file on GitHub and paste your Project URL and Anon Key near the top.');
-        }
+        var params     = new URLSearchParams(window.location.search);
+        var hashParams = new URLSearchParams(window.location.hash.substring(1));
+        var code        = params.get('code');
+        var accessToken = hashParams.get('access_token');
+        var refreshToken = hashParams.get('refresh_token');
 
-        // Exchange the code/token in the URL for a session
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) throw error;
-
-        if (data.session) {
-          await redirectAfterConfirm();
+        if (code) {
+          var res = await supabase.auth.exchangeCodeForSession(code);
+          if (res.error) throw res.error;
+        } else if (accessToken) {
+          var res = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (res.error) throw res.error;
         } else {
-          const params = new URLSearchParams(window.location.search);
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const code = params.get('code');
-          const accessToken = hashParams.get('access_token');
-
-          if (code) {
-            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-            if (exchangeError) throw exchangeError;
-            await redirectAfterConfirm();
-          } else if (accessToken) {
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: hashParams.get('refresh_token')
-            });
-            await redirectAfterConfirm();
-          } else {
-            throw new Error('No confirmation code found. The link may have expired.');
-          }
+          // Maybe already have a session
+          var { data: sessData } = await supabase.auth.getSession();
+          if (!sessData || !sessData.session) throw new Error('No confirmation code found. The link may have expired — please try signing in.');
         }
-      } catch (err) {
+
+        await redirectAfterConfirm();
+
+      } catch(err) {
         document.getElementById('icon').innerHTML = '⚠️';
         document.getElementById('icon').className = 'icon icon-error';
         document.getElementById('title').textContent = 'Something went wrong';
-        document.getElementById('msg').textContent = err.message || 'The confirmation link may have expired. Please try signing up again.';
-        document.getElementById('card').innerHTML += '<a href="signup.html" class="btn">Back to sign up</a>';
+        document.getElementById('msg').textContent = err.message || 'The confirmation link may have expired. Please try signing in.';
+        document.getElementById('card').innerHTML += '<a href="login.html" class="btn">Go to sign in</a>';
       }
     }
 
@@ -129,29 +73,23 @@
       document.getElementById('title').textContent = 'Email confirmed!';
 
       try {
-        const { data } = await supabase.auth.getUser();
-        const meta = data?.user?.user_metadata || {};
-        const onboardingComplete = meta.onboarding_complete;
-        const isNewUser = !meta.business_name && !meta.trade_type;
+        var { data } = await supabase.auth.getUser();
+        var meta = (data && data.user) ? (data.user.user_metadata || {}) : {};
+        var isNewUser = !meta.onboarding_complete && !meta.business_name;
 
-        if (!onboardingComplete || isNewUser) {
-          // New user — set trial start and send to onboarding
+        if (isNewUser) {
           if (!meta.trial_start) {
-            await supabase.auth.updateUser({
-              data: { trial_start: new Date().toISOString() }
-            });
+            await supabase.auth.updateUser({ data: { trial_start: new Date().toISOString() } });
           }
-          document.getElementById('msg').textContent = "Let's get your account set up...";
-          setTimeout(() => { window.location.replace('welcome.html'); }, 1200);
+          document.getElementById('msg').textContent = "Let's get your account set up…";
+          setTimeout(function(){ window.location.replace('welcome.html'); }, 1000);
         } else {
-          // Returning user confirming email change
-          document.getElementById('msg').textContent = 'Taking you to your dashboard...';
-          setTimeout(() => { window.location.replace('dashboard.html'); }, 1200);
+          document.getElementById('msg').textContent = 'Taking you to your dashboard…';
+          setTimeout(function(){ window.location.replace('dashboard.html'); }, 1000);
         }
       } catch(e) {
-        // Fallback — if we can't read metadata just go to welcome
-        document.getElementById('msg').textContent = "Let's get your account set up...";
-        setTimeout(() => { window.location.replace('welcome.html'); }, 1200);
+        document.getElementById('msg').textContent = "Let's get your account set up…";
+        setTimeout(function(){ window.location.replace('welcome.html'); }, 1000);
       }
     }
 

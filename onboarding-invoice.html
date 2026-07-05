@@ -8,13 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,8 +18,6 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%);
       display: flex; flex-direction: column; }
-    body::before { content: ''; position: fixed; top: -150px; right: -150px; width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(93,202,165,0.1) 0%, transparent 70%); pointer-events: none; }
     .nav { padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
     .nav-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .nav-logo i { color: #5DCAA5; }
@@ -51,7 +45,14 @@
     .field label { display: block; font-size: 11px; font-weight: 700; color: #8B8A84; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
     .field input, .field select { width: 100%; padding: 11px 14px; border: 1.5px solid #E5E3DC; border-radius: 10px; font-size: 14px; color: #1A1A18; font-family: inherit; outline: none; }
     .field input:focus, .field select:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    /* Contact tabs */
+    .contact-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .contact-tab { flex: 1; padding: 9px; border-radius: 9px; font-size: 13px; font-weight: 600; border: 1.5px solid #E5E3DC; background: #fff; color: #6B6A65; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
+    .contact-tab.active-email { border-color: #0A2540; background: #EEF3F8; color: #0A2540; }
+    .contact-tab.active-wa { border-color: #25D366; background: #F0FEF4; color: #1A5C2E; }
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+    .input-icon-wrap input { padding-left: 38px; }
     .amount-wrap { position: relative; }
     .amount-wrap span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #6B6A65; font-weight: 600; }
     .amount-wrap input { padding-left: 28px; font-size: 18px; font-weight: 600; }
@@ -62,9 +63,10 @@
     .btn-back { background: none; border: none; color: #A3A29C; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; }
     .btn-next { background: #5DCAA5; color: #061A30; font-size: 14px; font-weight: 700; border: none; padding: 12px 26px; border-radius: 10px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 7px; }
     .btn-next:hover { background: #4DB894; }
+    .btn-skip { background: none; border: none; color: #A3A29C; font-size: 13px; cursor: pointer; font-family: inherit; text-decoration: underline; }
     .footer { padding: 14px; text-align: center; }
     .footer p { font-size: 12px; color: rgba(255,255,255,0.3); }
-    @media (max-width: 560px) { .nav { padding: 14px 16px; } .progress-wrap { padding: 4px 16px 16px; } .card-body { padding: 20px; } .card-footer { padding: 16px 20px; } .field-row { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .nav { padding: 14px 16px; } .progress-wrap { padding: 4px 16px 16px; } .card-body { padding: 20px; } .card-footer { padding: 16px 20px; flex-wrap: wrap; gap: 8px; } }
   </style>
 </head>
 <body>
@@ -90,11 +92,37 @@
         <div><div class="hdr-title">Create your first invoice</div><div class="hdr-sub">Takes less than 60 seconds</div></div>
       </div>
       <div class="card-body">
-        <div class="field"><label>Customer name</label><input type="text" id="cust-name" placeholder="e.g. Mark Taylor" autocomplete="off" /></div>
-        <div class="field"><label>Customer email</label><input type="email" id="cust-email" placeholder="mark@email.com" autocomplete="off" /></div>
-        <div class="field"><label>Job description</label><input type="text" id="job-desc" placeholder="e.g. Bathroom refit at 14 Elm St" autocomplete="off" /></div>
+        <div class="field"><label>Customer name <span style="color:#D14343">*</span></label><input type="text" id="cust-name" placeholder="e.g. Mark Taylor" autocomplete="off" /></div>
+
+        <!-- Contact method tabs -->
         <div class="field">
-          <label>Amount</label>
+          <label>Send invoice via</label>
+          <div class="contact-tabs">
+            <button type="button" id="tab-email" class="contact-tab active-email" onclick="switchTab('email')">
+              <i class="ti ti-mail" style="font-size:15px"></i> Email
+            </button>
+            <button type="button" id="tab-wa" class="contact-tab" onclick="switchTab('whatsapp')">
+              <i class="ti ti-brand-whatsapp" style="font-size:15px;color:#25D366"></i> WhatsApp
+            </button>
+          </div>
+          <div id="email-wrap">
+            <div class="input-icon-wrap">
+              <i class="ti ti-mail" style="color:#A3A29C"></i>
+              <input type="email" id="cust-email" placeholder="customer@email.com" autocomplete="off" />
+            </div>
+          </div>
+          <div id="wa-wrap" style="display:none">
+            <div class="input-icon-wrap">
+              <i class="ti ti-brand-whatsapp" style="color:#25D366"></i>
+              <input type="tel" id="cust-phone" placeholder="07700 900123" autocomplete="off" />
+            </div>
+            <div style="font-size:12px;color:#1A5C2E;margin-top:5px"><i class="ti ti-info-circle" style="font-size:12px"></i> We'll create a payment link you paste straight into WhatsApp</div>
+          </div>
+        </div>
+
+        <div class="field"><label>Job description <span style="color:#D14343">*</span></label><input type="text" id="job-desc" placeholder="e.g. Bathroom refit at 14 Elm St" autocomplete="off" /></div>
+        <div class="field">
+          <label>Amount <span style="color:#D14343">*</span></label>
           <div class="amount-wrap"><span>£</span><input type="number" id="amount" placeholder="0.00" min="0" step="0.01" oninput="calcTotal()" /></div>
         </div>
         <div class="field">
@@ -113,22 +141,47 @@
       </div>
       <div class="card-footer">
         <button class="btn-back" onclick="window.location.href='onboarding-payments.html'"><i class="ti ti-arrow-left" style="font-size:14px"></i> Back</button>
-        <button class="btn-next" onclick="continueNext()">Continue <i class="ti ti-arrow-right" style="font-size:14px"></i></button>
+        <div style="display:flex;align-items:center;gap:14px">
+          <button class="btn-skip" onclick="skipInvoice()">Skip for now</button>
+          <button class="btn-next" onclick="continueNext()">Continue <i class="ti ti-arrow-right" style="font-size:14px"></i></button>
+        </div>
       </div>
     </div>
   </div>
   <div class="footer"><p>© 2026 Primo Invoice · Payments powered by Stripe</p></div>
   <script>
+    var contactMode = 'email';
+
+    function switchTab(mode) {
+      contactMode = mode;
+      var tabEmail = document.getElementById('tab-email');
+      var tabWa    = document.getElementById('tab-wa');
+      var emailWrap = document.getElementById('email-wrap');
+      var waWrap    = document.getElementById('wa-wrap');
+      if (mode === 'email') {
+        tabEmail.className = 'contact-tab active-email';
+        tabWa.className    = 'contact-tab';
+        emailWrap.style.display = 'block';
+        waWrap.style.display = 'none';
+      } else {
+        tabEmail.className = 'contact-tab';
+        tabWa.className    = 'contact-tab active-wa';
+        emailWrap.style.display = 'none';
+        waWrap.style.display = 'block';
+        document.getElementById('cust-phone').focus();
+      }
+    }
+
     function calcTotal() {
-      const amt = parseFloat(document.getElementById('amount').value) || 0;
-      const vat = parseInt(document.getElementById('vat').value) || 0;
-      const vatAmt = amt * vat / 100;
-      const total = amt + vatAmt;
-      const row = document.getElementById('total-row');
+      var amt = parseFloat(document.getElementById('amount').value) || 0;
+      var vat = parseInt(document.getElementById('vat').value) || 0;
+      var vatAmt = amt * vat / 100;
+      var total = amt + vatAmt;
+      var row = document.getElementById('total-row');
       if (amt > 0) {
         row.style.display = 'block';
         document.getElementById('sub-display').textContent = '£' + amt.toFixed(2);
-        const vatLine = document.getElementById('vat-line');
+        var vatLine = document.getElementById('vat-line');
         if (vat > 0) {
           vatLine.style.display = 'flex';
           document.getElementById('vat-label').textContent = 'VAT (' + vat + '%)';
@@ -139,25 +192,34 @@
     }
 
     function continueNext() {
-      const name = document.getElementById('cust-name').value.trim();
-      const job  = document.getElementById('job-desc').value.trim();
-      const amt  = parseFloat(document.getElementById('amount').value) || 0;
-      if (!name || !job || amt <= 0) { alert('Please fill in customer name, job description and amount.'); return; }
-      // Store draft invoice in sessionStorage for the send step
+      var name  = document.getElementById('cust-name').value.trim();
+      var job   = document.getElementById('job-desc').value.trim();
+      var amt   = parseFloat(document.getElementById('amount').value) || 0;
+      var email = document.getElementById('cust-email').value.trim();
+      var phone = document.getElementById('cust-phone').value.trim();
+      if (!name) { alert('Please enter a customer name.'); return; }
+      if (!job)  { alert('Please enter a job description.'); return; }
+      if (amt <= 0) { alert('Please enter an amount.'); return; }
+      var vat    = parseInt(document.getElementById('vat').value) || 0;
+      var vatAmt = amt * vat / 100;
+      var total  = amt + vatAmt;
       sessionStorage.setItem('ob_invoice', JSON.stringify({
-        customer: name,
-        email: document.getElementById('cust-email').value.trim(),
-        job: job,
-        amount: amt,
-        vat: parseInt(document.getElementById('vat').value) || 0
+        customer: name, email: email, phone: phone,
+        job: job, amount: amt, vat: vat, total: total,
+        contactMode: contactMode
       }));
       window.location.href = 'onboarding-send.html';
     }
 
+    async function skipInvoice() {
+      try { await supabase.auth.updateUser({ data: { onboarding_complete: true, trial_start: new Date().toISOString() } }); } catch(e) {}
+      window.location.href = 'dashboard.html';
+    }
+
     async function loadUser() {
       try {
-        const { data } = await supabase.auth.getUser();
-        if (!data?.user) { window.location.href = 'login.html'; }
+        var { data } = await supabase.auth.getUser();
+        if (!data || !data.user) { window.location.href = 'login.html'; }
       } catch(e) {}
     }
     loadUser();
