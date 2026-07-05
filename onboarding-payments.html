@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -168,30 +168,63 @@
 
   <script>
     async function loadUser() {
+      // Always check URL params first — Stripe redirect happens before session check
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.get('connected') === 'true') {
+        const accountId = params.get('account_id');
+        // Save to localStorage immediately as fallback
+        localStorage.setItem('pi_stripe_connected', 'true');
+        localStorage.setItem('pi_stripe_account_id', accountId);
+        try {
+          await supabase.auth.updateUser({ data: { stripe_connected: true, stripe_account_id: accountId } });
+        } catch(e) { console.warn('Could not save to Supabase:', e.message); }
+        showConnected();
+        // Clean up URL without reload
+        window.history.replaceState({}, '', 'onboarding-payments.html');
+        return;
+      }
+
+      if (params.get('reconnect') === 'true') {
+        var btn = document.getElementById('connect-btn');
+        if (btn) btn.textContent = 'Retry Stripe connection';
+      }
+
       try {
         const { data } = await supabase.auth.getUser();
         if (!data?.user) { window.location.href = 'login.html'; return; }
         const m = data.user.user_metadata || {};
-        if (m.stripe_connected) showConnected();
-        if (m.bank_account_name) { document.getElementById('bank-name').value = m.bank_account_name; document.getElementById('sort-code').value = m.bank_sort_code || ''; document.getElementById('acc-num').value = m.bank_account_number || ''; }
-        // Handle Stripe Connect return
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('connected') === 'true') {
-          const accountId = params.get('account_id');
-          await supabase.auth.updateUser({ data: { stripe_connected: true, stripe_account_id: accountId } });
-          showConnected();
+
+        // Check Supabase metadata OR localStorage fallback
+        const stripeConnected = m.stripe_connected || localStorage.getItem('pi_stripe_connected') === 'true';
+        if (stripeConnected) showConnected();
+
+        if (m.bank_account_name) {
+          document.getElementById('bank-name').value = m.bank_account_name;
+          document.getElementById('sort-code').value = m.bank_sort_code || '';
+          document.getElementById('acc-num').value = m.bank_account_number || '';
         }
-        if (params.get('reconnect') === 'true') {
-          document.getElementById('connect-btn').textContent = 'Retry Stripe connection';
-        }
-      } catch(e) {}
+      } catch(e) {
+        // Check localStorage fallback
+        if (localStorage.getItem('pi_stripe_connected') === 'true') showConnected();
+      }
     }
     loadUser();
 
     function showConnected() {
       const box = document.getElementById('stripe-box');
       box.classList.add('connected');
-      box.innerHTML = '<div style="display:flex;align-items:center;gap:12px"><div style="width:42px;height:42px;border-radius:11px;background:#1D9E75;display:flex;align-items:center;justify-content:center"><i class="ti ti-circle-check" style="font-size:22px;color:#fff"></i></div><div><div style="font-size:15px;font-weight:700;color:#085041">Stripe connected!</div><div style="font-size:13px;color:#0F6E56">You\'re all set to accept card & Apple Pay payments.</div></div></div>';
+      box.innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:4px 0">'
+        + '<div style="width:48px;height:48px;border-radius:12px;background:#1D9E75;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-circle-check" style="font-size:24px;color:#fff"></i></div>'
+        + '<div><div style="font-size:15px;font-weight:700;color:#085041;margin-bottom:2px">Stripe connected!</div>'
+        + '<div style="font-size:13px;color:#0F6E56">You\'re all set to accept card & Apple Pay payments.</div></div></div>';
+      // Make Continue button teal and prominent
+      var continueBtn = document.getElementById('continue-btn');
+      if (continueBtn) {
+        continueBtn.style.background = '#5DCAA5';
+        continueBtn.style.color = '#061A30';
+        continueBtn.innerHTML = 'Continue <i class="ti ti-arrow-right" style="font-size:14px"></i>';
+      }
     }
 
     async function connectStripe() {
