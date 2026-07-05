@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -331,12 +331,14 @@
 
       // ── Recent invoices rows ──
       var invRows = invoices.slice(0,5).map(function(inv, i) {
-        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F0EFEA">'
+        var invId = inv.id || '';
+        var status = inv.status || 'unpaid';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F0EFEA;cursor:pointer" onclick="openPayModal(\'' + invId + '\',\'' + status + '\')" id="inv-row-' + invId + '">'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + (['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'][i%5]) + ';color:' + (['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'][i%5]) + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(inv.customer_name) + '</div>'
           + '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (inv.customer_name||'—') + '</div>'
-          + '<div style="font-size:11px;color:#8B8A84">' + (inv.job||'—') + ' · #' + (inv.number||inv.id.slice(0,6)) + '</div></div>'
+          + '<div style="font-size:11px;color:#8B8A84">' + (inv.job||'—') + ' · ' + (inv.number||('#'+inv.id.slice(0,6))) + '</div></div>'
           + '<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">' + fmtGbp(inv.amount) + '</div>'
-          + badge(inv.status) + '</div>';
+          + badge(status) + '</div>';
       }).join('');
 
       // ── Jobs rows ──
@@ -383,7 +385,7 @@
         + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8B8A84;margin-bottom:6px">Customers</div><div style="font-size:20px;font-weight:700;color:#061A30;letter-spacing:-0.02em">' + custSet.size + '</div></div>'
         + '</div>'
 
-        // Recent invoices
+        // Recent invoices — with clickable payment status
         + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
         + '<div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
         + '<div style="font-size:13px;font-weight:700;color:#061A30">Recent invoices</div>'
@@ -906,6 +908,111 @@
       else if (e.key === 'Enter' || e.key === '=') calcAction('eq');
       else if (e.key === 'Backspace') calcAction('back');
       else if (e.key === 'Escape') closeCalc();
+    });
+  </script>
+
+  <!-- PAYMENT STATUS MODAL -->
+  <div id="pay-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:400px;margin:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="background:#0A2540;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:#fff">Update payment status</div>
+        <button onclick="closePayModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div style="padding:20px">
+        <div style="font-size:12px;font-weight:700;color:#8B8A84;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em">Mark as</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="pay-status-btns">
+          <button onclick="updateStatus('paid','card')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #E5E3DC;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+            <div style="width:36px;height:36px;border-radius:9px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-credit-card" style="font-size:18px;color:#0F6E56"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:#061A30">Paid by card</div><div style="font-size:11px;color:#8B8A84">Card, Apple Pay or Google Pay</div></div>
+          </button>
+          <button onclick="updateStatus('paid','cash')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #E5E3DC;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+            <div style="width:36px;height:36px;border-radius:9px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-cash" style="font-size:18px;color:#0F6E56"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:#061A30">Paid in cash</div><div style="font-size:11px;color:#8B8A84">Mark as received in hand</div></div>
+          </button>
+          <button onclick="updateStatus('partial','cash')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #E5E3DC;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+            <div style="width:36px;height:36px;border-radius:9px;background:#FBF3E3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-clock" style="font-size:18px;color:#C28A1E"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:#061A30">Partially paid</div><div style="font-size:11px;color:#8B8A84">Customer paid a deposit</div></div>
+          </button>
+          <button onclick="updateStatus('overdue','none')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #E5E3DC;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+            <div style="width:36px;height:36px;border-radius:9px;background:#FDEDED;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-alert-circle" style="font-size:18px;color:#D14343"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:#061A30">Mark overdue</div><div style="font-size:11px;color:#8B8A84">Chase the customer</div></div>
+          </button>
+          <button onclick="updateStatus('unpaid','none')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid #E5E3DC;border-radius:10px;background:#F8F7F3;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+            <div style="width:36px;height:36px;border-radius:9px;background:#F0EFEA;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-rotate-2" style="font-size:18px;color:#6B6A65"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:#061A30">Reset to unpaid</div><div style="font-size:11px;color:#8B8A84">Undo a previous status change</div></div>
+          </button>
+        </div>
+        <div id="pay-modal-msg" style="display:none;margin-top:12px;padding:10px 13px;border-radius:9px;font-size:13px;font-weight:600;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var _payModalInvId = null;
+
+    function openPayModal(invId, currentStatus) {
+      _payModalInvId = invId;
+      document.getElementById('pay-modal-msg').style.display = 'none';
+      document.getElementById('pay-modal-overlay').style.display = 'flex';
+    }
+
+    function closePayModal() {
+      document.getElementById('pay-modal-overlay').style.display = 'none';
+      _payModalInvId = null;
+    }
+
+    async function updateStatus(status, method) {
+      if (!_payModalInvId) return;
+      var msgEl = document.getElementById('pay-modal-msg');
+
+      try {
+        // Update localStorage
+        var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        var inv = invs.find(function(i){ return i.id == _payModalInvId; });
+        if (inv) {
+          inv.status = status;
+          if (method !== 'none') inv.payment_method = method;
+          if (status === 'paid') inv.paid_at = new Date().toISOString();
+          localStorage.setItem('tb_invoices', JSON.stringify(invs));
+        }
+
+        // Update Supabase
+        try {
+          var updateData = { status: status };
+          if (method !== 'none') updateData.payment_method = method;
+          if (status === 'paid') updateData.paid_at = new Date().toISOString();
+          await supabase.from('invoices').update(updateData).eq('id', _payModalInvId);
+        } catch(e) { console.warn('Supabase update failed:', e); }
+
+        // Update the row badge in the DOM
+        var row = document.getElementById('inv-row-' + _payModalInvId);
+        if (row) {
+          var BADGE_MAP = {
+            paid:    'background:#E1F5EE;color:#0F6E56',
+            partial: 'background:#FBF3E3;color:#C28A1E',
+            overdue: 'background:#FDEDED;color:#D14343',
+            unpaid:  'background:#FBF3E3;color:#C28A1E'
+          };
+          var LABEL_MAP = { paid:'Paid', partial:'Partial', overdue:'Overdue', unpaid:'Unpaid' };
+          var existingBadge = row.querySelector('.dyn-badge');
+          if (existingBadge) {
+            existingBadge.style.cssText = 'font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;' + (BADGE_MAP[status]||BADGE_MAP.unpaid);
+            existingBadge.textContent = LABEL_MAP[status] || status;
+          }
+        }
+
+        msgEl.style.cssText = 'display:block;margin-top:12px;padding:10px 13px;border-radius:9px;font-size:13px;font-weight:600;text-align:center;background:#E1F5EE;color:#0F6E56';
+        msgEl.textContent = '✓ Updated to ' + (status === 'paid' ? 'Paid' : status);
+        setTimeout(closePayModal, 1200);
+
+      } catch(e) {
+        msgEl.style.cssText = 'display:block;margin-top:12px;padding:10px 13px;border-radius:9px;font-size:13px;font-weight:600;text-align:center;background:#FDEDED;color:#D14343';
+        msgEl.textContent = 'Update failed: ' + e.message;
+      }
+    }
+
+    document.getElementById('pay-modal-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closePayModal();
     });
   </script>
 

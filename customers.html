@@ -2,639 +2,505 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customers — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
   <script>
     if (typeof DB === 'undefined') {
       window.DB = {
-        getNextNumber: async function(type) {
-          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
-          var last = parseInt(localStorage.getItem(key) || '1000');
-          var next = last + 1; localStorage.setItem(key, next.toString());
-          return (type === 'quote' ? '#Q' : '#') + next;
-        },
-        saveInvoice: async function(inv) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
-          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
-        },
-        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
-        updateInvoiceStatus: async function(id, status, method) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var inv = invs.find(function(i){ return i.id == id; });
-          if (inv) { inv.status = status; if (method) inv.payment_method = method; }
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
-        },
-        saveCustomer: async function(c) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          var idx = custs.findIndex(function(x){ return x.id === c.id; });
-          if (idx > -1) custs[idx] = c; else custs.unshift(c);
-          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
-        },
         getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
-        deleteCustomer: async function(id) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
-        },
-        saveQuote: async function(q) {
-          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
-          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
-        },
-        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
-        saveJob: async function(j) {
-          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
-          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
-          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
-          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
-        },
-        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
-        getEarningsSummary: async function() {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var paid = invs.filter(function(i){ return i.status==='paid'; });
-          return { totalEarned: paid.reduce(function(a,i){ return a+Number(i.amount||0); },0), invoiceCount: invs.length, paidCount: paid.length };
-        }
+        saveCustomer: async function(c) { var a = JSON.parse(localStorage.getItem('tb_customers')||'[]'); var i = a.findIndex(function(x){return x.id===c.id;}); if(i>-1)a[i]=c;else a.unshift(c); localStorage.setItem('tb_customers',JSON.stringify(a)); return c; },
+        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); }
       };
     }
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
+    html, body { min-height: 100vh; overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; }
     .db { display: flex; min-height: 100vh; }
-
-    /* Sidebar */
     .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); text-decoration: none; }
     .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
     .sb-logo-icon i { color: #fff; font-size: 18px; }
     .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
     .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
-    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .sb-lbl { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
     .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
     .sb-item i { font-size: 18px; }
     .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
     .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
     .sb-user:hover { background: rgba(255,255,255,0.08); }
-    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
-    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
-    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
-
-    /* Main */
-    .main { flex: 1; margin-left: 210px; display: flex; min-height: 100vh; }
-
-    /* List panel */
-    .list-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; border-right: 1px solid #E5E3DC; }
+    .sb-av { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .sb-uname { font-size: 12px; font-weight: 600; color: #fff; }
+    .sb-uplan { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: inherit; }
-    .btn-new:hover { background: #061A30; }
-    .content { padding: 20px 24px; flex: 1; }
+    .btn-new { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+    .content { flex: 1; display: flex; overflow: hidden; }
 
-    /* Stats */
-    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
-    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 14px; }
-    .stat-label { font-size: 11px; color: #8B8A84; margin-bottom: 5px; font-weight: 600; }
-    .stat-value { font-size: 20px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
-
-    /* Search */
-    .search-wrap { position: relative; margin-bottom: 14px; }
-    .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; }
-    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
-    .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-
-    /* Filter tabs */
-    .filter-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-    .filter-tab { padding: 6px 13px; border-radius: 7px; font-size: 12px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; }
-    .filter-tab.active { background: #0A2540; color: #fff; border-color: #0A2540; }
-
-    /* Customer list */
-    .cust-list { background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; overflow: hidden; }
-    .cust-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #F0EFEA; cursor: pointer; transition: background 0.1s; }
-    .cust-row:last-child { border-bottom: none; }
-    .cust-row:hover, .cust-row.active { background: #F4F7FB; }
-    .cust-initials { width: 36px; height: 36px; border-radius: 50%; background: #EEF3F8; color: #0A2540; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    /* LIST PANEL */
+    .list-panel { width: 340px; flex-shrink: 0; border-right: 1px solid #E5E3DC; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+    .search-wrap { padding: 14px 16px; border-bottom: 1px solid #F0EFEA; }
+    .search-box { display: flex; align-items: center; gap: 8px; background: #F8F7F3; border: 1px solid #E5E3DC; border-radius: 9px; padding: 8px 12px; }
+    .search-box i { font-size: 16px; color: #A3A29C; flex-shrink: 0; }
+    .search-box input { flex: 1; border: none; background: transparent; font-size: 13px; color: #1A1A18; outline: none; font-family: inherit; }
+    .filter-tabs { display: flex; gap: 4px; padding: 0 16px 12px; }
+    .filter-tab { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 7px; border: none; cursor: pointer; font-family: inherit; background: transparent; color: #8B8A84; }
+    .filter-tab.active { background: #EEF3F8; color: #0A2540; }
+    .cust-list { flex: 1; overflow-y: auto; }
+    .cust-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #F8F7F3; cursor: pointer; }
+    .cust-item:hover { background: #F8F7F3; }
+    .cust-item.selected { background: #EEF3F8; border-left: 3px solid #0A2540; }
+    .cust-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
     .cust-info { flex: 1; min-width: 0; }
     .cust-name { font-size: 13px; font-weight: 600; color: #061A30; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cust-sub { font-size: 11px; color: #8B8A84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cust-right { text-align: right; flex-shrink: 0; }
-    .cust-amount { font-size: 13px; font-weight: 600; color: #061A30; }
-    .cust-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; display: inline-block; margin-top: 2px; }
+    .cust-meta { font-size: 11px; color: #8B8A84; margin-top: 1px; }
+    .cust-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; flex-shrink: 0; }
     .badge-new { background: #E1F5EE; color: #0F6E56; }
     .badge-repeat { background: #EEF3F8; color: #0A2540; }
-    .cust-empty { padding: 48px 20px; text-align: center; }
-    .cust-empty i { font-size: 32px; color: #D3D1C7; margin-bottom: 10px; display: block; }
-    .cust-empty p { font-size: 14px; font-weight: 600; color: #6B6A65; margin-bottom: 5px; }
-    .cust-empty span { font-size: 13px; color: #8B8A84; }
+    .empty-list { padding: 40px 20px; text-align: center; color: #A3A29C; font-size: 13px; }
+    .empty-list i { font-size: 32px; display: block; margin-bottom: 12px; color: #D3D1C7; }
 
-    /* Detail panel */
-    .detail-panel { width: 360px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-    .detail-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; color: #A3A29C; }
-    .detail-empty i { font-size: 36px; margin-bottom: 12px; }
-    .detail-empty p { font-size: 13px; }
-    .detail-header { padding: 20px; border-bottom: 1px solid #F0EFEA; display: flex; align-items: center; gap: 14px; }
-    .detail-avatar { width: 48px; height: 48px; border-radius: 50%; background: #EEF3F8; color: #0A2540; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .detail-name { font-size: 16px; font-weight: 700; color: #061A30; margin-bottom: 2px; }
-    .detail-since { font-size: 12px; color: #8B8A84; }
-    .detail-close { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #8B8A84; flex-shrink: 0; }
-    .detail-close:hover { background: #F0EFEA; }
-
-    .detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #F0EFEA; border-bottom: 1px solid #F0EFEA; }
-    .detail-stat { background: #fff; padding: 14px 12px; text-align: center; }
-    .detail-stat-val { font-size: 17px; font-weight: 700; color: #061A30; letter-spacing: -0.01em; }
-    .detail-stat-label { font-size: 10px; color: #8B8A84; font-weight: 600; margin-top: 2px; }
-
-    .detail-section { padding: 16px 20px; border-bottom: 1px solid #F0EFEA; }
-    .detail-section-title { font-size: 11px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-    .detail-field { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; }
-    .detail-field:last-child { margin-bottom: 0; }
-    .detail-field i { font-size: 16px; color: #A3A29C; flex-shrink: 0; margin-top: 1px; }
-    .detail-field-val { font-size: 13px; color: #1A1A18; line-height: 1.4; }
-    .detail-field-empty { color: #A3A29C; font-style: italic; }
-
-    .invoice-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #F0EFEA; }
-    .invoice-row:last-child { border-bottom: none; }
-    .invoice-row-left { font-size: 12px; color: #1A1A18; }
-    .invoice-row-num { font-weight: 600; color: #0A2540; }
-    .invoice-row-date { color: #8B8A84; font-size: 11px; margin-top: 1px; }
-    .invoice-row-right { text-align: right; }
-    .invoice-row-amount { font-size: 13px; font-weight: 600; color: #061A30; }
-    .inv-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+    /* DETAIL PANEL */
+    .detail-panel { flex: 1; overflow-y: auto; background: #FAFAF8; }
+    .detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #A3A29C; font-size: 14px; gap: 10px; }
+    .detail-empty i { font-size: 40px; color: #D3D1C7; }
+    .detail-header { background: #0A2540; padding: 24px 28px; display: flex; align-items: center; gap: 18px; }
+    .detail-av { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+    .detail-name { font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .detail-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .detail-actions { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-detail { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; border: none; }
+    .btn-detail-primary { background: #5DCAA5; color: #061A30; }
+    .btn-detail-outline { background: rgba(255,255,255,0.15); color: #fff; }
+    .detail-body { padding: 20px 28px; display: flex; flex-direction: column; gap: 16px; }
+    .detail-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
+    .detail-card-header { padding: 12px 16px; border-bottom: 1px solid #F0EFEA; display: flex; align-items: center; justify-content: space-between; }
+    .detail-card-title { font-size: 12px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.05em; }
+    .detail-card-body { padding: 16px; }
+    .info-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #F8F7F3; }
+    .info-row:last-child { border-bottom: none; }
+    .info-icon { width: 28px; height: 28px; border-radius: 7px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .info-icon i { font-size: 14px; color: #0A2540; }
+    .info-label { font-size: 11px; color: #A3A29C; }
+    .info-value { font-size: 13px; font-weight: 600; color: #061A30; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 16px; }
+    .stat-box { background: #F8F7F3; border-radius: 10px; padding: 12px; text-align: center; }
+    .stat-val { font-size: 18px; font-weight: 700; color: #061A30; letter-spacing: -0.01em; }
+    .stat-lbl { font-size: 11px; color: #8B8A84; margin-top: 2px; }
+    .inv-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #F0EFEA; }
+    .inv-row:last-child { border-bottom: none; }
+    .inv-num { font-size: 11px; font-weight: 700; color: #0A2540; background: #EEF3F8; padding: 2px 7px; border-radius: 5px; }
+    .inv-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
     .inv-paid { background: #E1F5EE; color: #0F6E56; }
     .inv-unpaid { background: #FBF3E3; color: #C28A1E; }
     .inv-overdue { background: #FDEDED; color: #D14343; }
+    .note-area { width: 100%; padding: 11px 13px; border: 1.5px solid #E5E3DC; border-radius: 9px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 90px; outline: none; }
+    .note-area:focus { border-color: #0A2540; }
+    .btn-save-note { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 8px; }
+    .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 6px; display: inline-block; }
+    .tag-new { background: #E1F5EE; color: #0F6E56; }
+    .tag-repeat { background: #EEF3F8; color: #0A2540; }
 
-    .detail-actions { padding: 16px 20px; display: flex; gap: 8px; }
-    .det-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
-    .det-btn-primary { background: #0A2540; color: #fff; border: none; }
-    .det-btn-primary:hover { background: #061A30; }
-    .det-btn-secondary { background: #fff; color: #0A2540; border: 1px solid #E5E3DC; }
-    .det-btn-secondary:hover { background: #F0EFEA; }
-
-    /* Modal */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #F0EFEA; }
-    .modal-title { font-size: 16px; font-weight: 700; color: #061A30; }
-    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #F0EFEA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B6A65; font-size: 18px; }
-    .modal-body { padding: 22px; }
-    .field { margin-bottom: 14px; }
-    .field:last-child { margin-bottom: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 14px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .modal-footer { padding: 16px 22px; border-top: 1px solid #F0EFEA; display: flex; gap: 10px; justify-content: flex-end; }
-    .btn-cancel { padding: 9px 18px; border-radius: 8px; border: 1px solid #E5E3DC; background: #fff; color: #6B6A65; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-    .btn-save { padding: 9px 22px; border-radius: 8px; border: none; background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-
-    /* Mobile */
+    /* MOBILE */
     .mobile-topbar { display: none; }
     .bottom-nav { display: none; }
-    @media (max-width: 900px) {
-      .detail-panel { display: none; }
-      .list-panel { border-right: none; }
-    }
     @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
+      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 14px 16px; }
+      .mob-logo { display: flex; align-items: center; gap: 7px; text-decoration: none; }
       .mob-logo i { color: #5DCAA5; font-size: 22px; }
       .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; }
-      .content { padding: 14px 16px; }
-      .stats { grid-template-columns: 1fr 1fr 1fr; }
-      .stat-value { font-size: 16px; }
+      .content { flex-direction: column; }
+      .list-panel { width: 100%; border-right: none; border-bottom: 1px solid #E5E3DC; max-height: 50vh; }
+      .detail-header { padding: 18px 16px; flex-wrap: wrap; gap: 12px; }
+      .detail-body { padding: 14px 16px; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .detail-actions { flex-wrap: wrap; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
       .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
       .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
       .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
-      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
+      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
-      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
-      .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
-      .plus-menu-item:last-child { border-bottom: none; }
-      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
-      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
   </style>
 </head>
 <body>
-
   <div class="mobile-topbar">
-    <a href="dashboard.html" class="mob-logo" style="text-decoration:none"><i class="ti ti-file-invoice"></i><span>Primo Invoice</span></a>
-    <button class="mob-add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Add customer</button>
+    <a href="dashboard.html" class="mob-logo"><i class="ti ti-file-invoice"></i><span>Primo Invoice</span></a>
   </div>
-
   <div class="db">
     <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+      <a href="dashboard.html" class="sb-logo">
+        <div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div>
+        <span class="sb-logo-text">Primo Invoice</span>
+      </a>
       <div class="sb-nav">
-        <div class="sb-section-label">Main</div>
+        <div class="sb-lbl">Main</div>
         <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
         <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item active"><i class="ti ti-users"></i> Customers</a>
         <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
         <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
-        <div class="sb-section-label">Reports</div>
+        <div class="sb-lbl">Reports</div>
         <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
         <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
-        <div class="sb-section-label">Account</div>
+        <div class="sb-lbl">Account</div>
         <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
       </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
+      <div class="sb-bottom">
+        <a href="settings.html" class="sb-user">
+          <div class="sb-av" id="sb-av"></div>
+          <div><div class="sb-uname" id="sb-uname"></div><div class="sb-uplan" id="sb-uplan">Free plan</div></div>
+        </a>
+      </div>
     </nav>
 
     <div class="main">
-      <!-- LIST PANEL -->
-      <div class="list-panel">
-        <div class="topbar">
-          <h1>Customers</h1>
-          <button class="btn-new" onclick="openModal()"><i class="ti ti-plus"></i> Add customer</button>
-        </div>
-        <div class="content">
-          <div class="stats" id="cust-stats" style="display:none">
-            <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
-            <div class="stat"><div class="stat-label">Repeat</div><div class="stat-value" id="stat-repeat">0</div></div>
-            <div class="stat"><div class="stat-label">Total spent</div><div class="stat-value" id="stat-spent">£0</div></div>
-          </div>
+      <div class="topbar">
+        <h1>Customers</h1>
+        <button class="btn-new" onclick="openAddCustomer()"><i class="ti ti-plus"></i> Add customer</button>
+      </div>
+
+      <div class="content">
+        <!-- LIST -->
+        <div class="list-panel">
           <div class="search-wrap">
-            <i class="ti ti-search"></i>
-            <input type="text" placeholder="Search customers..." oninput="filterCustomers(this.value)" />
+            <div class="search-box">
+              <i class="ti ti-search"></i>
+              <input type="text" id="search-input" placeholder="Search by name, postcode or invoice #..." oninput="renderList()" />
+            </div>
           </div>
           <div class="filter-tabs">
-            <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
-            <div class="filter-tab" onclick="setFilter(this,'new')">New</div>
-            <div class="filter-tab" onclick="setFilter(this,'repeat')">Repeat</div>
+            <button class="filter-tab active" onclick="setFilter('all',this)">All</button>
+            <button class="filter-tab" onclick="setFilter('new',this)">New</button>
+            <button class="filter-tab" onclick="setFilter('repeat',this)">Repeat</button>
+            <button class="filter-tab" onclick="setFilter('outstanding',this)">Owes money</button>
           </div>
-          <div id="cust-intro" style="margin-bottom:16px"><div style="max-width:480px;margin:0 auto;padding:20px 0 40px"><div style="text-align:center;padding:28px 0 24px"><div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-users" style="font-size:28px;color:#0A2540"></i></div><div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Build your customer book</div><div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto">Save your customers once and invoice them in seconds next time. See how much each customer has spent, their full invoice history, and whether they're a new or repeat client — just like Shopify.</div></div><div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px"><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-history" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Full invoice history</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">See every job and payment per customer</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-map-pin" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Address & postcode</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Stored and ready for every invoice</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-repeat" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">New vs repeat</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Track who keeps coming back</div></div></div><div style="padding:12px 0;border:none"></div></div><a href="#" onclick="openModal(); return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Add your first customer</a></div></div><div class="cust-list" id="cust-list" style="display:none"></div>
+          <div class="cust-list" id="cust-list"></div>
         </div>
-        <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
-      </div>
 
-      <!-- DETAIL PANEL -->
-      <div class="detail-panel" id="detail-panel">
-        <div class="detail-empty" id="detail-empty">
-          <i class="ti ti-user-circle"></i>
-          <p>Select a customer<br>to view their profile</p>
+        <!-- DETAIL -->
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty">
+            <i class="ti ti-user-search"></i>
+            <span>Select a customer to view their profile</span>
+          </div>
         </div>
-        <div id="detail-content" style="display:none"></div>
       </div>
     </div>
   </div>
 
-  <!-- ADD CUSTOMER MODAL -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-title">Add customer</div>
-        <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="field-row">
-          <div class="field"><label>First name</label><input type="text" id="f-first" placeholder="Mark" autocomplete="off" /></div>
-          <div class="field"><label>Last name</label><input type="text" id="f-last" placeholder="Taylor" autocomplete="off" /></div>
-        </div>
-        <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="mark@email.com" autocomplete="off" /></div>
-        <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="07700 900123" autocomplete="off" /></div>
-        <div class="field"><label>Address</label><input type="text" id="f-address" placeholder="14 Elm Street, Manchester" autocomplete="off" /></div>
-        <div class="field"><label>Postcode</label><input type="text" id="f-postcode" placeholder="M1 4BT" autocomplete="off" style="text-transform:uppercase" /></div>
-        <div class="field"><label>Notes</label><textarea id="f-notes" placeholder="Any notes about this customer..."></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-save" onclick="saveCustomer()">Save customer</button>
-      </div>
-    </div>
-  </div>
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+    <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Jobs</span></a>
+    <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+    <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+  </nav>
 
   <script>
     var customers = [];
+    var allInvoices = [];
     var activeFilter = 'all';
-    var activeId = null;
-    var editingId = null;
+    var selectedId = null;
+    var AV_BG = ['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'];
+    var AV_FG = ['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'];
 
-    // ── Auth ──
-    async function loadUser() {
-      try {
-        var r = await supabase.auth.getUser();
-        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
-        var m = r.data.user.user_metadata || {};
-        var first = m.first_name || m.given_name || '';
-        var last = m.last_name || m.family_name || '';
-        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
-        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : r.data.user.email.split('@')[0];
-      } catch(e) {}
+    function ini(name) { return (name||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2); }
+    function fmt(n) { return '£' + Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtDate(d) { if(!d)return ''; try { return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch(e){return d;} }
+
+    function setFilter(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-tab').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderList();
     }
-    loadUser();
 
-    // ── Helpers ──
-    function fmt(n) { return '£' + (n || 0).toLocaleString('en-GB', { maximumFractionDigits: 0 }); }
-    function initials(name) { var p = name.trim().split(' '); return (p[0].charAt(0) + (p[1] ? p[1].charAt(0) : '')).toUpperCase(); }
-    function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
-    function isRepeat(c) { return (c.invoiceCount || 0) >= 2; }
-
-    // ── Render list ──
-    function renderList(filter, query) {
-      var intro = document.getElementById('cust-intro');
-      var listEl = document.getElementById('cust-list');
-      if (customers.length > 0) {
-        if (intro) intro.style.display = 'none';
-        if (listEl) listEl.style.display = 'block';
-        var statsEl = document.getElementById('cust-stats'); if (statsEl) statsEl.style.display = 'grid';
-      } else {
-        if (intro) intro.style.display = 'block';
-        if (listEl) listEl.style.display = 'none';
-        var statsEl = document.getElementById('cust-stats'); if (statsEl) statsEl.style.display = 'none';
-        document.getElementById('stat-total').textContent = '0';
-        document.getElementById('stat-repeat').textContent = '0';
-        document.getElementById('stat-spent').textContent = '£0';
-        return;
-      }
-      var list = customers.filter(function(c) {
-        var matchFilter = filter === 'all' || (filter === 'new' && !isRepeat(c)) || (filter === 'repeat' && isRepeat(c));
-        var matchQ = !query || c.name.toLowerCase().includes(query.toLowerCase()) || (c.email || '').toLowerCase().includes(query.toLowerCase());
-        return matchFilter && matchQ;
+    function renderList() {
+      var q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      var filtered = customers.filter(function(c) {
+        if (activeFilter === 'new' && (c.invoiceCount||0) > 1) return false;
+        if (activeFilter === 'repeat' && (c.invoiceCount||0) <= 1) return false;
+        if (activeFilter === 'outstanding' && !c.hasOutstanding) return false;
+        if (!q) return true;
+        // Search name, postcode, email, phone, invoice numbers
+        var nameMatch = (c.name||'').toLowerCase().includes(q);
+        var postMatch = (c.postcode||c.address||'').toLowerCase().includes(q);
+        var emailMatch = (c.email||'').toLowerCase().includes(q);
+        var phoneMatch = (c.phone||'').toLowerCase().includes(q);
+        var invMatch = (c.invoices||[]).some(function(inv){
+          return (inv.number||'').toLowerCase().includes(q);
+        });
+        return nameMatch || postMatch || emailMatch || phoneMatch || invMatch;
       });
 
-      // Stats
-      var totalSpent = customers.reduce(function(a, c) { return a + (c.totalSpent || 0); }, 0);
-      var repeatCount = customers.filter(isRepeat).length;
-      document.getElementById('stat-total').textContent = customers.length;
-      document.getElementById('stat-repeat').textContent = repeatCount;
-      document.getElementById('stat-spent').textContent = fmt(totalSpent);
-
-      var el = document.getElementById('cust-list');
-      if (list.length === 0) {
-        el.innerHTML = '<div class="cust-empty"><i class="ti ti-users"></i><p>' + (query ? 'No results found' : 'No customers yet') + '</p><span>' + (query ? 'Try a different search' : 'Add your first customer to get started') + '</span></div>';
+      var list = document.getElementById('cust-list');
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-list"><i class="ti ti-user-off"></i>' + (q ? 'No results for "' + q + '"' : 'No customers yet — create your first invoice') + '</div>';
         return;
       }
 
-      el.innerHTML = list.map(function(c) {
-        var badge = isRepeat(c)
-          ? '<span class="cust-badge badge-repeat">Repeat</span>'
-          : '<span class="cust-badge badge-new">New</span>';
-        return '<div class="cust-row' + (c.id === activeId ? ' active' : '') + '" onclick="showDetail(\'' + c.id + '\')">'
-          + '<div class="cust-initials">' + initials(c.name) + '</div>'
-          + '<div class="cust-info"><div class="cust-name">' + c.name + '</div>'
-          + '<div class="cust-sub">' + (c.email || c.phone || c.postcode || 'No contact details') + '</div></div>'
-          + '<div class="cust-right"><div class="cust-amount">' + fmt(c.totalSpent) + '</div>' + badge + '</div>'
+      list.innerHTML = filtered.map(function(c, i) {
+        var bg = AV_BG[i % AV_BG.length]; var fg = AV_FG[i % AV_FG.length];
+        var isRepeat = (c.invoiceCount||0) > 1;
+        var selected = c.id === selectedId ? ' selected' : '';
+        return '<div class="cust-item' + selected + '" onclick="selectCustomer(\'' + c.id + '\')">'
+          + '<div class="cust-av" style="background:' + bg + ';color:' + fg + '">' + ini(c.name) + '</div>'
+          + '<div class="cust-info">'
+          + '<div class="cust-name">' + (c.name||'Unknown') + '</div>'
+          + '<div class="cust-meta">' + (c.invoiceCount||0) + ' invoice' + ((c.invoiceCount||0)!==1?'s':'') + ' · ' + fmt(c.totalSpent||0) + ' spent</div>'
+          + '</div>'
+          + '<span class="cust-badge ' + (isRepeat ? 'badge-repeat' : 'badge-new') + '">' + (isRepeat ? 'Repeat' : 'New') + '</span>'
           + '</div>';
       }).join('');
     }
 
-    // ── Detail panel ──
-    function showDetail(id) {
-      activeId = id;
-      var c = customers.find(function(x) { return x.id === id; });
+    function selectCustomer(id) {
+      selectedId = id;
+      // Update selected state in list
+      document.querySelectorAll('.cust-item').forEach(function(el){ el.classList.remove('selected'); });
+      var clickedItems = document.querySelectorAll('.cust-item');
+      clickedItems.forEach(function(el){ if(el.onclick && el.onclick.toString().includes(id)) el.classList.add('selected'); });
+      renderList(); // re-render to update selected class
+
+      var c = customers.find(function(x){ return x.id === id; });
       if (!c) return;
-      renderList(activeFilter);
+      renderDetail(c);
+    }
 
-      document.getElementById('detail-empty').style.display = 'none';
-      var dc = document.getElementById('detail-content');
-      dc.style.display = 'block';
+    function renderDetail(c) {
+      var i = customers.indexOf(c) % AV_BG.length;
+      var bg = AV_BG[i]; var fg = AV_FG[i];
+      var isRepeat = (c.invoiceCount||0) > 1;
+      var invoiceList = (c.invoices||[]);
+      var totalPaid = invoiceList.filter(function(inv){ return inv.status==='paid'; }).reduce(function(a,inv){ return a+Number(inv.amount||0); },0);
+      var outstanding = invoiceList.filter(function(inv){ return inv.status==='unpaid'||inv.status==='overdue'||inv.status==='partial'; }).reduce(function(a,inv){ return a+Number(inv.amount||0); },0);
+      var lastJob = invoiceList.length > 0 ? (invoiceList[0].job || '—') : '—';
+      var lastDate = invoiceList.length > 0 ? fmtDate(invoiceList[0].date || invoiceList[0].created_at) : '—';
 
-      var invoicesHtml = '';
-      if (c.invoices && c.invoices.length > 0) {
-        invoicesHtml = c.invoices.slice().reverse().slice(0, 5).map(function(inv) {
-          var badgeCls = inv.status === 'paid' ? 'inv-paid' : inv.status === 'overdue' ? 'inv-overdue' : 'inv-unpaid';
-          var badgeLabel = inv.status === 'paid' ? 'Paid' : inv.status === 'overdue' ? 'Overdue' : 'Unpaid';
-          return '<div class="invoice-row">'
-            + '<div class="invoice-row-left"><div class="invoice-row-num">' + (inv.number || 'Invoice') + '</div>'
-            + '<div class="invoice-row-date">' + fmtDate(inv.date) + '</div></div>'
-            + '<div class="invoice-row-right"><div class="invoice-row-amount">£' + (inv.amount || 0).toLocaleString() + '</div>'
-            + '<span class="inv-badge ' + badgeCls + '">' + badgeLabel + '</span></div>'
-            + '</div>';
-        }).join('');
-      } else {
-        invoicesHtml = '<div style="padding:12px 0;font-size:13px;color:#A3A29C;text-align:center">No invoices yet</div>';
-      }
-
-      dc.innerHTML =
+      var detail = document.getElementById('detail-panel');
+      detail.innerHTML =
+        // Header
         '<div class="detail-header">'
-        + '<div class="detail-avatar">' + initials(c.name) + '</div>'
-        + '<div><div class="detail-name">' + c.name + '</div>'
-        + '<div class="detail-since">Customer since ' + fmtDate(c.createdAt) + '</div></div>'
-        + '<button class="detail-close" onclick="editCustomer(\'' + c.id + '\')"><i class="ti ti-pencil"></i></button>'
+        + '<div class="detail-av" style="background:' + bg + ';color:' + fg + '">' + ini(c.name) + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div class="detail-name">' + (c.name||'Unknown') + '</div>'
+        + '<div class="detail-sub">'
+        + '<span class="tag ' + (isRepeat?'tag-repeat':'tag-new') + '" style="margin-right:8px">' + (isRepeat?'Repeat customer':'New customer') + '</span>'
+        + 'Since ' + fmtDate(c.createdAt || c.created_at)
         + '</div>'
-
-        + '<div class="detail-stats">'
-        + '<div class="detail-stat"><div class="detail-stat-val">' + fmt(c.totalSpent) + '</div><div class="detail-stat-label">Total spent</div></div>'
-        + '<div class="detail-stat"><div class="detail-stat-val">' + (c.invoiceCount || 0) + '</div><div class="detail-stat-label">Invoices</div></div>'
-        + '<div class="detail-stat"><div class="detail-stat-val">' + (isRepeat(c) ? 'Repeat' : 'New') + '</div><div class="detail-stat-label">Status</div></div>'
         + '</div>'
-
-        + '<div class="detail-section">'
-        + '<div class="detail-section-title">Contact</div>'
-        + '<div class="detail-field"><i class="ti ti-mail"></i><div class="detail-field-val ' + (c.email ? '' : 'detail-field-empty') + '">' + (c.email || 'No email') + '</div></div>'
-        + '<div class="detail-field"><i class="ti ti-phone"></i><div class="detail-field-val ' + (c.phone ? '' : 'detail-field-empty') + '">' + (c.phone || 'No phone') + '</div></div>'
-        + '</div>'
-
-        + '<div class="detail-section">'
-        + '<div class="detail-section-title">Address</div>'
-        + '<div class="detail-field"><i class="ti ti-map-pin"></i><div class="detail-field-val ' + (c.address ? '' : 'detail-field-empty') + '">'
-        + (c.address ? c.address + (c.postcode ? '<br>' + c.postcode.toUpperCase() : '') : 'No address') + '</div></div>'
-        + '</div>'
-
-        + (c.notes ? '<div class="detail-section"><div class="detail-section-title">Notes</div>'
-        + '<div style="font-size:13px;color:#1A1A18;line-height:1.5">' + c.notes + '</div></div>' : '')
-
-        + '<div class="detail-section">'
-        + '<div class="detail-section-title">Invoice history</div>'
-        + invoicesHtml
-        + '</div>'
-
         + '<div class="detail-actions">'
-        + '<a href="create-invoice.html" class="det-btn det-btn-primary"><i class="ti ti-file-plus"></i> New invoice</a>'
-        + '<button class="det-btn det-btn-secondary" onclick="deleteCustomer(\'' + c.id + '\')"><i class="ti ti-trash"></i></button>'
-        + '</div>';
+        + '<button class="btn-detail btn-detail-primary" onclick="newInvoiceFor(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-file-plus"></i> New invoice</button>'
+        + '<button class="btn-detail btn-detail-outline" onclick="bookJob(\'' + encodeURIComponent(c.name) + '\')"><i class="ti ti-calendar-plus"></i> Book job</button>'
+        + '</div>'
+        + '</div>'
+
+        // Stats
+        + '<div class="detail-body">'
+        + '<div class="detail-card">'
+        + '<div class="stat-grid">'
+        + '<div class="stat-box"><div class="stat-val">' + (c.invoiceCount||0) + '</div><div class="stat-lbl">Invoices</div></div>'
+        + '<div class="stat-box"><div class="stat-val" style="color:#1D9E75">' + fmt(totalPaid) + '</div><div class="stat-lbl">Total paid</div></div>'
+        + '<div class="stat-box"><div class="stat-val" style="color:' + (outstanding>0?'#D14343':'#1D9E75') + '">' + fmt(outstanding) + '</div><div class="stat-lbl">Outstanding</div></div>'
+        + '</div>'
+        + '</div>'
+
+        // Contact details
+        + '<div class="detail-card">'
+        + '<div class="detail-card-header"><div class="detail-card-title">Contact details</div>'
+        + '<button onclick="editContact(\'' + c.id + '\')" style="font-size:12px;color:#0A2540;font-weight:600;background:none;border:none;cursor:pointer">Edit</button>'
+        + '</div>'
+        + '<div class="detail-card-body">'
+        + (c.email ? '<div class="info-row"><div class="info-icon"><i class="ti ti-mail"></i></div><div><div class="info-label">Email</div><div class="info-value">' + c.email + '</div></div></div>' : '')
+        + (c.phone ? '<div class="info-row"><div class="info-icon"><i class="ti ti-phone"></i></div><div><div class="info-label">Phone</div><div class="info-value">' + c.phone + '</div></div></div>' : '')
+        + (c.address ? '<div class="info-row"><div class="info-icon"><i class="ti ti-map-pin"></i></div><div><div class="info-label">Address</div><div class="info-value" style="white-space:pre-line">' + c.address + '</div></div></div>' : '')
+        + (c.postcode ? '<div class="info-row"><div class="info-icon"><i class="ti ti-map"></i></div><div><div class="info-label">Postcode</div><div class="info-value">' + c.postcode + '</div></div></div>' : '')
+        + (!c.email && !c.phone && !c.address ? '<div style="font-size:13px;color:#A3A29C;padding:8px 0">No contact details saved. <button onclick="editContact(\'' + c.id + '\')" style="color:#0A2540;font-weight:600;background:none;border:none;cursor:pointer;font-size:13px">Add details</button></div>' : '')
+        + '<div class="info-row"><div class="info-icon"><i class="ti ti-briefcase"></i></div><div><div class="info-label">Last job</div><div class="info-value">' + lastJob + '</div></div></div>'
+        + '<div class="info-row"><div class="info-icon"><i class="ti ti-calendar"></i></div><div><div class="info-label">Last invoice</div><div class="info-value">' + lastDate + '</div></div></div>'
+        + '</div></div>'
+
+        // Invoice history
+        + '<div class="detail-card">'
+        + '<div class="detail-card-header"><div class="detail-card-title">Invoice history</div><a href="invoices.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">View all</a></div>'
+        + (invoiceList.length === 0
+          ? '<div style="padding:16px;font-size:13px;color:#A3A29C">No invoices yet</div>'
+          : invoiceList.slice(0,5).map(function(inv) {
+              var st = inv.status || 'unpaid';
+              var cls = st === 'paid' ? 'inv-paid' : st === 'overdue' ? 'inv-overdue' : 'inv-unpaid';
+              var lbl = st === 'paid' ? 'Paid' : st === 'overdue' ? 'Overdue' : st === 'partial' ? 'Partial' : 'Unpaid';
+              return '<div class="inv-row">'
+                + '<span class="inv-num">' + (inv.number||'—') + '</span>'
+                + '<div style="flex:1;font-size:12px;color:#6B6A65;padding:0 8px">' + (inv.job||'Invoice') + '</div>'
+                + '<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">' + fmt(inv.amount) + '</div>'
+                + '<span class="inv-badge ' + cls + '">' + lbl + '</span>'
+                + '</div>';
+            }).join('')
+          )
+        + '</div>'
+
+        // Notes
+        + '<div class="detail-card">'
+        + '<div class="detail-card-header"><div class="detail-card-title">Internal notes</div></div>'
+        + '<div class="detail-card-body">'
+        + '<textarea class="note-area" id="note-' + c.id + '" placeholder="Add notes about this customer — preferences, site access, parking, key contacts...">' + (c.notes||'') + '</textarea>'
+        + '<button class="btn-save-note" onclick="saveNote(\'' + c.id + '\')">Save note</button>'
+        + '</div></div>'
+
+        + '</div>'; // end detail-body
     }
 
-    // ── Modal ──
-    function openModal() {
-      editingId = null;
-      document.getElementById('modal-title').textContent = 'Add customer';
-      ['f-first','f-last','f-email','f-phone','f-address','f-postcode','f-notes'].forEach(function(id) {
-        document.getElementById(id).value = '';
-      });
-      document.getElementById('modal').classList.add('open');
-      setTimeout(function() { document.getElementById('f-first').focus(); }, 100);
+    async function saveNote(custId) {
+      var note = document.getElementById('note-' + custId);
+      if (!note) return;
+      var text = note.value.trim();
+      var c = customers.find(function(x){ return x.id === custId; });
+      if (c) c.notes = text;
+      try {
+        await supabase.from('customers').update({ notes: text }).eq('id', custId);
+      } catch(e) {}
+      // localStorage
+      var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+      var lc = custs.find(function(x){ return x.id === custId; });
+      if (lc) { lc.notes = text; localStorage.setItem('tb_customers', JSON.stringify(custs)); }
+      var btn = note.nextElementSibling;
+      btn.textContent = '✓ Saved!'; btn.style.background = '#1D9E75';
+      setTimeout(function(){ btn.textContent = 'Save note'; btn.style.background = '#0A2540'; }, 2000);
     }
 
-    function editCustomer(id) {
-      var c = customers.find(function(x) { return x.id === id; });
+    function newInvoiceFor(name, email, phone) {
+      var n = decodeURIComponent(name); var e = decodeURIComponent(email); var p = decodeURIComponent(phone);
+      sessionStorage.setItem('prefill_invoice', JSON.stringify({ name: n, email: e, phone: p }));
+      window.location.href = 'create-invoice.html';
+    }
+
+    function bookJob(name) {
+      var n = decodeURIComponent(name);
+      sessionStorage.setItem('prefill_job', JSON.stringify({ customer: n }));
+      window.location.href = 'jobs.html?new=true';
+    }
+
+    function editContact(custId) {
+      var c = customers.find(function(x){ return x.id === custId; });
       if (!c) return;
-      editingId = id;
-      var parts = c.name.split(' ');
-      document.getElementById('modal-title').textContent = 'Edit customer';
-      document.getElementById('f-first').value = parts[0] || '';
-      document.getElementById('f-last').value = parts.slice(1).join(' ') || '';
-      document.getElementById('f-email').value = c.email || '';
-      document.getElementById('f-phone').value = c.phone || '';
-      document.getElementById('f-address').value = c.address || '';
-      document.getElementById('f-postcode').value = c.postcode || '';
-      document.getElementById('f-notes').value = c.notes || '';
-      document.getElementById('modal').classList.add('open');
+      var email   = prompt('Email address:', c.email || '');
+      if (email === null) return;
+      var phone   = prompt('Phone number:', c.phone || '');
+      if (phone === null) return;
+      var address = prompt('Address:', c.address || '');
+      if (address === null) return;
+      var postcode = prompt('Postcode:', c.postcode || '');
+      if (postcode === null) return;
+      c.email = email; c.phone = phone; c.address = address; c.postcode = postcode;
+      // Save
+      supabase.from('customers').update({ email: email, phone: phone, address: address, postcode: postcode }).eq('id', custId).catch(function(){});
+      var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+      var lc = custs.find(function(x){ return x.id === custId; });
+      if (lc) { lc.email=email; lc.phone=phone; lc.address=address; lc.postcode=postcode; localStorage.setItem('tb_customers', JSON.stringify(custs)); }
+      renderDetail(c);
     }
 
-    function closeModal() { document.getElementById('modal').classList.remove('open'); }
-
-    async function saveCustomer() {
-      var first = document.getElementById('f-first').value.trim();
-      var last = document.getElementById('f-last').value.trim();
-      if (!first) { document.getElementById('f-first').focus(); return; }
-      var name = (first + ' ' + last).trim();
-      var cust = {
-        id: editingId || Date.now().toString(),
-        name: name,
-        email: document.getElementById('f-email').value.trim(),
-        phone: document.getElementById('f-phone').value.trim(),
-        address: document.getElementById('f-address').value.trim(),
-        postcode: document.getElementById('f-postcode').value.trim().toUpperCase(),
-        notes: document.getElementById('f-notes').value.trim(),
-        createdAt: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).createdAt : new Date().toISOString(),
-        totalSpent: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).totalSpent || 0 : 0,
-        invoiceCount: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).invoiceCount || 0 : 0,
-        invoices: editingId ? (customers.find(function(c){return c.id===editingId;})||{}).invoices || [] : []
-      };
-      var saved = await DB.saveCustomer(editingId ? {...cust, id: editingId} : {...cust, isNew: true});
-      if (!saved) { alert('Could not save customer. Please try again.'); return; }
-      customers = await DB.getCustomers();
-      closeModal();
-      renderList(activeFilter);
-      if (editingId === activeId) showDetail(saved.id);
+    function openAddCustomer() {
+      var name = prompt('Customer name:');
+      if (!name || !name.trim()) return;
+      var email = prompt('Email (optional):') || '';
+      var phone = prompt('Phone (optional):') || '';
+      var newCust = { id: 'c_' + Date.now(), name: name.trim(), email: email, phone: phone, address: '', postcode: '', notes: '', invoices: [], invoiceCount: 0, totalSpent: 0, hasOutstanding: false, createdAt: new Date().toISOString() };
+      customers.unshift(newCust);
+      // Save
+      supabase.from('customers').insert({ name: newCust.name, email: email||null, phone: phone||null, created_at: newCust.createdAt }).catch(function(){});
+      var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+      custs.unshift(newCust);
+      localStorage.setItem('tb_customers', JSON.stringify(custs));
+      renderList();
+      selectCustomer(newCust.id);
     }
-
-    function deleteCustomer(id) {
-      if (!confirm('Delete this customer? This cannot be undone.')) return;
-      await DB.deleteCustomer(id);
-      customers = await DB.getCustomers();
-      activeId = null;
-      document.getElementById('detail-empty').style.display = 'flex';
-      document.getElementById('detail-content').style.display = 'none';
-      renderList(activeFilter);
-    }
-
-    // ── Filters ──
-    function filterCustomers(q) { renderList(activeFilter, q); }
-    function setFilter(el, f) {
-      activeFilter = f;
-      document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
-      el.classList.add('active');
-      renderList(f);
-    }
-
-    document.getElementById('modal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
-    });
 
     async function init() {
+      // Load user
       try {
-        customers = await DB.getCustomers();
-      } catch(e) { customers = []; }
+        var { data } = await supabase.auth.getUser();
+        if (!data?.user) { window.location.href = 'login.html'; return; }
+        var m = data.user.user_metadata || {};
+        var first = m.first_name || ''; var last = m.last_name || '';
+        var ini2 = (first.charAt(0) + last.charAt(0)).toUpperCase();
+        var av = document.getElementById('sb-av'); if (av) av.textContent = ini2 || data.user.email[0].toUpperCase();
+        var nm = document.getElementById('sb-uname'); if (nm) nm.textContent = (first+' '+last).trim() || data.user.email.split('@')[0];
+        var pl = document.getElementById('sb-uplan'); if (pl) pl.textContent = m.plan ? m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan' : 'Free plan';
+      } catch(e) {}
 
-      // Fallback to localStorage if Supabase empty
-      if (customers.length === 0) {
-        customers = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-      }
+      // Load invoices
+      try { allInvoices = await DB.getInvoices(); } catch(e) { allInvoices = []; }
+      if (!allInvoices.length) allInvoices = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
 
-      // Enrich customers with invoice data from localStorage
-      var localInvoices = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-      if (localInvoices.length > 0) {
-        customers = customers.map(function(c) {
-          var custInvoices = localInvoices.filter(function(inv) {
-            return (inv.customer_name||inv.customer||'').toLowerCase() === (c.name||'').toLowerCase();
-          });
-          var totalSpent = custInvoices.filter(function(i){ return i.status === 'paid'; })
-            .reduce(function(a,i){ return a + Number(i.amount||0); }, 0);
-          return Object.assign({}, c, {
-            invoiceCount: custInvoices.length,
-            totalSpent: totalSpent || c.totalSpent || 0,
-            invoices: custInvoices
-          });
-        });
+      // Load customers
+      try { customers = await DB.getCustomers(); } catch(e) { customers = []; }
+      if (!customers.length) customers = JSON.parse(localStorage.getItem('tb_customers') || '[]');
 
-        // Also add customers from invoices that aren't in the list yet
-        localInvoices.forEach(function(inv) {
-          var custName = inv.customer_name || inv.customer;
-          if (!custName) return;
-          var exists = customers.find(function(c){ return c.name.toLowerCase() === custName.toLowerCase(); });
-          if (!exists) {
-            customers.push({
-              id: 'auto_' + custName.replace(/\s+/g,'_'),
-              name: custName,
-              email: inv.email || null,
-              phone: null,
-              address: null,
-              postcode: null,
-              notes: null,
-              createdAt: inv.created_at || inv.date,
-              invoiceCount: 1,
-              totalSpent: inv.status === 'paid' ? Number(inv.amount||0) : 0,
-              invoices: [inv]
-            });
-          }
-        });
-      }
+      // Enrich customers with invoice data
+      var custMap = {};
+      customers.forEach(function(c){ custMap[c.name.toLowerCase()] = c; });
 
-      renderList('all');
+      // Auto-create customers from invoices
+      allInvoices.forEach(function(inv) {
+        var n = (inv.customer_name || inv.customer || '').trim();
+        if (!n) return;
+        var key = n.toLowerCase();
+        if (!custMap[key]) {
+          var nc = { id: 'auto_' + Date.now() + '_' + Math.random(), name: n, email: inv.email||null, phone: inv.phone||null, address:'', postcode:'', notes:'', invoices:[], invoiceCount:0, totalSpent:0, hasOutstanding:false, createdAt: inv.created_at || inv.date };
+          customers.push(nc);
+          custMap[key] = nc;
+        }
+        var c = custMap[key];
+        if (!c.invoices) c.invoices = [];
+        if (!c.invoices.find(function(i){ return i.id === inv.id; })) {
+          c.invoices.push(inv);
+        }
+      });
+
+      // Compute stats per customer
+      customers.forEach(function(c) {
+        var invs = c.invoices || [];
+        c.invoiceCount = invs.length;
+        c.totalSpent = invs.filter(function(i){ return i.status==='paid'; }).reduce(function(a,i){ return a+Number(i.amount||0); }, 0);
+        c.hasOutstanding = invs.some(function(i){ return i.status==='unpaid'||i.status==='overdue'||i.status==='partial'; });
+      });
+
+      // Sort by most recent invoice
+      customers.sort(function(a,b){
+        var ad = a.invoices && a.invoices[0] ? new Date(a.invoices[0].created_at||a.invoices[0].date||a.createdAt) : new Date(a.createdAt||0);
+        var bd = b.invoices && b.invoices[0] ? new Date(b.invoices[0].created_at||b.invoices[0].date||b.createdAt) : new Date(b.createdAt||0);
+        return bd - ad;
+      });
+
+      renderList();
+
+      // Auto-select if deep linked
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('id')) selectCustomer(params.get('id'));
     }
+
     init();
   </script>
-
 </body>
 </html>
