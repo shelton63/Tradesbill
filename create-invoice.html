@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -19,6 +19,32 @@
     }
   </script>
   <script src="db.js"></script>
+  <script>
+    // Fallback DB stub if db.js fails to load (404)
+    if (typeof DB === 'undefined') {
+      window.DB = {
+        getNextNumber: async function(type) {
+          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
+          var last = parseInt(localStorage.getItem(key) || '1000');
+          var next = last + 1;
+          localStorage.setItem(key, next.toString());
+          return '#' + next;
+        },
+        saveInvoice: async function(inv) {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          invs.unshift(inv);
+          localStorage.setItem('tb_invoices', JSON.stringify(invs));
+          return inv;
+        },
+        getInvoices: async function() {
+          return JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        },
+        saveCustomer: async function(c) { return c; },
+        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); }
+      };
+      console.warn('db.js not found — using localStorage fallback. Add db.js to your GitHub repo root.');
+    }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
@@ -394,6 +420,10 @@
   </div>
 
   <script>
+    // ── Global state ──
+    var invoiceMode = 'simple';
+    var contactMode = 'email';
+
     function fmt(n) { return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
     function calcAll() {
@@ -438,19 +468,23 @@
     }
 
     function updatePreview() {
-      const num = document.getElementById('inv-num').value;
-      const job = document.getElementById('job-desc').value;
-      const name = document.getElementById('cust-name').value.trim();
-      const email = document.getElementById('cust-email').value.trim();
-      const address = document.getElementById('cust-address').value.trim();
-      const notes = document.getElementById('inv-notes') ? document.getElementById('inv-notes').value : '';
+      var num     = document.getElementById('inv-num') ? document.getElementById('inv-num').value : '';
+      var job     = document.getElementById('job-desc') ? document.getElementById('job-desc').value : '';
+      var name    = document.getElementById('cust-name') ? document.getElementById('cust-name').value.trim() : '';
+      var email   = document.getElementById('cust-email') ? document.getElementById('cust-email').value.trim() : '';
+      var phone   = document.getElementById('cust-phone') ? document.getElementById('cust-phone').value.trim() : '';
+      var address = document.getElementById('cust-address') ? document.getElementById('cust-address').value.trim() : '';
+      var notes   = document.getElementById('inv-notes') ? document.getElementById('inv-notes').value : '';
+
       if (document.getElementById('prev-num')) document.getElementById('prev-num').textContent = num || 'INV-001';
       if (document.getElementById('prev-job')) document.getElementById('prev-job').textContent = job || '—';
       if (document.getElementById('prev-notes')) document.getElementById('prev-notes').textContent = notes;
+
       if (document.getElementById('prev-cust')) {
-        let custHtml = name || '—';
-        if (email) custHtml += '<br>' + email;
-        if (address) custHtml += '<br>' + address.replace(/\n/g, ', ');
+        var contact = contactMode === 'whatsapp' ? phone : email;
+        var custHtml = (name || '—');
+        if (contact) custHtml += '<br><span style="font-size:11px;color:#8B8A84">' + contact + '</span>';
+        if (address) custHtml += '<br><span style="font-size:11px;color:#8B8A84">' + address.replace(/\n/g, ', ') + '</span>';
         document.getElementById('prev-cust').innerHTML = custHtml;
       }
       updatePreviewItems();
@@ -595,8 +629,9 @@
         tabWa.style.cssText     = 'flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:600;border:1.5px solid #25D366;background:#F0FEF4;color:#1A5C2E;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px';
         tabEmail.style.cssText  = 'flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:600;border:1.5px solid #E5E3DC;background:#fff;color:#6B6A65;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px';
         var ph = document.getElementById('cust-phone');
-        if (ph) ph.focus();
+        if (ph) { ph.focus(); ph.oninput = updatePreview; }
       }
+      updatePreview();
     }
 
     async function sendInvoice() {
@@ -787,7 +822,6 @@
             <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:12px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center">
               View invoices
             </a>
-          </div>`
           </div>`;
 
       btn.parentElement.innerHTML = `
