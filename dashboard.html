@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -139,7 +139,33 @@
       .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
     }
   
-    /* ── Mobile distortion fix ── */
+    /* Calculator */
+    .calc-overlay { display:none; position:fixed; inset:0; z-index:300; }
+    .calc-overlay.open { display:block; }
+    .calc-panel { position:fixed; left:210px; bottom:0; width:280px; background:#0A2540; border-radius:0 16px 0 0; box-shadow:4px 0 24px rgba(0,0,0,0.3); z-index:301; transform:translateY(100%); transition:transform 0.25s ease; }
+    .calc-panel.open { transform:translateY(0); }
+    .calc-header { padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .calc-title { font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:7px; }
+    .calc-close { width:26px; height:26px; border-radius:7px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .calc-display { padding:12px 16px; text-align:right; }
+    .calc-expr { font-size:11px; color:rgba(255,255,255,0.45); min-height:16px; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .calc-val { font-size:28px; font-weight:300; color:#fff; letter-spacing:-0.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .calc-vat-bar { display:flex; gap:4px; padding:0 12px 10px; }
+    .calc-vat-btn { flex:1; padding:5px 0; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:rgba(255,255,255,0.6); font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .calc-vat-btn.active { background:#5DCAA5; color:#061A30; border-color:#5DCAA5; }
+    .calc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:0 12px 14px; }
+    .calc-btn { padding:0; height:52px; border-radius:10px; border:none; font-size:16px; font-weight:500; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; transition:opacity 0.1s; }
+    .calc-btn:hover { opacity:0.85; }
+    .calc-btn:active { transform:scale(0.96); }
+    .c-num  { background:rgba(255,255,255,0.1); color:#fff; }
+    .c-op   { background:rgba(255,255,255,0.18); color:#fff; }
+    .c-eq   { background:#5DCAA5; color:#061A30; font-weight:700; }
+    .c-clr  { background:rgba(209,67,67,0.25); color:#F09595; }
+    .c-fn   { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.7); font-size:14px; }
+    .calc-result { margin:0 12px 10px; background:rgba(93,202,165,0.12); border:1px solid rgba(93,202,165,0.25); border-radius:9px; padding:9px 12px; display:none; }
+    .calc-result-label { font-size:10px; color:#5DCAA5; font-weight:600; margin-bottom:3px; }
+    .calc-result-val { font-size:14px; font-weight:600; color:#fff; }
+    @media (max-width:768px) { .calc-panel { left:0; width:100%; border-radius:16px 16px 0 0; } }
     html { overflow-x: hidden; }
     body { overflow-x: hidden; max-width: 100vw; }
     * { max-width: 100%; }
@@ -171,6 +197,7 @@
       <div class="sb-nav">
         <div class="sb-section-label">Main</div>
         <a href="dashboard.html" class="sb-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <div class="sb-item" onclick="toggleCalc()" style="cursor:pointer"><i class="ti ti-calculator"></i> Calculator</div>
         <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
         <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
@@ -268,6 +295,137 @@
       if (!e.target.closest('.notif-wrap')) document.getElementById('notif-dropdown').classList.remove('open');
       if (!e.target.closest('.nav-plus-wrap')) { const m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
     });
+
+    function fmtGbp(n) { return '£' + Number(n||0).toLocaleString('en-GB', {minimumFractionDigits:0,maximumFractionDigits:0}); }
+    function fmtDate(d) { if (!d) return ''; return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short'}); }
+    function ini2(name) { return (name||'?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2); }
+    var AV_COLORS = ['av-blue','av-teal','av-amber','av-coral','av-purple'];
+    function avColor(i) { return AV_COLORS[i % AV_COLORS.length]; }
+
+    function renderDataDashboard(name, meta, invoices, jobs) {
+      // ── Compute stats ──
+      var now = new Date();
+      var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      var thisMonth  = invoices.filter(function(i){ return new Date(i.created_at) >= monthStart; });
+      var earned     = invoices.filter(function(i){ return i.status === 'paid' || i.status === 'partial'; }).reduce(function(a,i){ return a+Number(i.amount||0); }, 0);
+      var earnedMonth= thisMonth.filter(function(i){ return i.status === 'paid' || i.status === 'partial'; }).reduce(function(a,i){ return a+Number(i.amount||0); }, 0);
+      var outstanding= invoices.filter(function(i){ return i.status === 'unpaid' || i.status === 'overdue'; }).reduce(function(a,i){ return a+Number(i.amount||0); }, 0);
+      var overdueList= invoices.filter(function(i){ return i.status === 'unpaid' || i.status === 'overdue'; });
+      var custSet    = new Set(invoices.map(function(i){ return i.customer_name; }));
+
+      // ── Badge helper ──
+      function badge(status) {
+        var map = { paid:'background:#E1F5EE;color:#0F6E56', partial:'background:#FBF3E3;color:#C28A1E', unpaid:'background:#FBF3E3;color:#C28A1E', overdue:'background:#FDEDED;color:#D14343', draft:'background:#F0EFEA;color:#6B6A65' };
+        var lbl = { paid:'Paid', partial:'Partial', unpaid:'Unpaid', overdue:'Overdue', draft:'Draft' };
+        return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;' + (map[status]||map.unpaid) + '">' + (lbl[status]||status) + '</span>';
+      }
+
+      // ── Job dot color ──
+      function jobDot(status) {
+        var c = { todo:'#A3A29C', scheduled:'#C28A1E', inprogress:'#635BFF', done:'#1D9E75' };
+        return c[status] || '#A3A29C';
+      }
+
+      // ── Recent invoices rows ──
+      var invRows = invoices.slice(0,5).map(function(inv, i) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F0EFEA">'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + (['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'][i%5]) + ';color:' + (['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'][i%5]) + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(inv.customer_name) + '</div>'
+          + '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (inv.customer_name||'—') + '</div>'
+          + '<div style="font-size:11px;color:#8B8A84">' + (inv.job||'—') + ' · #' + (inv.number||inv.id.slice(0,6)) + '</div></div>'
+          + '<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">' + fmtGbp(inv.amount) + '</div>'
+          + badge(inv.status) + '</div>';
+      }).join('');
+
+      // ── Jobs rows ──
+      var jobRows = jobs.length === 0
+        ? '<div style="padding:16px;text-align:center;font-size:12px;color:#A3A29C">No upcoming jobs — <a href="jobs.html" style="color:#0A2540;font-weight:600">schedule one</a></div>'
+        : jobs.slice(0,4).map(function(j) {
+            return '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA">'
+              + '<div style="width:8px;height:8px;border-radius:50%;background:' + jobDot(j.status) + ';flex-shrink:0"></div>'
+              + '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:#061A30">' + j.title + '</div>'
+              + '<div style="font-size:11px;color:#8B8A84">' + (j.date ? fmtDate(j.date) : 'No date') + (j.time ? ' · ' + j.time : '') + (j.customer_name ? ' · ' + j.customer_name : '') + '</div></div>'
+              + '</div>';
+          }).join('');
+
+      // ── Who owes you ──
+      var owingRows = overdueList.length === 0
+        ? '<div style="padding:14px 16px;font-size:12px;color:#1D9E75;display:flex;align-items:center;gap:6px"><i class="ti ti-circle-check" style="font-size:16px"></i> All invoices paid — great work!</div>'
+        : overdueList.slice(0,3).map(function(inv) {
+            var isOv = inv.status === 'overdue';
+            return '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA">'
+              + '<div style="width:28px;height:28px;border-radius:50%;background:#FBF3E3;color:#C28A1E;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(inv.customer_name) + '</div>'
+              + '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:#061A30">' + (inv.customer_name||'Unknown') + '</div>'
+              + '<div style="font-size:11px;color:' + (isOv?'#D14343':'#C28A1E') + '">' + (isOv?'Overdue':'Unpaid') + '</div></div>'
+              + '<div style="font-size:13px;font-weight:600;color:#061A30">' + fmtGbp(inv.amount) + '</div></div>';
+          }).join('');
+
+      document.getElementById('main-content').innerHTML =
+        '<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">'
+
+        // ── LEFT ──
+        + '<div style="display:flex;flex-direction:column;gap:14px">'
+
+        // Greeting bar
+        + '<div style="background:#0A2540;border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">'
+        + '<div><div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:3px">' + greeting() + ' ' + name + '</div>'
+        + '<div style="font-size:13px;color:#8FA8C2">Here\'s your business at a glance.</div></div>'
+        + '<a href="create-invoice.html" style="display:inline-flex;align-items:center;gap:7px;background:#5DCAA5;color:#061A30;text-decoration:none;padding:11px 20px;border-radius:9px;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus" style="font-size:16px"></i> New invoice</a>'
+        + '</div>'
+
+        // Stat cards
+        + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8B8A84;margin-bottom:6px">Earned this month</div><div style="font-size:20px;font-weight:700;color:#061A30;letter-spacing:-0.02em">' + fmtGbp(earnedMonth) + '</div></div>'
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8B8A84;margin-bottom:6px">Outstanding</div><div style="font-size:20px;font-weight:700;color:' + (outstanding>0?'#D14343':'#1D9E75') + ';letter-spacing:-0.02em">' + fmtGbp(outstanding) + '</div></div>'
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8B8A84;margin-bottom:6px">Total invoices</div><div style="font-size:20px;font-weight:700;color:#061A30;letter-spacing:-0.02em">' + invoices.length + '</div></div>'
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px"><div style="font-size:11px;color:#8B8A84;margin-bottom:6px">Customers</div><div style="font-size:20px;font-weight:700;color:#061A30;letter-spacing:-0.02em">' + custSet.size + '</div></div>'
+        + '</div>'
+
+        // Recent invoices
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Recent invoices</div>'
+        + '<a href="invoices.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">View all →</a></div>'
+        + invRows
+        + '</div>'
+        + '</div>'
+
+        // ── RIGHT ──
+        + '<div style="display:flex;flex-direction:column;gap:14px">'
+
+        // Jobs this week
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:12px 14px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Upcoming jobs</div>'
+        + '<a href="jobs.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">Calendar →</a></div>'
+        + jobRows + '</div>'
+
+        // Who owes you
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:12px 14px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Who owes you</div>'
+        + '<a href="earnings.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">Earnings →</a></div>'
+        + owingRows + '</div>'
+
+        // Quick actions
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+        + '<div style="padding:12px 14px;border-bottom:1px solid #F0EFEA"><div style="font-size:13px;font-weight:700;color:#061A30">Quick actions</div></div>'
+        + '<a href="create-invoice.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-plus" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">New invoice</span><i class="ti ti-arrow-right" style="font-size:13px;color:#A3A29C;margin-left:auto"></i></a>'
+        + '<a href="customers.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-users" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">Customers</span><i class="ti ti-arrow-right" style="font-size:13px;color:#A3A29C;margin-left:auto"></i></a>'
+        + '<a href="quotes.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">New quote</span><i class="ti ti-arrow-right" style="font-size:13px;color:#A3A29C;margin-left:auto"></i></a>'
+        + '<a href="jobs.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-briefcase" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:12px;font-weight:600;color:#061A30">Schedule job</span><i class="ti ti-arrow-right" style="font-size:13px;color:#A3A29C;margin-left:auto"></i></a>'
+        + '</div>'
+
+        + '</div>'
+        + '</div>';
+    }
 
     function dismissChecklist() {
       localStorage.setItem('pi_checklist_dismissed', 'true');
@@ -566,7 +724,19 @@
           await supabase.auth.updateUser({ data: { plan: params.get('plan') } });
         }
 
-        renderChecklist(first || fullName, meta);
+        // Fetch real data then decide which view to show
+        var invoicesRes = await supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(5);
+        var jobsRes     = await supabase.from('jobs').select('*').order('date', { ascending: true }).limit(4);
+        var invoices    = invoicesRes.data || [];
+        var jobs        = jobsRes.data || [];
+
+        var hasData = invoices.length > 0;
+
+        if (hasData) {
+          renderDataDashboard(first || fullName, meta, invoices, jobs);
+        } else {
+          renderChecklist(first || fullName, meta);
+        }
 
       } catch(e) {
         document.getElementById('main-content').innerHTML =
@@ -580,6 +750,155 @@
     }
 
     loadUser();
+  </script>
+
+  <!-- CALCULATOR -->
+  <div class="calc-overlay" id="calc-overlay" onclick="closeCalc()"></div>
+  <div class="calc-panel" id="calc-panel">
+    <div class="calc-header">
+      <div class="calc-title"><i class="ti ti-calculator" style="font-size:16px;color:#5DCAA5"></i> Quote Calculator</div>
+      <button class="calc-close" onclick="closeCalc()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="calc-display">
+      <div class="calc-expr" id="calc-expr"></div>
+      <div class="calc-val" id="calc-val">0</div>
+    </div>
+    <div class="calc-vat-bar">
+      <button class="calc-vat-btn active" onclick="setVat(0,this)">No VAT</button>
+      <button class="calc-vat-btn" onclick="setVat(5,this)">+5% VAT</button>
+      <button class="calc-vat-btn" onclick="setVat(20,this)">+20% VAT</button>
+    </div>
+    <div class="calc-result" id="calc-vat-result">
+      <div class="calc-result-label" id="calc-vat-label">VAT (20%)</div>
+      <div class="calc-result-val" id="calc-vat-val"></div>
+    </div>
+    <div class="calc-grid">
+      <button class="calc-btn c-clr" onclick="calcAction('clear')" style="grid-column:span 2">AC</button>
+      <button class="calc-btn c-fn" onclick="calcAction('back')"><i class="ti ti-backspace"></i></button>
+      <button class="calc-btn c-op" onclick="calcAction('op','/')">÷</button>
+
+      <button class="calc-btn c-num" onclick="calcAction('num','7')">7</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','8')">8</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','9')">9</button>
+      <button class="calc-btn c-op" onclick="calcAction('op','*')">×</button>
+
+      <button class="calc-btn c-num" onclick="calcAction('num','4')">4</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','5')">5</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','6')">6</button>
+      <button class="calc-btn c-op" onclick="calcAction('op','-')">−</button>
+
+      <button class="calc-btn c-num" onclick="calcAction('num','1')">1</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','2')">2</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','3')">3</button>
+      <button class="calc-btn c-op" onclick="calcAction('op','+')">+</button>
+
+      <button class="calc-btn c-fn" onclick="calcAction('pct')">%</button>
+      <button class="calc-btn c-num" onclick="calcAction('num','0')">0</button>
+      <button class="calc-btn c-num" onclick="calcAction('dot')">.</button>
+      <button class="calc-btn c-eq" onclick="calcAction('eq')">=</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Calculator logic ──
+    var _cExpr = '', _cVal = '0', _cOp = null, _cPrev = null, _cNewNum = true, _cVat = 0;
+
+    function toggleCalc() {
+      var panel = document.getElementById('calc-panel');
+      var overlay = document.getElementById('calc-overlay');
+      var isOpen = panel.classList.contains('open');
+      if (isOpen) { panel.classList.remove('open'); overlay.classList.remove('open'); }
+      else { panel.classList.add('open'); overlay.classList.add('open'); }
+    }
+    function closeCalc() {
+      document.getElementById('calc-panel').classList.remove('open');
+      document.getElementById('calc-overlay').classList.remove('open');
+    }
+
+    function setVat(rate, btn) {
+      _cVat = rate;
+      document.querySelectorAll('.calc-vat-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      updateVatResult();
+    }
+
+    function updateVatResult() {
+      var val = parseFloat(_cVal) || 0;
+      var result = document.getElementById('calc-vat-result');
+      var label  = document.getElementById('calc-vat-label');
+      var vatVal = document.getElementById('calc-vat-val');
+      if (_cVat > 0 && val > 0) {
+        result.style.display = 'block';
+        var vat = val * _cVat / 100;
+        var total = val + vat;
+        label.textContent = 'VAT (' + _cVat + '%) = £' + vat.toFixed(2);
+        vatVal.textContent = 'Total with VAT: £' + total.toFixed(2);
+      } else {
+        result.style.display = 'none';
+      }
+    }
+
+    function calcAction(type, val) {
+      switch(type) {
+        case 'num':
+          if (_cNewNum) { _cVal = val; _cNewNum = false; }
+          else { _cVal = _cVal === '0' ? val : _cVal + val; }
+          break;
+        case 'dot':
+          if (_cNewNum) { _cVal = '0.'; _cNewNum = false; }
+          else if (!_cVal.includes('.')) { _cVal += '.'; }
+          break;
+        case 'op':
+          if (_cOp && !_cNewNum) { calcAction('eq'); }
+          _cPrev = parseFloat(_cVal);
+          _cOp = val;
+          _cExpr = _cVal + ' ' + {'+':'+','-':'−','*':'×','/':'÷'}[val] + ' ';
+          _cNewNum = true;
+          break;
+        case 'eq':
+          if (_cOp && _cPrev !== null) {
+            var curr = parseFloat(_cVal);
+            var res;
+            if (_cOp === '+') res = _cPrev + curr;
+            else if (_cOp === '-') res = _cPrev - curr;
+            else if (_cOp === '*') res = _cPrev * curr;
+            else if (_cOp === '/') res = curr !== 0 ? _cPrev / curr : 0;
+            _cExpr = _cExpr + _cVal + ' =';
+            _cVal = parseFloat(res.toFixed(10)).toString();
+            _cOp = null; _cPrev = null; _cNewNum = true;
+          }
+          break;
+        case 'pct':
+          _cVal = (parseFloat(_cVal) / 100).toString();
+          _cNewNum = true;
+          break;
+        case 'back':
+          if (!_cNewNum && _cVal.length > 1) { _cVal = _cVal.slice(0,-1); }
+          else { _cVal = '0'; _cNewNum = true; }
+          break;
+        case 'clear':
+          _cVal = '0'; _cExpr = ''; _cOp = null; _cPrev = null; _cNewNum = true;
+          break;
+      }
+      var display = parseFloat(_cVal);
+      document.getElementById('calc-val').textContent = isNaN(display) ? _cVal : display.toLocaleString('en-GB', {maximumFractionDigits:8});
+      document.getElementById('calc-expr').textContent = _cExpr;
+      updateVatResult();
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function(e) {
+      if (!document.getElementById('calc-panel').classList.contains('open')) return;
+      if (e.key >= '0' && e.key <= '9') calcAction('num', e.key);
+      else if (e.key === '.') calcAction('dot');
+      else if (e.key === '+') calcAction('op', '+');
+      else if (e.key === '-') calcAction('op', '-');
+      else if (e.key === '*') calcAction('op', '*');
+      else if (e.key === '/') { e.preventDefault(); calcAction('op', '/'); }
+      else if (e.key === 'Enter' || e.key === '=') calcAction('eq');
+      else if (e.key === 'Backspace') calcAction('back');
+      else if (e.key === 'Escape') closeCalc();
+    });
   </script>
 
 </body>
