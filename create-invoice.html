@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -164,25 +164,27 @@
     <button class="btn-send-top" onclick="sendInvoice()"><i class="ti ti-send"></i> Send</button>
   </div>
 
-  <div class="progress">
-    <div class="step">
-      <div class="step-dot done"><i class="ti ti-check" style="font-size:14px"></i></div>
-      <span class="step-label">Customer</span>
+  <div class="progress" id="progress-bar">
+    <div class="step" id="step-1">
+      <div class="step-dot active" id="dot-1">1</div>
+      <span class="step-label active" id="lbl-1">Customer</span>
     </div>
-    <div class="step-line"></div>
-    <div class="step">
-      <div class="step-dot active">2</div>
-      <span class="step-label active">Items</span>
+    <div class="step-line" id="line-1"></div>
+    <div class="step" id="step-2">
+      <div class="step-dot todo" id="dot-2">2</div>
+      <span class="step-label" id="lbl-2">Job</span>
     </div>
-    <div class="step-line"></div>
-    <div class="step">
-      <div class="step-dot todo">3</div>
-      <span class="step-label">Review</span>
+    <div class="step-line" id="line-2"></div>
+    <div class="step" id="step-3">
+      <div class="step-dot todo" id="dot-3">3</div>
+      <span class="step-label" id="lbl-3">Amount</span>
     </div>
-    <div class="step-line"></div>
-    <div class="step">
-      <div class="step-dot todo">4</div>
-      <span class="step-label">Send</span>
+    <div class="step-line" id="line-3"></div>
+    <div class="step" id="step-4">
+      <div class="step-dot todo" id="dot-4">4</div>
+      <span class="step-label" id="lbl-4">Send</span>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -259,7 +261,7 @@
               <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:#6B6A65;font-weight:600">£</span>
               <input type="number" id="simple-amount" placeholder="0.00" min="0" step="0.01" autocomplete="off"
                 style="padding-left:30px;width:100%;padding-top:11px;padding-bottom:11px;padding-right:13px;border:1px solid #E5E3DC;border-radius:9px;font-size:18px;font-weight:600;font-family:inherit;color:#061A30;background:#fff;outline:none"
-                oninput="updateSimpleAmount()" />
+                oninput="updateSimpleAmount(); updatePreview()" />
             </div>
           </div>
           <div class="field" style="margin-bottom:0">
@@ -509,9 +511,14 @@
         row.style.display = 'none';
       }
       // Sync to preview
-      var prevSub = document.getElementById('sub'); if (prevSub) prevSub.textContent = '£' + amt.toFixed(2);
-      var prevVat = document.getElementById('vatamt'); if (prevVat) prevVat.textContent = '£' + vatAmt.toFixed(2);
-      var prevTotal = document.getElementById('total'); if (prevTotal) prevTotal.textContent = '£' + total.toFixed(2);
+      var prevSub = document.getElementById('prev-sub'); if (prevSub) prevSub.textContent = '£' + amt.toFixed(2);
+      var prevVat = document.getElementById('prev-vat'); if (prevVat) prevVat.textContent = '£' + vatAmt.toFixed(2);
+      var prevVatLabel = document.getElementById('prev-vat-label'); if (prevVatLabel) prevVatLabel.textContent = 'VAT (' + vatRate + '%)';
+      var prevTotal = document.getElementById('prev-grand'); if (prevTotal) prevTotal.textContent = '£' + total.toFixed(2);
+      // Also update the detailed totals so getInvoiceTotal() works
+      var sub = document.getElementById('sub'); if (sub) sub.textContent = '£' + amt.toFixed(2);
+      var vatamt = document.getElementById('vatamt'); if (vatamt) vatamt.textContent = '£' + vatAmt.toFixed(2);
+      var totalEl = document.getElementById('total'); if (totalEl) totalEl.textContent = '£' + total.toFixed(2);
     }
 
     function getInvoiceTotal() {
@@ -525,8 +532,39 @@
       }
     }
 
-    var invoiceMode = 'simple';
-    var contactMode = 'email';
+    // ── Progress steps ──
+    function updateProgress() {
+      var hasCustomer = !!(document.getElementById('cust-name') && document.getElementById('cust-name').value.trim());
+      var hasJob      = !!(document.getElementById('job-desc') && document.getElementById('job-desc').value.trim());
+      var hasAmount   = !!(document.getElementById('simple-amount') && parseFloat(document.getElementById('simple-amount').value) > 0);
+      var steps = [hasCustomer, hasJob, hasAmount, false];
+      var doneClass = 'step-dot done'; var activeClass = 'step-dot active'; var todoClass = 'step-dot todo';
+      var firstActive = -1;
+      for (var i = 0; i < 4; i++) {
+        var dot = document.getElementById('dot-' + (i+1));
+        var lbl = document.getElementById('lbl-' + (i+1));
+        var line = document.getElementById('line-' + i);
+        if (!dot) continue;
+        if (steps[i]) {
+          dot.className = 'step-dot done'; dot.innerHTML = '<i class="ti ti-check" style="font-size:12px"></i>';
+          lbl.className = 'step-label'; if (line) line.style.background = '#5DCAA5';
+        } else if (firstActive === -1) {
+          firstActive = i;
+          dot.className = 'step-dot active'; dot.textContent = (i+1);
+          lbl.className = 'step-label active';
+        } else {
+          dot.className = 'step-dot todo'; dot.textContent = (i+1);
+          lbl.className = 'step-label';
+        }
+      }
+    }
+
+    // Hook inputs to progress
+    ['cust-name','cust-email','cust-phone','job-desc','simple-amount'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateProgress);
+    });
+    updateProgress();
 
     function switchContactTab(mode) {
       contactMode = mode;
@@ -595,19 +633,37 @@
         var usedNum = parseInt(num.replace(/[^0-9]/g, ''));
         if (usedNum) localStorage.setItem('pi_last_inv_num', usedNum.toString());
 
-        // Save invoice to Supabase
+        // Save invoice — try Supabase first, fallback to localStorage
+        var savedInvoice = {
+          id: Date.now().toString(),
+          number: num,
+          customer_name: name,
+          customer: name,
+          job: job,
+          amount: totalPounds,
+          status: 'unpaid',
+          stripe_payment_link: data.paymentUrl,
+          date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString()
+        };
+
         try {
-          await DB.saveInvoice({
-            isNew: true,
-            number: num,
-            customer_name: name,
-            job: job,
-            amount: totalPounds,
-            status: 'unpaid',
-            stripe_payment_link: data.paymentUrl,
-            date: new Date().toISOString().split('T')[0]
-          });
-        } catch(dbErr) { console.warn('Invoice save error:', dbErr); }
+          var dbResult = await DB.saveInvoice({ isNew: true, ...savedInvoice });
+          if (!dbResult) throw new Error('Supabase save failed');
+        } catch(dbErr) {
+          // Fallback: save to localStorage so invoices page still shows it
+          console.warn('Supabase save failed, using localStorage:', dbErr.message);
+          var existing = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          existing.unshift(savedInvoice);
+          localStorage.setItem('tb_invoices', JSON.stringify(existing));
+        }
+
+        // Auto-open WhatsApp immediately if in WhatsApp mode
+        if (contactMode === 'whatsapp' && phone) {
+          var waNumAuto = phone.replace(/\s+/g,'').replace(/^0/,'44');
+          var waMsgAuto = encodeURIComponent('Hi ' + name + ', here is your invoice for ' + totalText + '.\n\nPay by card or bank transfer here:\n' + data.paymentUrl + '\n\nThank you!');
+          setTimeout(function() { window.open('https://wa.me/' + waNumAuto + '?text=' + waMsgAuto, '_blank'); }, 500);
+        }
 
         // Success — show the payment link
         showSendSuccess(data.paymentUrl, name, totalText, email);
@@ -643,20 +699,21 @@
 
       const actionBtns = contactMode === 'whatsapp'
         ? `<div style="display:flex;gap:10px">
-            <a href="${waUrl}" target="_blank" style="flex:2;background:#25D366;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px">
-              <i class="ti ti-brand-whatsapp" style="font-size:16px"></i> Send on WhatsApp
+            <a href="${waUrl}" target="_blank" onclick="setTimeout(function(){window.open('${waUrl}','_blank');},100)" style="flex:2;background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:9px;font-size:14px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:7px">
+              <i class="ti ti-brand-whatsapp" style="font-size:17px"></i> Open WhatsApp & Send
             </a>
-            <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:block">
+            <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:12px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center">
               View invoices
             </a>
           </div>`
         : `<div style="display:flex;gap:10px">
-            <a href="mailto:${email}?subject=Invoice ${invNum} — Payment Link&body=Hi ${name},%0D%0A%0D%0APlease find your payment link below:%0D%0A%0D%0A${paymentUrl}%0D%0A%0D%0ATotal: ${total}%0D%0A%0D%0AThank you!" style="flex:1;background:#0A2540;color:#fff;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:block">
-              <i class="ti ti-mail" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>Send by email
-            </a>
-            <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:block">
+            <button onclick="window.location.href='mailto:${email}?subject=Invoice ${invNum} - Payment Link&body=Hi ${name},%0D%0A%0D%0APlease find your payment link below:%0D%0A%0D%0A${paymentUrl}%0D%0A%0D%0ATotal: ${total}%0D%0A%0D%0AThank you!'" style="flex:1;background:#0A2540;color:#fff;border:none;padding:12px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
+              <i class="ti ti-mail" style="font-size:15px"></i> Send by email
+            </button>
+            <a href="invoices.html" style="flex:1;background:#F0EFEA;color:#0A2540;text-decoration:none;padding:12px;border-radius:9px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center">
               View invoices
             </a>
+          </div>`
           </div>`;
 
       btn.parentElement.innerHTML = `
