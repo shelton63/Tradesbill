@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -140,11 +140,52 @@
       .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; text-decoration: none; }
       .nav-plus i { font-size: 23px; color: #fff; }
     }
+  
+    
+      /* Make mobile topbar sticky if not already */
+      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
+    }
+  
+    /* Hamburger menu */
+    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
+    .mob-menu-overlay.open { display: block; }
+    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
+    .mob-drawer.open { left: 0; }
+    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
+    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
+    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
+    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
+    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
+    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
+    .mob-drawer-item i { font-size: 20px; width: 24px; }
+    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
+    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
+    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
+    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
+    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
+  <!-- MOBILE TOP BAR -->
   <div class="mobile-topbar">
-    <a href="dashboard.html" class="mob-logo"><i class="ti ti-file-invoice"></i><span>Primo Invoice</span></a>
+    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
+      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
+    </div>
+    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
+  </div>
+      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <a href="settings.html" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;text-decoration:none" id="mob-avatar-top"></a>
+    </div>
   </div>
   <div class="db">
     <nav class="sidebar">
@@ -212,7 +253,7 @@
     <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
     <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Jobs</span></a>
     <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
-    <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+    <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
     <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
   </nav>
 
@@ -445,7 +486,16 @@
         var first = m.first_name || ''; var last = m.last_name || '';
         var ini2 = (first.charAt(0) + last.charAt(0)).toUpperCase();
         var av = document.getElementById('sb-av'); if (av) av.textContent = ini2 || data.user.email[0].toUpperCase();
-        var nm = document.getElementById('sb-uname'); if (nm) nm.textContent = (first+' '+last).trim() || data.user.email.split('@')[0];
+        var nm = document.getElementById('sb-uname'); if (nm) nm.textContent = (first+' '+last).trim()
+        // Update hamburger drawer user info
+        var da = document.getElementById('mob-drawer-av'); if(da) da.textContent = ini;
+        var dn = document.getElementById('mob-drawer-name'); if(dn) dn.textContent = (first||fullName||'there');
+        var dp = document.getElementById('mob-drawer-plan'); if(dp) dp.textContent = typeof PLAN_NAMES !== 'undefined' ? (PLAN_NAMES[_plan||'trial']||'Free trial') : 'Free trial';
+        // Greeting
+        var h = new Date().getHours();
+        var gr = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+        var gt = document.getElementById('mob-greet-time'); if(gt) gt.textContent = gr;
+        var gn = document.getElementById('mob-greet-name'); if(gn) gn.textContent = first||fullName||'there'; || data.user.email.split('@')[0];
         var pl = document.getElementById('sb-uplan'); if (pl) pl.textContent = m.plan ? m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan' : 'Free plan';
       } catch(e) {}
 
@@ -501,6 +551,44 @@
     }
 
     init();
+  </script>
+
+  <!-- HAMBURGER OVERLAY + DRAWER -->
+  <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
+  <div class="mob-drawer" id="mob-drawer">
+    <div class="mob-drawer-head">
+      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
+      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mob-drawer-section">Main</div>
+    <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
+    <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+    <a href="customers.html" class="mob-drawer-item active"><i class="ti ti-users"></i> Customers</a>
+    <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
+    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-briefcase"></i> Jobs</a>
+    <div class="mob-drawer-section">Reports</div>
+    <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+    <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
+    <div class="mob-drawer-section">Account</div>
+    <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
+    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
+    <div class="mob-drawer-bottom">
+      <div class="mob-drawer-user">
+        <div class="mob-drawer-av" id="mob-drawer-av"></div>
+        <div>
+          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
+          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
+    // Swipe to close
+    var _swipeStartX = 0;
+    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
+    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
   </script>
 </body>
 </html>

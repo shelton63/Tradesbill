@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -171,14 +171,48 @@
     * { max-width: 100%; }
     img, video, iframe, table { max-width: 100%; }
 
+  
+    
+      /* Make mobile topbar sticky if not already */
+      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
+    }
+  
+    /* Hamburger menu */
+    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
+    .mob-menu-overlay.open { display: block; }
+    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
+    .mob-drawer.open { left: 0; }
+    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
+    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
+    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
+    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
+    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
+    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
+    .mob-drawer-item i { font-size: 20px; width: 24px; }
+    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
+    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
+    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
+    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
+    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
 
   <!-- MOBILE TOP BAR -->
   <div class="mobile-topbar">
-    <div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:1px" id="mob-greet-time">Good morning</div>
+    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
+      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
+    </div>
+    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
+  </div>
       <div style="font-size:17px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
     </div>
     <div class="mob-right">
@@ -267,7 +301,7 @@
             <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
           </div>
         </div>
-        <a href="earnings.html" class="nav-item"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
+        <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
         <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
       </nav>
     </div>
@@ -1016,5 +1050,43 @@
     });
   </script>
 
+
+  <!-- HAMBURGER OVERLAY + DRAWER -->
+  <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
+  <div class="mob-drawer" id="mob-drawer">
+    <div class="mob-drawer-head">
+      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
+      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mob-drawer-section">Main</div>
+    <a href="dashboard.html" class="mob-drawer-item active"><i class="ti ti-layout-dashboard"></i> Home</a>
+    <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+    <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
+    <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
+    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-briefcase"></i> Jobs</a>
+    <div class="mob-drawer-section">Reports</div>
+    <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+    <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
+    <div class="mob-drawer-section">Account</div>
+    <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
+    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
+    <div class="mob-drawer-bottom">
+      <div class="mob-drawer-user">
+        <div class="mob-drawer-av" id="mob-drawer-av"></div>
+        <div>
+          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
+          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
+    // Swipe to close
+    var _swipeStartX = 0;
+    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
+    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
+  </script>
 </body>
 </html>
