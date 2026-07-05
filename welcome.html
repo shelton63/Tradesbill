@@ -1,129 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to TradesBill</title>
+  <title>Welcome — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try {
+      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
+    }
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
+    html, body { min-height: 100vh; overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%);
+      display: flex; flex-direction: column; position: relative; }
+    body::before { content: ''; position: fixed; top: -150px; right: -150px; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(93,202,165,0.1) 0%, transparent 70%); pointer-events: none; }
+    body::after { content: ''; position: fixed; bottom: -100px; left: -100px; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(93,202,165,0.07) 0%, transparent 70%); pointer-events: none; }
 
-    .nav { background: #0A2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .nav-logo i { color: #5DCAA5; }
-    .nav-skip { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+    .nav { padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+    .nav-logo { font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-logo i { color: #5DCAA5; font-size: 22px; }
+    .nav-skip { font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; }
     .nav-skip:hover { color: #fff; }
 
-    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E3DC; width: 100%; max-width: 480px; padding: 48px 40px; text-align: center; }
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 20px; position: relative; z-index: 1; }
+    .card { background: #fff; border-radius: 20px; width: 100%; max-width: 480px; padding: 44px 40px; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
 
-    .icon-stack { position: relative; width: 100px; height: 100px; margin: 0 auto 28px; }
-    .icon-circle { width: 100px; height: 100px; border-radius: 50%; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-    .icon-circle i { font-size: 46px; color: #0A2540; }
-    .icon-badge { position: absolute; bottom: -2px; right: -2px; width: 34px; height: 34px; border-radius: 50%; background: #5DCAA5; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
-    .icon-badge i { font-size: 16px; color: #061A30; }
+    .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #061A30, #0A2540); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; position: relative; }
+    .icon-wrap i { font-size: 36px; color: #5DCAA5; }
+    .icon-badge { position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; border-radius: 50%; background: #5DCAA5; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
+    .icon-badge i { font-size: 13px; color: #061A30; }
 
-    h1 { font-size: 26px; font-weight: 700; color: #061A30; margin-bottom: 10px; }
-    .subtitle { font-size: 15px; color: #6B6A65; line-height: 1.6; margin-bottom: 8px; }
-    .name-highlight { color: #0A2540; font-weight: 600; }
+    h1 { font-size: 24px; font-weight: 700; color: #061A30; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .subtitle { font-size: 15px; color: #6B6A65; line-height: 1.6; margin-bottom: 28px; }
 
-    .timeline { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 28px 0 32px; flex-wrap: wrap; }
-    .time-pill { display: flex; align-items: center; gap: 6px; background: #FAFAF8; border-radius: 20px; padding: 7px 14px; font-size: 12px; color: #6B6A65; font-weight: 600; }
-    .time-pill i { font-size: 14px; color: #0A2540; }
+    .steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 28px; text-align: left; background: #F8F7F3; border-radius: 13px; overflow: hidden; }
+    .step-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-bottom: 1px solid #F0EFEA; }
+    .step-row:last-child { border-bottom: none; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #0A2540; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-icon { font-size: 18px; color: #0A2540; flex-shrink: 0; }
+    .step-label { font-size: 13px; font-weight: 600; color: #061A30; }
+    .step-sub { font-size: 12px; color: #8B8A84; margin-top: 1px; }
+    .step-time { margin-left: auto; font-size: 11px; color: #A3A29C; font-weight: 600; flex-shrink: 0; }
 
-    .steps-preview { text-align: left; margin-bottom: 32px; }
-    .step-row { display: flex; align-items: center; gap: 14px; padding: 11px 0; }
-    .step-num { width: 28px; height: 28px; border-radius: 50%; background: #FAFAF8; color: #8B8A84; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .step-text { font-size: 14px; color: #6B6A65; font-weight: 600; }
-    .step-text span { display: block; font-size: 12px; color: #8B8A84; font-weight: 400; margin-top: 1px; }
+    .btn-start { width: 100%; padding: 15px; background: #5DCAA5; color: #061A30; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+    .btn-start:hover { background: #4DB894; }
+    .free-note { font-size: 12px; color: #A3A29C; }
+    .free-note strong { color: #0A2540; }
 
-    .btn-start { width: 100%; padding: 15px; background: #0A2540; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-start:hover { background: #0A2540; }
-    .btn-start i { font-size: 19px; }
-
-    .footer { background: #061A30; padding: 18px 40px; text-align: center; }
-    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
-
-    @media (max-width: 480px) {
-      .nav { padding: 14px 20px; }
-      .card { padding: 36px 24px; }
-      h1 { font-size: 22px; }
-    }
+    .footer { padding: 16px 40px; text-align: center; position: relative; z-index: 1; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.3); }
+    @media (max-width: 480px) { .nav { padding: 14px 20px; } .card { padding: 32px 22px; } }
   </style>
 </head>
 <body>
-
   <nav class="nav">
-    <div class="nav-logo"><i class="ti ti-file-invoice"></i> TradesBill</div>
-    <a href="dashboard.html?skip_onboarding=true" class="nav-skip">Skip for now</a>
+    <a href="/" class="nav-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</a>
+    <a href="#" onclick="skipOnboarding()" class="nav-skip">Skip for now</a>
   </nav>
-
   <div class="page">
     <div class="card">
-      <div class="icon-stack">
-        <div class="icon-circle"><i class="ti ti-confetti"></i></div>
+      <div class="icon-wrap">
+        <i class="ti ti-file-invoice"></i>
         <div class="icon-badge"><i class="ti ti-check"></i></div>
       </div>
-
-      <h1>Welcome to TradesBill<span id="name-suffix">!</span></h1>
-      <p class="subtitle">You'll be ready to send your first invoice in just a few minutes.</p>
-
-      <div class="timeline">
-        <div class="time-pill"><i class="ti ti-clock"></i> Takes ~3 minutes</div>
-        <div class="time-pill"><i class="ti ti-credit-card"></i> No card required</div>
-      </div>
-
-      <div class="steps-preview">
+      <h1>Welcome to Primo Invoice! 🎉</h1>
+      <p class="subtitle">Let's get you set up so you can start sending invoices and getting paid faster. Takes about 3 minutes.</p>
+      <div class="steps">
         <div class="step-row">
           <div class="step-num">1</div>
-          <div class="step-text">Set up your business<span>Name, logo, and details</span></div>
+          <div><div class="step-label"><i class="ti ti-building" style="font-size:13px;margin-right:4px;color:#0A2540"></i>Business details</div><div class="step-sub">Your name, trade type and logo</div></div>
+          <div class="step-time">1 min</div>
         </div>
         <div class="step-row">
           <div class="step-num">2</div>
-          <div class="step-text">Connect payments<span>Get paid directly via Stripe</span></div>
+          <div><div class="step-label"><i class="ti ti-brand-stripe" style="font-size:13px;margin-right:4px;color:#635BFF"></i>Connect Stripe</div><div class="step-sub">Accept card & Apple Pay</div></div>
+          <div class="step-time">2 mins</div>
         </div>
         <div class="step-row">
           <div class="step-num">3</div>
-          <div class="step-text">Create your first invoice<span>We'll guide you through it</span></div>
-        </div>
-        <div class="step-row">
-          <div class="step-num">4</div>
-          <div class="step-text">Send it<span>And you're officially live</span></div>
+          <div><div class="step-label"><i class="ti ti-send" style="font-size:13px;margin-right:4px;color:#1D9E75"></i>Send first invoice</div><div class="step-sub">Get paid straight away</div></div>
+          <div class="step-time">1 min</div>
         </div>
       </div>
-
       <button class="btn-start" onclick="window.location.href='onboarding-business.html'">
-        Let's get started <i class="ti ti-arrow-right"></i>
+        <i class="ti ti-arrow-right" style="font-size:18px"></i> Let's get started
       </button>
+      <div class="free-note">14-day free trial · <strong>No card required</strong></div>
     </div>
   </div>
-
-  <footer class="footer">
-    <p>© 2026 TradesBill &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
-  </footer>
-
+  <div class="footer"><p>© 2026 Primo Invoice · Payments powered by Stripe</p></div>
   <script>
-    async function loadName() {
-      const { data } = await supabase.auth.getUser();
-      if (data && data.user) {
-        const meta = data.user.user_metadata || {};
-        const first = meta.first_name || meta.given_name || '';
-        if (first) {
-          document.querySelector('h1').innerHTML = `Welcome to TradesBill, <span class="name-highlight">${first}</span>!`;
-        }
-      } else {
-        window.location.href = 'login.html';
-      }
+    async function skipOnboarding() {
+      try { await supabase.auth.updateUser({ data: { onboarding_complete: true, trial_start: new Date().toISOString() } }); } catch(e) {}
+      window.location.href = 'dashboard.html';
     }
-    loadName();
+    async function loadUser() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) { window.location.href = 'login.html'; return; }
+      } catch(e) {}
+    }
+    loadUser();
   </script>
-
 </body>
 </html>

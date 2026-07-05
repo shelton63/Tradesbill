@@ -2,278 +2,217 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Set up your business — Primo Invoice</title>
+  <title>Business details — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try {
+      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
+    }
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; display: flex; flex-direction: column; }
-
-    .nav { background: #0A2540; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-size: 18px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    html, body { min-height: 100vh; overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%);
+      display: flex; flex-direction: column; }
+    body::before { content: ''; position: fixed; top: -150px; right: -150px; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(93,202,165,0.1) 0%, transparent 70%); pointer-events: none; }
+    .nav { padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+    .nav-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .nav-logo i { color: #5DCAA5; }
-    .nav-skip { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
-    .nav-skip:hover { color: #fff; }
+    .nav-step { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; }
 
-    .progress-bar { background: #0A2540; padding: 14px 40px; }
-    .progress-track { max-width: 480px; margin: 0 auto; display: flex; align-items: center; }
-    .pstep { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .pdot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-    .pdot.done { background: #5DCAA5; color: #061A30; }
-    .pdot.active { background: #fff; color: #0A2540; }
-    .pdot.todo { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
-    .pline { flex: 1; height: 2px; background: rgba(255,255,255,0.2); margin-top: -18px; }
-    .pline.done { background: #5DCAA5; }
-    .plabel { font-size: 10px; color: rgba(255,255,255,0.65); }
-    .plabel.active { color: #fff; font-weight: 700; }
+    /* Progress */
+    .progress-wrap { padding: 4px 40px 20px; position: relative; z-index: 1; }
+    .progress-steps { display: flex; align-items: center; max-width: 440px; margin: 0 auto; }
+    .p-step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .p-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .p-dot.done { background: #5DCAA5; color: #061A30; }
+    .p-dot.active { background: #fff; color: #0A2540; }
+    .p-dot.pending { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); border: 1.5px solid rgba(255,255,255,0.2); }
+    .p-lbl { font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .p-lbl.done { color: #5DCAA5; }
+    .p-lbl.active { color: #fff; }
+    .p-lbl.pending { color: rgba(255,255,255,0.35); }
+    .p-line { flex: 1; height: 2px; margin-bottom: 18px; }
+    .p-line.done { background: #5DCAA5; }
+    .p-line.pending { background: rgba(255,255,255,0.15); }
 
-    .page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 36px 20px; }
-    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E3DC; width: 100%; max-width: 480px; padding: 36px; }
-
-    h1 { font-size: 21px; font-weight: 700; color: #061A30; margin-bottom: 6px; }
-    .subtitle { font-size: 14px; color: #6B6A65; margin-bottom: 26px; }
-
-    .error-banner { background: #FCEBEB; border: 1px solid #F09595; color: #D14343; border-radius: 8px; padding: 11px 14px; font-size: 13px; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
-    .error-banner i { font-size: 17px; flex-shrink: 0; }
-
-    .logo-upload { border: 1.5px dashed #E5E3DC; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: #F8F7F3; margin-bottom: 22px; transition: all 0.15s; }
-    .logo-upload:hover { border-color: #0A2540; background: #EEF3F8; }
-    .logo-preview { width: 64px; height: 64px; border-radius: 10px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; overflow: hidden; }
-    .logo-preview i { font-size: 28px; color: #0A2540; }
-    .logo-preview img { width: 64px; height: 64px; object-fit: contain; display: none; }
-    .logo-upload p { font-size: 13px; color: #6B6A65; font-weight: 600; }
-    .logo-upload span { font-size: 11px; color: #8B8A84; }
-
+    .page { flex: 1; display: flex; justify-content: center; padding: 0 20px 32px; position: relative; z-index: 1; }
+    .card { background: #fff; border-radius: 20px; width: 100%; max-width: 540px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+    .card-header { background: linear-gradient(135deg, #061A30, #0A2540); padding: 22px 28px; display: flex; align-items: center; gap: 14px; }
+    .hdr-icon { width: 42px; height: 42px; border-radius: 11px; background: rgba(93,202,165,0.2); display: flex; align-items: center; justify-content: center; }
+    .hdr-icon i { font-size: 21px; color: #5DCAA5; }
+    .hdr-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .hdr-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .card-body { padding: 26px 28px; }
     .field { margin-bottom: 16px; }
-    .field:last-of-type { margin-bottom: 0; }
-    .field label { display: block; font-size: 13px; font-weight: 700; color: #6B6A65; margin-bottom: 6px; }
-    .field input, .field select, .field textarea {
-      width: 100%; padding: 11px 13px; border: 1px solid #E5E3DC; border-radius: 9px;
-      font-size: 14px; color: #1A1A18; background: #fff; outline: none;
-      font-family: inherit; -webkit-appearance: none;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .btn-row { display: flex; gap: 10px; margin-top: 26px; }
-    .btn-back { flex: 0 0 auto; padding: 13px 18px; background: transparent; color: #6B6A65; border: 1px solid #E5E3DC; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
-    .btn-back:hover { background: #FAFAF8; }
-    .btn-next { flex: 1; padding: 13px; background: #0A2540; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 7px; }
-    .btn-next:hover { background: #0A2540; }
-    .btn-next:disabled { background: #7AADD4; cursor: not-allowed; }
-
-    .footer { background: #061A30; padding: 18px 40px; text-align: center; }
-    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); }
-
-    @media (max-width: 480px) {
-      .nav, .progress-bar { padding: 14px 20px; }
-      .card { padding: 26px 22px; }
-      .field-row { grid-template-columns: 1fr; }
-    }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
-
+    .field label { display: block; font-size: 11px; font-weight: 700; color: #8B8A84; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input, .field select { width: 100%; padding: 11px 14px; border: 1.5px solid #E5E3DC; border-radius: 10px; font-size: 14px; color: #1A1A18; font-family: inherit; outline: none; background: #fff; }
+    .field input:focus, .field select:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .logo-upload { border: 2px dashed #E5E3DC; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #FAFAF8; }
+    .logo-upload:hover { border-color: #0A2540; background: #EEF3F8; }
+    .logo-upload i { font-size: 28px; color: #A3A29C; margin-bottom: 8px; display: block; }
+    .logo-upload p { font-size: 13px; color: #6B6A65; margin-bottom: 3px; font-weight: 600; }
+    .logo-upload span { font-size: 11px; color: #A3A29C; }
+    .optional { font-size: 11px; color: #A3A29C; font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .card-footer { padding: 18px 28px; border-top: 1px solid #F0EFEA; display: flex; align-items: center; justify-content: space-between; }
+    .btn-back { background: none; border: none; color: #A3A29C; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+    .btn-next { background: #5DCAA5; color: #061A30; font-size: 14px; font-weight: 700; border: none; padding: 12px 26px; border-radius: 10px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 7px; }
+    .btn-next:hover { background: #4DB894; }
+    .error { background: #FDEDED; border: 1px solid #F09595; color: #D14343; border-radius: 9px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; display: none; }
+    .footer { padding: 14px; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.3); }
+    @media (max-width: 560px) { .nav { padding: 14px 16px; } .progress-wrap { padding: 4px 16px 16px; } .card-body { padding: 20px; } .card-footer { padding: 16px 20px; } .field-row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
   <nav class="nav">
-    <div class="nav-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
-    <a href="#" onclick="skipOnboarding()" class="nav-skip">Skip for now</a>
+    <a href="/" class="nav-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</a>
+    <div class="nav-step">Step 1 of 4</div>
   </nav>
 
-  <div class="progress-bar">
-    <div class="progress-track">
-      <div class="pstep"><div class="pdot active">1</div></div>
-      <div class="pline"></div>
-      <div class="pstep"><div class="pdot todo">2</div></div>
-      <div class="pline"></div>
-      <div class="pstep"><div class="pdot todo">3</div></div>
-      <div class="pline"></div>
-      <div class="pstep"><div class="pdot todo">4</div></div>
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="p-step"><div class="p-dot active">1</div><div class="p-lbl active">Business</div></div>
+      <div class="p-line pending"></div>
+      <div class="p-step"><div class="p-dot pending">2</div><div class="p-lbl pending">Payments</div></div>
+      <div class="p-line pending"></div>
+      <div class="p-step"><div class="p-dot pending">3</div><div class="p-lbl pending">Invoice</div></div>
+      <div class="p-line pending"></div>
+      <div class="p-step"><div class="p-dot pending">4</div><div class="p-lbl pending">Send</div></div>
     </div>
   </div>
 
   <div class="page">
     <div class="card">
-      <h1>Set up your business</h1>
-      <p class="subtitle">This appears on every invoice you send — let's make it look professional.</p>
-
-      <div class="error-banner" id="error-banner">
-        <i class="ti ti-alert-circle"></i>
-        <span id="error-text"></span>
+      <div class="card-header">
+        <div class="hdr-icon"><i class="ti ti-building"></i></div>
+        <div><div class="hdr-title">Business details</div><div class="hdr-sub">This appears on every invoice you send</div></div>
       </div>
-
-      <div class="logo-upload" onclick="document.getElementById('logo-input').click()">
-        <div class="logo-preview">
-          <i class="ti ti-building" id="logo-icon"></i>
-          <img id="logo-img" alt="Business logo" />
+      <div class="card-body">
+        <div id="error" class="error"></div>
+        <div class="field-row">
+          <div class="field"><label>First name</label><input type="text" id="first" placeholder="Mark" autocomplete="given-name" /></div>
+          <div class="field"><label>Last name</label><input type="text" id="last" placeholder="Taylor" autocomplete="family-name" /></div>
         </div>
-        <p id="logo-text">Add your business logo</p>
-        <span>Optional — you can add this later</span>
-      </div>
-      <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="previewLogo(event)" />
-
-      <div class="field">
-        <label for="business">Business name</label>
-        <input type="text" id="business" placeholder="Hughes Plumbing Ltd" />
-      </div>
-
-      <div class="field">
-        <label for="trade">Trade type</label>
-        <select id="trade">
-          <option value="">Select your trade...</option>
-          <option>Plumber</option>
-          <option>Builder</option>
-          <option>Electrician</option>
-          <option>Roofer</option>
-          <option>Carpenter</option>
-          <option>Painter & Decorator</option>
-          <option>Gas Engineer</option>
-          <option>Landscaper</option>
-          <option>General Contractor</option>
-          <option>Other</option>
-        </select>
-      </div>
-
-      <div class="field-row">
+        <div class="field"><label>Business name</label><input type="text" id="biz" placeholder="e.g. Taylor Plumbing Ltd" autocomplete="organization" /></div>
         <div class="field">
-          <label for="phone">Phone number</label>
-          <input type="tel" id="phone" placeholder="07700 900123" />
+          <label>Trade type</label>
+          <select id="trade">
+            <option value="">Select your trade...</option>
+            <option>Plumber</option><option>Electrician</option><option>Builder</option>
+            <option>Roofer</option><option>Painter & Decorator</option><option>Carpenter & Joiner</option>
+            <option>Gas Engineer</option><option>Landscaper</option><option>Plasterer</option>
+            <option>Tiler</option><option>HVAC Engineer</option><option>Glazier</option>
+            <option>Handyman</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Phone number</label><input type="tel" id="phone" placeholder="07700 900123" autocomplete="tel" /></div>
+        <div class="field"><label>Business address <span class="optional">(optional)</span></label><input type="text" id="address" placeholder="14 Elm Street, Manchester, M1 4BT" /></div>
+        <div class="field-row">
+          <div class="field"><label>VAT number <span class="optional">(optional)</span></label><input type="text" id="vat" placeholder="GB 123 456 789" /></div>
+          <div class="field"><label>Company number <span class="optional">(optional)</span></label><input type="text" id="company-num" placeholder="12345678" /></div>
         </div>
         <div class="field">
-          <label for="vat">VAT number <span style="font-weight:400;color:#8B8A84">(optional)</span></label>
-          <input type="text" id="vat" placeholder="GB 123 456 789" />
+          <label>Logo <span class="optional">(optional — shown on invoices)</span></label>
+          <div class="logo-upload" onclick="document.getElementById('logo-input').click()">
+            <i class="ti ti-cloud-upload" id="logo-icon"></i>
+            <p id="logo-text">Click to upload your logo</p>
+            <span>PNG, JPG or SVG · Max 2MB</span>
+          </div>
+          <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(this)" />
         </div>
       </div>
-
-      <div class="field">
-        <label for="address">Business address</label>
-        <textarea id="address" placeholder="14 Elm Street, Manchester, M1 4BT" style="min-height:60px;resize:vertical"></textarea>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-back" onclick="window.location.href='welcome.html'"><i class="ti ti-arrow-left"></i></button>
-        <button class="btn-next" id="next-btn" onclick="saveBusiness()">Continue <i class="ti ti-arrow-right"></i></button>
+      <div class="card-footer">
+        <button class="btn-back" onclick="window.location.href='welcome.html'"><i class="ti ti-arrow-left" style="font-size:14px"></i> Back</button>
+        <button class="btn-next" onclick="saveAndContinue()">Continue <i class="ti ti-arrow-right" style="font-size:14px"></i></button>
       </div>
     </div>
   </div>
-
-  <footer class="footer">
-    <p>© 2026 Primo Invoice &middot; Built for UK tradespeople &middot; Payments powered by Stripe</p>
-  </footer>
+  <div class="footer"><p>© 2026 Primo Invoice · Payments powered by Stripe</p></div>
 
   <script>
-    let logoDataUrl = null;
+    async function loadUser() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) { window.location.href = 'login.html'; return; }
+        const m = data.user.user_metadata || {};
+        if (m.first_name) document.getElementById('first').value = m.first_name;
+        if (m.last_name)  document.getElementById('last').value = m.last_name;
+        if (m.business_name) document.getElementById('biz').value = m.business_name;
+        if (m.trade_type) document.getElementById('trade').value = m.trade_type;
+        if (m.phone)     document.getElementById('phone').value = m.phone;
+        if (m.business_address) document.getElementById('address').value = m.business_address;
+        if (m.vat_number) document.getElementById('vat').value = m.vat_number;
+        if (m.company_number) document.getElementById('company-num').value = m.company_number;
+        if (m.logo_url) { document.getElementById('logo-icon').className = 'ti ti-check'; document.getElementById('logo-text').textContent = 'Logo uploaded ✓'; }
+      } catch(e) {}
+    }
+    loadUser();
 
-    function previewLogo(e) {
-      const file = e.target.files[0];
+    function handleLogo(input) {
+      const file = input.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        logoDataUrl = ev.target.result;
-        document.getElementById('logo-icon').style.display = 'none';
-        const img = document.getElementById('logo-img');
-        img.src = logoDataUrl;
-        img.style.display = 'block';
-        document.getElementById('logo-text').textContent = 'Logo added — click to change';
-      };
-      reader.readAsDataURL(file);
+      document.getElementById('logo-text').textContent = file.name + ' selected';
+      document.getElementById('logo-icon').className = 'ti ti-check';
     }
 
-    function showError(msg) {
-      document.getElementById('error-text').textContent = msg;
-      document.getElementById('error-banner').style.display = 'flex';
-    }
-    function hideError() {
-      document.getElementById('error-banner').style.display = 'none';
-    }
-
-    // Pre-fill from any existing user metadata
-    async function prefill() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data || !data.user) {
-        window.location.href = 'login.html';
-        return;
-      }
-      const meta = data.user.user_metadata || {};
-      if (meta.business_name) document.getElementById('business').value = meta.business_name;
-      if (meta.trade_type) document.getElementById('trade').value = meta.trade_type;
-      if (meta.phone) document.getElementById('phone').value = meta.phone;
-      if (meta.vat_number) document.getElementById('vat').value = meta.vat_number;
-      if (meta.business_address) document.getElementById('address').value = meta.business_address;
-      if (meta.logo_url) {
-        logoDataUrl = meta.logo_url;
-        document.getElementById('logo-icon').style.display = 'none';
-        const img = document.getElementById('logo-img');
-        img.src = logoDataUrl;
-        img.style.display = 'block';
-        document.getElementById('logo-text').textContent = 'Logo added — click to change';
-      }
-    }
-    prefill();
-
-    async function saveBusiness() {
-      hideError();
-      const business = document.getElementById('business').value.trim();
+    async function saveAndContinue() {
+      const first = document.getElementById('first').value.trim();
+      const biz   = document.getElementById('biz').value.trim();
       const trade = document.getElementById('trade').value;
-      const phone = document.getElementById('phone').value.trim();
-      const vat = document.getElementById('vat').value.trim();
-      const address = document.getElementById('address').value.trim();
-      const btn = document.getElementById('next-btn');
+      const errEl = document.getElementById('error');
+      if (!first) { errEl.textContent = 'Please enter your first name.'; errEl.style.display = 'block'; return; }
+      if (!biz)   { errEl.textContent = 'Please enter your business name.'; errEl.style.display = 'block'; return; }
+      if (!trade) { errEl.textContent = 'Please select your trade type.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
 
-      if (!business) { showError('Please enter your business name.'); return; }
-      if (!trade) { showError('Please select your trade type.'); return; }
-
-      btn.textContent = 'Saving...';
-      btn.disabled = true;
-
-      const updateData = {
-        business_name: business,
-        trade_type: trade,
-        phone: phone,
-        vat_number: vat,
-        business_address: address,
-        onboarding_step: 'business_complete'
-      };
-      if (logoDataUrl) updateData.logo_url = logoDataUrl;
-
-      const { error } = await supabase.auth.updateUser({ data: updateData });
-
-      if (error) {
-        showError(error.message);
-        btn.innerHTML = 'Continue <i class="ti ti-arrow-right"></i>';
-        btn.disabled = false;
-        return;
+      // Upload logo if selected
+      let logoUrl = null;
+      const logoFile = document.getElementById('logo-input').files[0];
+      if (logoFile) {
+        try {
+          const ext = logoFile.name.split('.').pop();
+          const { data: { user } } = await supabase.auth.getUser();
+          const path = user.id + '/logo.' + ext;
+          const { error: upErr } = await supabase.storage.from('logos').upload(path, logoFile, { upsert: true });
+          if (!upErr) {
+            const { data: urlData } = supabase.storage.from('logos').getPublicUrl(path);
+            logoUrl = urlData.publicUrl;
+          }
+        } catch(e) {}
       }
 
+      const updates = {
+        first_name: first,
+        last_name: document.getElementById('last').value.trim(),
+        business_name: biz,
+        trade_type: trade,
+        phone: document.getElementById('phone').value.trim(),
+        business_address: document.getElementById('address').value.trim(),
+        vat_number: document.getElementById('vat').value.trim(),
+        company_number: document.getElementById('company-num').value.trim(),
+        onboarding_step: 'payments'
+      };
+      if (logoUrl) updates.logo_url = logoUrl;
+
+      await supabase.auth.updateUser({ data: updates });
       window.location.href = 'onboarding-payments.html';
     }
 
     async function skipOnboarding() {
-      try {
-        await supabase.auth.updateUser({
-          data: {
-            onboarding_complete: true,
-            trial_start: new Date().toISOString()
-          }
-        });
-      } catch(e) {}
+      try { await supabase.auth.updateUser({ data: { onboarding_complete: true, trial_start: new Date().toISOString() } }); } catch(e) {}
       window.location.href = 'dashboard.html';
     }
   </script>
-
 </body>
 </html>
