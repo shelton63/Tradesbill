@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -161,7 +161,7 @@
       <a href="dashboard.html" class="btn-back" aria-label="Back to dashboard"><i class="ti ti-arrow-left"></i></a>
       <span class="top-title">New invoice</span>
     </div>
-    <button class="btn-send-top" onclick="sendInvoice()"><i class="ti ti-send"></i> Send</button>
+    <button class="btn-send-top" id="btn-send-top" onclick="sendInvoice()"><i class="ti ti-send"></i> <span id="send-top-label">Send</span></button>
   </div>
 
   <div class="progress" id="progress-bar">
@@ -510,6 +510,12 @@
       } else {
         row.style.display = 'none';
       }
+      // Update topbar send button
+      var topLabel = document.getElementById('send-top-label');
+      if (topLabel) topLabel.textContent = total > 0 ? 'Send · £' + total.toFixed(2) : 'Send';
+      // Update main send button
+      var sendBtn = document.getElementById('send-btn');
+      if (sendBtn && !sendBtn.disabled) sendBtn.innerHTML = '<i class="ti ti-send"></i> Send invoice' + (total > 0 ? ' — £' + total.toFixed(2) : '');
       // Sync to preview
       var prevSub = document.getElementById('prev-sub'); if (prevSub) prevSub.textContent = '£' + amt.toFixed(2);
       var prevVat = document.getElementById('prev-vat'); if (prevVat) prevVat.textContent = '£' + vatAmt.toFixed(2);
@@ -647,15 +653,74 @@
           created_at: new Date().toISOString()
         };
 
+        var customerId = null;
+
         try {
+          // 1. Find or create customer in Supabase
+          var { data: { user } } = await supabase.auth.getUser();
+          var custEmail = email || null;
+          var custPhone = phone || null;
+          var custAddress = document.getElementById('cust-address') ? document.getElementById('cust-address').value.trim() : '';
+
+          // Check if customer already exists
+          var { data: existingCusts } = await supabase
+            .from('customers')
+            .select('id,name,total_spent,invoice_count')
+            .eq('user_id', user.id)
+            .ilike('name', name)
+            .limit(1);
+
+          if (existingCusts && existingCusts.length > 0) {
+            customerId = existingCusts[0].id;
+            // Update their total
+            await supabase.from('customers').update({
+              email: custEmail || existingCusts[0].email,
+              phone: custPhone || existingCusts[0].phone,
+            }).eq('id', customerId);
+          } else {
+            // Create new customer
+            var { data: newCust } = await supabase.from('customers').insert({
+              user_id: user.id,
+              name: name,
+              email: custEmail,
+              phone: custPhone,
+              address: custAddress || null,
+              created_at: new Date().toISOString()
+            }).select().single();
+            if (newCust) customerId = newCust.id;
+          }
+
+          // 2. Save invoice linked to customer
+          savedInvoice.customer_id = customerId;
           var dbResult = await DB.saveInvoice({ isNew: true, ...savedInvoice });
-          if (!dbResult) throw new Error('Supabase save failed');
+          if (!dbResult) throw new Error('Invoice save failed');
+
+          console.log('✅ Invoice and customer saved to Supabase');
+
         } catch(dbErr) {
-          // Fallback: save to localStorage so invoices page still shows it
+          // Fallback: save to localStorage
           console.warn('Supabase save failed, using localStorage:', dbErr.message);
-          var existing = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          existing.unshift(savedInvoice);
-          localStorage.setItem('tb_invoices', JSON.stringify(existing));
+          var existingInvs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          existingInvs.unshift(savedInvoice);
+          localStorage.setItem('tb_invoices', JSON.stringify(existingInvs));
+
+          // Also save customer to localStorage
+          var existingCusts = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+          var found = existingCusts.find(function(c){ return c.name.toLowerCase() === name.toLowerCase(); });
+          if (!found) {
+            existingCusts.push({
+              id: 'c_' + Date.now(),
+              name: name,
+              email: email || null,
+              phone: phone || null,
+              address: document.getElementById('cust-address') ? document.getElementById('cust-address').value.trim() : '',
+              totalSpent: 0,
+              invoiceCount: 0,
+              invoices: [],
+              createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('tb_customers', JSON.stringify(existingCusts));
+          }
         }
 
         // Auto-open WhatsApp immediately if in WhatsApp mode
@@ -802,49 +867,68 @@
 
     async function checkStripe() {
       try {
+        // If keys not set, use localStorage fallback
+        if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE') {
+          loadBusinessFromStorage();
+          return;
+        }
+
         const { data } = await supabase.auth.getUser();
-        if (!data || !data.user) return;
+        if (!data || !data.user) { loadBusinessFromStorage(); return; }
         const meta = data.user.user_metadata || {};
 
-        // ── Populate live preview with real business data ──
-        const bizName = meta.business_name || '';
-        const bizAddress = meta.business_address || '';
-        const phone = meta.phone || '';
-        const vat = meta.vat_number || '';
+        // Cache metadata in localStorage for fallback
+        if (meta.business_name) localStorage.setItem('pi_biz_meta', JSON.stringify(meta));
 
-        const bizEl = document.getElementById('prev-biz');
-        if (bizEl) {
-          if (bizName) {
-            bizEl.textContent = bizName;
-            bizEl.style.color = '#061A30';
-            bizEl.style.fontStyle = 'normal';
-          }
-        }
+        applyBusinessMeta(meta);
 
-        const subEl = document.getElementById('prev-biz-sub');
-        if (subEl) {
-          var subParts = [];
-          if (bizAddress) subParts.push(bizAddress.replace(/\n/g, ', '));
-          var contactLine = [];
-          if (phone) contactLine.push(phone);
-          if (vat) contactLine.push('VAT: ' + vat);
-          if (contactLine.length) subParts.push(contactLine.join(' · '));
-          subEl.innerHTML = subParts.join('<br>');
-        }
-
-        // ── Logo ──
-        if (meta.logo_url) {
-          const icon = document.getElementById('prev-logo-icon');
-          const img  = document.getElementById('prev-logo-img');
-          if (icon) icon.style.display = 'none';
-          if (img)  { img.src = meta.logo_url; img.style.display = 'block'; }
-        }
-
-        // ── Stripe prompt ──
         if (!meta.stripe_connected) {
           document.getElementById('stripe-prompt').style.display = 'block';
         }
+      } catch(e) {
+        loadBusinessFromStorage();
+      }
+    }
+
+    function loadBusinessFromStorage() {
+      try {
+        var cached = JSON.parse(localStorage.getItem('pi_biz_meta') || '{}');
+        applyBusinessMeta(cached);
       } catch(e) {}
+    }
+
+    function applyBusinessMeta(meta) {
+      var bizName = meta.business_name || '';
+      var bizAddress = meta.business_address || '';
+      var phone = meta.phone || '';
+      var vat = meta.vat_number || '';
+
+      var bizEl = document.getElementById('prev-biz');
+      if (bizEl) {
+        if (bizName) {
+          bizEl.textContent = bizName;
+          bizEl.style.color = '#061A30';
+          bizEl.style.fontStyle = 'normal';
+        }
+      }
+
+      var subEl = document.getElementById('prev-biz-sub');
+      if (subEl) {
+        var subParts = [];
+        if (bizAddress) subParts.push(bizAddress.replace(/\n/g, ', '));
+        var contactLine = [];
+        if (phone) contactLine.push(phone);
+        if (vat) contactLine.push('VAT: ' + vat);
+        if (contactLine.length) subParts.push(contactLine.join(' · '));
+        subEl.innerHTML = subParts.join('<br>');
+      }
+
+      if (meta.logo_url) {
+        var icon = document.getElementById('prev-logo-icon');
+        var img  = document.getElementById('prev-logo-img');
+        if (icon) icon.style.display = 'none';
+        if (img)  { img.src = meta.logo_url; img.style.display = 'block'; }
+      }
     }
     checkStripe();
     setAutoInvoiceNumber();
