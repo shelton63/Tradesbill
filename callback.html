@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Confirming your account — TradesBill</title>
+  <title>Confirming your account — Primo Invoice</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -80,46 +82,30 @@
         if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE' || SUPABASE_KEY === 'YOUR_ANON_KEY_HERE') {
           throw new Error('Supabase keys not set in callback.html. Open the file on GitHub and paste your Project URL and Anon Key near the top.');
         }
+
         // Exchange the code/token in the URL for a session
         const { data, error } = await supabase.auth.getSession();
 
         if (error) throw error;
 
         if (data.session) {
-          // Session confirmed — redirect to dashboard cleanly
-          document.getElementById('icon').innerHTML = '✅';
-          document.getElementById('icon').className = 'icon icon-success';
-          document.getElementById('title').textContent = 'Email confirmed!';
-          document.getElementById('msg').textContent = 'Taking you to your dashboard...';
-          setTimeout(() => { window.location.replace('dashboard.html'); }, 1200);
+          await redirectAfterConfirm();
         } else {
-          // Try exchanging code from URL params (PKCE flow)
           const params = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
           const code = params.get('code');
           const accessToken = hashParams.get('access_token');
-          const type = params.get('type') || hashParams.get('type');
 
           if (code) {
-            const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
             if (exchangeError) throw exchangeError;
-            document.getElementById('icon').innerHTML = '✅';
-            document.getElementById('icon').className = 'icon icon-success';
-            document.getElementById('title').textContent = 'Email confirmed!';
-            document.getElementById('msg').textContent = 'Taking you to your dashboard...';
-            setTimeout(() => { window.location.replace('dashboard.html'); }, 1200);
+            await redirectAfterConfirm();
           } else if (accessToken) {
-            // Set session from token then redirect cleanly without token in URL
             await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: hashParams.get('refresh_token')
             });
-            document.getElementById('icon').innerHTML = '✅';
-            document.getElementById('icon').className = 'icon icon-success';
-            document.getElementById('title').textContent = 'Email confirmed!';
-            document.getElementById('msg').textContent = 'Taking you to your dashboard...';
-            setTimeout(() => { window.location.replace('dashboard.html'); }, 1200);
+            await redirectAfterConfirm();
           } else {
             throw new Error('No confirmation code found. The link may have expired.');
           }
@@ -130,6 +116,38 @@
         document.getElementById('title').textContent = 'Something went wrong';
         document.getElementById('msg').textContent = err.message || 'The confirmation link may have expired. Please try signing up again.';
         document.getElementById('card').innerHTML += '<a href="signup.html" class="btn">Back to sign up</a>';
+      }
+    }
+
+    async function redirectAfterConfirm() {
+      document.getElementById('icon').innerHTML = '✅';
+      document.getElementById('icon').className = 'icon icon-success';
+      document.getElementById('title').textContent = 'Email confirmed!';
+
+      try {
+        const { data } = await supabase.auth.getUser();
+        const meta = data?.user?.user_metadata || {};
+        const onboardingComplete = meta.onboarding_complete;
+        const isNewUser = !meta.business_name && !meta.trade_type;
+
+        if (!onboardingComplete || isNewUser) {
+          // New user — set trial start and send to onboarding
+          if (!meta.trial_start) {
+            await supabase.auth.updateUser({
+              data: { trial_start: new Date().toISOString() }
+            });
+          }
+          document.getElementById('msg').textContent = "Let's get your account set up...";
+          setTimeout(() => { window.location.replace('welcome.html'); }, 1200);
+        } else {
+          // Returning user confirming email change
+          document.getElementById('msg').textContent = 'Taking you to your dashboard...';
+          setTimeout(() => { window.location.replace('dashboard.html'); }, 1200);
+        }
+      } catch(e) {
+        // Fallback — if we can't read metadata just go to welcome
+        document.getElementById('msg').textContent = "Let's get your account set up...";
+        setTimeout(() => { window.location.replace('welcome.html'); }, 1200);
       }
     }
 
