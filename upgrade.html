@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -157,7 +157,7 @@
       <div class="plan popular" id="plan-pro">
         <div class="popular-badge">⭐ Most popular</div>
         <div class="plan-name">Pro</div>
-        <div class="plan-price">£79<span>/month</span></div>
+        <div class="plan-price">£49<span>/month</span></div>
         <div class="plan-desc">For busy tradespeople who want unlimited invoicing and a growing team.</div>
         <hr class="plan-divider" />
         <ul class="plan-features">
@@ -171,13 +171,13 @@
           <li class="muted"><i class="ti ti-x"></i> AI features</li>
           <li class="muted"><i class="ti ti-x"></i> Dedicated account manager</li>
         </ul>
-        <button class="btn-plan btn-primary" onclick="openPayModal('pro','£79/month','Pro')"><i class="ti ti-star"></i> Get Pro</button>
+        <button class="btn-plan btn-primary" onclick="openPayModal('pro','£49/month','Pro')"><i class="ti ti-star"></i> Get Pro</button>
       </div>
 
       <!-- BUSINESS -->
       <div class="plan" id="plan-business">
         <div class="plan-name">Business</div>
-        <div class="plan-price">£149<span>/month</span></div>
+        <div class="plan-price">£79<span>/month</span></div>
         <div class="plan-desc">For established trade businesses with multiple staff and high volume.</div>
         <hr class="plan-divider" />
         <ul class="plan-features">
@@ -191,7 +191,7 @@
           <li><i class="ti ti-check"></i> Future AI features</li>
           <li><i class="ti ti-check"></i> Dedicated account manager</li>
         </ul>
-        <button class="btn-plan btn-outline" onclick="openPayModal('business','£149/month','Business')">Get Business</button>
+        <button class="btn-plan btn-outline" onclick="openPayModal('business','£79/month','Business')">Get Business</button>
       </div>
 
     </div>
@@ -203,8 +203,8 @@
           <tr>
             <th style="width:40%">Feature</th>
             <th>Starter <div style="font-weight:700;color:#061A30">£29/mo</div></th>
-            <th style="background:#FAFAF8">Pro <div style="font-weight:700;color:#061A30">£79/mo</div></th>
-            <th>Business <div style="font-weight:700;color:#061A30">£149/mo</div></th>
+            <th style="background:#FAFAF8">Pro <div style="font-weight:700;color:#061A30">£49/mo</div></th>
+            <th>Business <div style="font-weight:700;color:#061A30">£79/mo</div></th>
           </tr>
         </thead>
         <tbody>
@@ -253,7 +253,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="modal-plan-name" id="modal-plan-name">Pro plan</div>
-        <div class="modal-plan-price" id="modal-plan-price">£79</div>
+        <div class="modal-plan-price" id="modal-plan-price">£49</div>
         <div class="modal-plan-sub">per month · cancel anytime</div>
       </div>
       <div class="modal-body">
@@ -291,7 +291,7 @@
         <h3 style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Before you go...</h3>
         <p style="font-size:13px;color:#6B6A65;margin-bottom:20px;line-height:1.5">We'd hate to see you leave. As a thank you for giving Primo Invoice a try, here's an exclusive offer:</p>
         <div class="discount-badge">30% off for 2 months</div>
-        <div class="discount-sub">That's <strong id="discount-price">£55.30/month</strong> instead of <span id="original-price">£79/month</span><br>for your first 2 months — then normal price.</div>
+        <div class="discount-sub">That's <strong id="discount-price">£34.30/month</strong> instead of <span id="original-price">£49/month</span><br>for your first 2 months — then normal price.</div>
         <button class="btn-accept-discount" onclick="acceptDiscount()"><i class="ti ti-tag"></i> Yes — claim my 30% discount</button>
         <button class="btn-decline" onclick="declineDiscount()">No thanks, I still want to cancel</button>
       </div>
@@ -305,8 +305,8 @@
     // TODO: Replace with your real Stripe Price IDs once created in Stripe Dashboard
     var PRICE_IDS = {
       starter:  'price_1Tp4m9CsuXSeLOJopzViH8R1',   // £29/month
-      pro:      'price_1Tp4mUCsuXSeLOJolDcmkVra',        // £79/month
-      business: 'price_1Tp4mrCsuXSeLOJop484QVNY'   // £149/month
+      pro:      'price_1Tp4mUCsuXSeLOJolDcmkVra',        // £49/month
+      business: 'price_1Tp4mrCsuXSeLOJop484QVNY'   // £79/month
     };
 
     var PRICES = { starter: 29, pro: 79, business: 149 };

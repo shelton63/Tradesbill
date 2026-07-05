@@ -21,7 +21,7 @@
     .nav-cta { background: #fff !important; color: #0A2540 !important; font-size: 13px !important; font-weight: 600 !important; padding: 8px 18px; border-radius: 7px; }
 
     /* HERO */
-    .hero-wrap { background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); position: relative; overflow: hidden; }
+    .hero-wrap { background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); position: relative; }
     .hero-wrap::before { content: ''; position: absolute; top: -120px; right: -120px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(93,202,165,0.12) 0%, transparent 70%); pointer-events: none; }
     .hero-wrap::after { content: ''; position: absolute; bottom: -80px; left: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(93,202,165,0.07) 0%, transparent 70%); pointer-events: none; }
     .hero { color: #fff; padding: 90px 40px 80px; text-align: center; position: relative; z-index: 1; }
@@ -35,16 +35,16 @@
     .btn-secondary { background: transparent; color: #fff; font-size: 15px; font-weight: 500; padding: 14px 30px; border-radius: 9px; border: 1.5px solid rgba(255,255,255,0.3); cursor: pointer; text-decoration: none; display: inline-block; }
     .btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); }
     /* Wave divider */
-    .wave-divider { display: block; width: 100%; overflow: hidden; line-height: 0; background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); }
+    .wave-divider { display: block; width: 100%; overflow: hidden; line-height: 0; background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); pointer-events: none; position: relative; z-index: 0; }
     .wave-divider svg { display: block; width: 100%; }
 
     /* TRUST BAR */
-    .trust-bar { background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); padding: 0 40px 28px; display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+    .trust-bar { background: linear-gradient(160deg, #061A30 0%, #0A2540 55%, #0D3060 100%); padding: 0 40px 28px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
     .trust-item { color: rgba(255,255,255,0.7); font-size: 13px; display: flex; align-items: center; gap: 7px; }
     .trust-item i { color: #5DCAA5; font-size: 16px; }
 
     /* FEATURES */
-    .section { padding: 72px 40px; background: #fff; }
+    .section { padding: 72px 40px; background: #fff; position: relative; z-index: 1; }
     .section-label { font-size: 12px; font-weight: 600; color: #0A2540; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
     .section h2 { font-size: 30px; font-weight: 700; color: #061A30; margin-bottom: 12px; text-align: center; }
     .section-sub { font-size: 16px; color: #6B6A65; max-width: 480px; line-height: 1.6; margin: 0 auto 48px; text-align: center; }
@@ -57,13 +57,13 @@
 
     /* HOW IT WORKS */
     .hiw-wrap { position: relative; background: #fff; }
-    .hiw { background: linear-gradient(160deg, #061A30 0%, #0A2540 60%, #0D3060 100%); padding: 72px 40px; position: relative; }
+    .hiw { background: linear-gradient(160deg, #061A30 0%, #0A2540 60%, #0D3060 100%); padding: 72px 40px; position: relative; z-index: 1; }
     .hiw .section-label { text-align: center; color: #5DCAA5; }
     .hiw h2 { font-size: 30px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 10px; }
     .hiw-sub { font-size: 16px; color: rgba(255,255,255,0.7); text-align: center; margin-bottom: 48px; }
-    .wave-top { display: block; width: 100%; overflow: hidden; line-height: 0; background: #fff; }
+    .wave-top { display: block; width: 100%; overflow: hidden; line-height: 0; background: #fff; pointer-events: none; position: relative; z-index: 0; }
     .wave-top svg { display: block; width: 100%; }
-    .wave-bottom { display: block; width: 100%; overflow: hidden; line-height: 0; background: #fff; }
+    .wave-bottom { display: block; width: 100%; overflow: hidden; line-height: 0; background: #fff; pointer-events: none; position: relative; z-index: 0; }
     .wave-bottom svg { display: block; width: 100%; }
     .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; max-width: 900px; margin: 0 auto; position: relative; }
     .step-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 28px 20px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; backdrop-filter: blur(4px); }
@@ -80,7 +80,7 @@
     .hiw-time { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 10px 22px; font-size: 13px; color: #fff; }
 
     /* PRICING */
-    .pricing-section { padding: 72px 40px; background: #FAFAF8; }
+    .pricing-section { padding: 72px 40px; background: #FAFAF8; position: relative; z-index: 1; }
     .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 820px; margin: 0 auto; }
     .price-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 28px 24px; }
     .price-card.featured { border: 2px solid #0A2540; }
@@ -147,6 +147,10 @@
     * { max-width: 100%; }
     img, video, iframe, table { max-width: 100%; }
 
+  
+    /* Ensure all buttons and links are always clickable */
+    a, button { position: relative; z-index: 2; }
+    .btn-plan, .btn-primary, .btn-secondary, .nav-cta { position: relative; z-index: 2; }
   </style>
 </head>
 <body>
@@ -311,7 +315,7 @@
       <div class="price-card featured">
         <div class="price-badge">⭐ Most popular</div>
         <h3>Pro</h3>
-        <div class="price-amount">£79 <span>/ month</span></div>
+        <div class="price-amount">£49 <span>/ month</span></div>
         <p class="price-desc">For busy tradespeople who want unlimited invoicing and a growing team.</p>
         <ul class="price-features">
           <li><i class="ti ti-check"></i> Unlimited invoices</li>
@@ -328,7 +332,7 @@
       <!-- BUSINESS -->
       <div class="price-card">
         <h3>Business</h3>
-        <div class="price-amount">£149 <span>/ month</span></div>
+        <div class="price-amount">£79 <span>/ month</span></div>
         <p class="price-desc">For established trade businesses with multiple staff and high volume.</p>
         <ul class="price-features">
           <li><i class="ti ti-check"></i> Unlimited everything</li>
