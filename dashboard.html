@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -98,7 +98,8 @@
     @media (max-width: 900px) {
       #main-content > div { grid-template-columns: 1fr !important; }
     }
-      /* Prevent table overflow on mobile */
+
+    @media (max-width: 768px) {
       .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       table { min-width: unset; }
       .stats { grid-template-columns: 1fr 1fr; }
@@ -106,7 +107,6 @@
       .board { grid-template-columns: 1fr; }
       .top-grid { grid-template-columns: 1fr; }
       .bottom-grid { grid-template-columns: 1fr; }
-
       .sidebar { display: none; }
       .main { margin-left: 0; }
       .topbar { display: none; }
@@ -120,10 +120,7 @@
       .hero-bar { display: block; background: #0A2540; padding: 16px 16px 20px; }
       .hero-greet { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 3px; }
       .hero-name { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 16px; }
-      .btn-new-mob { background: #fff; color: #0A2540; font-size: 15px; font-weight: 600; padding: 13px 20px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; }
       .content { padding: 14px 16px; }
-      .ob-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .ob-step { padding: 12px 14px; }
       .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
       .nav-item i { font-size: 22px; color: #A3A29C; }
