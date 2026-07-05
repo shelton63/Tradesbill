@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -95,7 +95,9 @@
     .hero-bar { display: none; }
     .bottom-nav { display: none; }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      #main-content > div { grid-template-columns: 1fr !important; }
+    }
       /* Prevent table overflow on mobile */
       .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       table { min-width: unset; }
@@ -270,22 +272,36 @@
       if (!e.target.closest('.nav-plus-wrap')) { const m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
     });
 
+    function dismissChecklist() {
+      localStorage.setItem('pi_checklist_dismissed', 'true');
+      // Re-render without checklist
+      supabase.auth.getUser().then(function(r) {
+        if (r.data && r.data.user) {
+          var meta = r.data.user.user_metadata || {};
+          var first = meta.first_name || meta.given_name || '';
+          renderChecklist(first || 'there', meta);
+        }
+      });
+    }
+
     function renderChecklist(name, meta) {
       const stripeConnected = !!(meta && meta.stripe_connected);
       const hasBusiness = !!(meta && meta.business_name);
       const hasLogo = !!(meta && meta.logo_url);
+      const dismissed = localStorage.getItem('pi_checklist_dismissed') === 'true';
 
       const steps = [
         { done: true,            label: 'Create your account',       href: null },
         { done: hasBusiness,     label: 'Add your business details', href: 'settings.html' },
         { done: stripeConnected, label: 'Connect Stripe',            href: 'onboarding-payments.html' },
-        { done: false,           label: 'Send your first invoice',   href: 'create-invoice.html' },
         { done: hasLogo,         label: 'Upload your logo',          href: 'settings.html' },
+        { done: false,           label: 'Send your first invoice',   href: 'create-invoice.html' },
       ];
 
       const doneCount = steps.filter(function(s) { return s.done; }).length;
       const pct = Math.round((doneCount / steps.length) * 100);
       const allDone = doneCount === steps.length;
+      const showChecklist = !allDone && !dismissed;
 
       var stepsHtml = steps.map(function(s) {
         var href = s.href || '#';
@@ -304,19 +320,46 @@
           + arrow + '</a>';
       }).join('');
 
-      var checklistHtml = allDone ? '' :
-        '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
-        + '<div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
-        + '<div style="font-size:13px;font-weight:700;color:#061A30">Get set up</div>'
-        + '<div style="display:flex;align-items:center;gap:8px">'
-        + '<div style="width:70px;height:4px;background:#E5E3DC;border-radius:2px;overflow:hidden">'
-        + '<div style="height:100%;width:' + pct + '%;background:#0A2540;border-radius:2px"></div></div>'
-        + '<div style="font-size:11px;color:#8B8A84;font-weight:600">' + doneCount + '/' + steps.length + '</div>'
-        + '</div></div>'
-        + stepsHtml
-        + '<div style="padding:10px 16px;text-align:right">'
-        + '<a href="dashboard.html?skip=true" style="font-size:11px;color:#A3A29C;text-decoration:none">Dismiss</a>'
-        + '</div></div>'
+      var quickActionsHtml = '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:0">'
+        + '<div style="padding:14px 16px;border-bottom:1px solid #F0EFEA">'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Quick actions</div>'
+        + '</div>'
+        + '<a href="create-invoice.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-plus" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">New invoice</div><div style="font-size:12px;color:#8B8A84">Send a payment link to a customer</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '<a href="customers.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-user-plus" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Add a customer</div><div style="font-size:12px;color:#8B8A84">Save their details for fast invoicing</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '<a href="jobs.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-briefcase" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">Schedule a job</div><div style="font-size:12px;color:#8B8A84">Plan your week and set reminders</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '<a href="quotes.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">New quote</div><div style="font-size:12px;color:#8B8A84">Send an estimate and convert when accepted</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '<a href="earnings.html" style="display:flex;align-items:center;gap:12px;padding:13px 16px;text-decoration:none">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-chart-bar" style="font-size:17px;color:#0A2540"></i></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">View earnings</div><div style="font-size:12px;color:#8B8A84">Track revenue, outstanding invoices & trends</div></div>'
+        + '<i class="ti ti-arrow-right" style="font-size:15px;color:#A3A29C"></i></a>'
+        + '</div>';
+
+      var checklistHtml = showChecklist
+        ? '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
+          + '<div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between">'
+          + '<div style="font-size:13px;font-weight:700;color:#061A30">Get set up</div>'
+          + '<div style="display:flex;align-items:center;gap:8px">'
+          + '<div style="width:70px;height:4px;background:#E5E3DC;border-radius:2px;overflow:hidden">'
+          + '<div style="height:100%;width:' + pct + '%;background:#0A2540;border-radius:2px"></div></div>'
+          + '<div style="font-size:11px;color:#8B8A84;font-weight:600">' + doneCount + '/' + steps.length + '</div>'
+          + '</div></div>'
+          + stepsHtml
+          + '<div style="padding:10px 16px;text-align:right">'
+          + '<a href="#" onclick="dismissChecklist()" style="font-size:11px;color:#A3A29C;text-decoration:none">Dismiss</a>'
+          + '</div></div>'
+        : quickActionsHtml;
         + '<div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">'
 
         + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden">'
@@ -354,8 +397,58 @@
 
         + '</div>';
 
+      var featuresHtml = '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:12px">'
+        + '<div style="padding:14px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;gap:8px">'
+        + '<i class="ti ti-rocket" style="font-size:16px;color:#0A2540"></i>'
+        + '<div style="font-size:13px;font-weight:700;color:#061A30">Everything included in your trial</div></div>'
+        + [
+            ['ti-file-invoice','Professional invoices','Send branded invoices by email or WhatsApp in seconds'],
+            ['ti-credit-card','Card & Apple Pay','Customers pay instantly — money lands same day'],
+            ['ti-users','Full CRM','Save customers, track history, see who owes what'],
+            ['ti-briefcase','Job scheduler','Plan your week, set reminders, never miss a job'],
+            ['ti-chart-bar','Earnings reports','See your revenue, outstanding invoices & trends'],
+            ['ti-file-text','Quotes & estimates','Send quotes, get them accepted, convert to invoice'],
+          ].map(function(f) {
+            return '<div style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid #F0EFEA">'
+              + '<div style="width:30px;height:30px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+              + '<i class="ti ' + f[0] + '" style="font-size:15px;color:#0A2540"></i></div>'
+              + '<div><div style="font-size:12px;font-weight:700;color:#061A30">' + f[1] + '</div>'
+              + '<div style="font-size:11px;color:#8B8A84">' + f[2] + '</div></div>'
+              + '<i class="ti ti-check" style="font-size:14px;color:#1D9E75;margin-left:auto;flex-shrink:0"></i></div>';
+          }).join('')
+        + '<div style="padding:11px 16px;display:flex;align-items:center;gap:11px">'
+        + '<div style="width:30px;height:30px;border-radius:8px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        + '<i class="ti ti-brain" style="font-size:15px;color:#635BFF"></i></div>'
+        + '<div><div style="font-size:12px;font-weight:700;color:#061A30">AI features</div>'
+        + '<div style="font-size:11px;color:#8B8A84">Auto-fill invoices from job notes — coming soon</div></div>'
+        + '<span style="font-size:9px;font-weight:700;background:#F3F1FE;color:#635BFF;padding:2px 7px;border-radius:5px;margin-left:auto;flex-shrink:0">SOON</span></div>'
+        + '</div>'
+
+        + '<div style="background:#0A2540;border-radius:14px;padding:18px;margin-bottom:12px">'
+        + '<div style="font-size:12px;font-weight:700;color:#5DCAA5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">💡 Pro tip</div>'
+        + '<div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:5px">Send invoices within 24 hours</div>'
+        + '<div style="font-size:12px;color:#8FA8C2;line-height:1.6">Tradespeople who invoice the same day get paid <strong style="color:#5DCAA5">3x faster</strong> on average. Your payment link is ready the moment you hit send.</div>'
+        + '</div>'
+
+        + '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:16px">'
+        + '<div style="font-size:12px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">🗓️ Coming up in your trial</div>'
+        + [
+            ['Day 1','Send your first invoice & get paid'],
+            ['Day 3','Set up your job calendar'],
+            ['Day 7','Check your earnings dashboard'],
+            ['Day 14','Choose the right plan for your business'],
+          ].map(function(item, i) {
+            return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8F7F3">'
+              + '<div style="width:32px;height:32px;border-radius:8px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0A2540;flex-shrink:0">' + item[0] + '</div>'
+              + '<div style="font-size:12px;color:#1A1A18;font-weight:500">' + item[1] + '</div>'
+              + '</div>';
+          }).join('')
+        + '</div>';
+
       document.getElementById('main-content').innerHTML =
-        '<div style="max-width:540px">'
+        '<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;max-width:960px">'
+
+        + '<div>'
         + '<div style="background:#0A2540;border-radius:16px;padding:26px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">'
         + '<div>'
         + '<div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px">Welcome, ' + name + '!</div>'
@@ -366,16 +459,17 @@
         + '</div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">'
         + '<a href="invoices.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
-        + '<i class="ti ti-file-invoice" style="font-size:20px;color:#0A2540"></i>'
-        + '<span style="font-size:12px;font-weight:600;color:#061A30">Invoices</span></a>'
+        + '<i class="ti ti-file-invoice" style="font-size:20px;color:#0A2540"></i><span style="font-size:12px;font-weight:600;color:#061A30">Invoices</span></a>'
         + '<a href="customers.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
-        + '<i class="ti ti-users" style="font-size:20px;color:#0A2540"></i>'
-        + '<span style="font-size:12px;font-weight:600;color:#061A30">Customers</span></a>'
+        + '<i class="ti ti-users" style="font-size:20px;color:#0A2540"></i><span style="font-size:12px;font-weight:600;color:#061A30">Customers</span></a>'
         + '<a href="earnings.html" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center">'
-        + '<i class="ti ti-chart-bar" style="font-size:20px;color:#0A2540"></i>'
-        + '<span style="font-size:12px;font-weight:600;color:#061A30">Earnings</span></a>'
+        + '<i class="ti ti-chart-bar" style="font-size:20px;color:#0A2540"></i><span style="font-size:12px;font-weight:600;color:#061A30">Earnings</span></a>'
         + '</div>'
         + checklistHtml
+        + '</div>'
+
+        + '<div>' + featuresHtml + '</div>'
+
         + '</div>';
     }
 
