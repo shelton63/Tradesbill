@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -930,7 +930,52 @@
         </div>`;
     }
 
-    async function markCashPaid(paymentUrl) {
+    async function saveDraft() {
+      var name    = document.getElementById('cust-name')    ? document.getElementById('cust-name').value.trim()    : '';
+      var email   = document.getElementById('cust-email')   ? document.getElementById('cust-email').value.trim()   : '';
+      var phone   = document.getElementById('cust-phone')   ? document.getElementById('cust-phone').value.trim()   : '';
+      var job     = document.getElementById('job-desc')     ? document.getElementById('job-desc').value.trim()     : '';
+      var num     = document.getElementById('inv-num')      ? document.getElementById('inv-num').value             : '';
+      var amount  = document.getElementById('simple-amount')? parseFloat(document.getElementById('simple-amount').value)||0 : 0;
+      var vat     = document.getElementById('simple-vat')   ? document.getElementById('simple-vat').value          : '0';
+      var notes   = document.getElementById('inv-notes')    ? document.getElementById('inv-notes').value           : '';
+      var address = document.getElementById('cust-address') ? document.getElementById('cust-address').value.trim() : '';
+
+      var draft = {
+        id: 'draft_' + Date.now(),
+        status: 'draft',
+        number: num,
+        customer_name: name || 'Draft',
+        customer: name || 'Draft',
+        job: job,
+        amount: amount,
+        vat: parseInt(vat),
+        notes: notes,
+        email: email,
+        phone: phone,
+        address: address,
+        contactMode: contactMode,
+        invoiceMode: invoiceMode,
+        date: new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString()
+      };
+
+      // Save to localStorage
+      var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+      // Replace existing draft with same number if exists
+      var idx = invs.findIndex(function(i){ return i.number === num && i.status === 'draft'; });
+      if (idx > -1) invs[idx] = draft; else invs.unshift(draft);
+      localStorage.setItem('tb_invoices', JSON.stringify(invs));
+
+      // Save to Supabase
+      try {
+        var { data: { user } } = await supabase.auth.getUser();
+        await supabase.from('invoices').upsert({ ...draft, user_id: user.id }).eq('id', draft.id);
+      } catch(e) {}
+
+      showToast('Draft saved — find it in your Invoices tab');
+      setTimeout(function(){ window.location.href = 'invoices.html'; }, 1800);
+    }
       // Update the most recent invoice to paid/cash in localStorage
       try {
         var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
@@ -1089,8 +1134,33 @@
     } else {
       restoreDraft();
     }
-    // Prefill from customers tab
-    try {
+    // Restore from draft invoice if ?draft=id
+    var _draftParam = _urlParams.get('draft');
+    if (_draftParam) {
+      var _allInvs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+      var _draftInv = _allInvs.find(function(i){ return i.id === _draftParam; });
+      if (_draftInv) {
+        var setVal = function(id, val) { var el = document.getElementById(id); if (el && val != null) el.value = val; };
+        setVal('cust-name',    _draftInv.customer_name || _draftInv.customer);
+        setVal('cust-email',   _draftInv.email);
+        setVal('cust-phone',   _draftInv.phone);
+        setVal('cust-address', _draftInv.address);
+        setVal('job-desc',     _draftInv.job);
+        setVal('inv-num',      _draftInv.number);
+        setVal('simple-amount', _draftInv.amount);
+        setVal('simple-vat',   _draftInv.vat || 0);
+        setVal('inv-notes',    _draftInv.notes);
+        if (_draftInv.contactMode && _draftInv.contactMode !== 'email') switchContactTab(_draftInv.contactMode);
+        updateSimpleAmount(); updatePreview(); updateProgress();
+        showToast('Draft restored — finish and send when ready');
+      }
+    }
+    // Prefill from customer name param
+    var _custParam = _urlParams.get('customer');
+    if (_custParam) {
+      var custEl = document.getElementById('cust-name');
+      if (custEl) { custEl.value = decodeURIComponent(_custParam); updatePreview(); updateProgress(); }
+    }
       var _prefill = JSON.parse(sessionStorage.getItem('prefill_invoice') || 'null');
       if (_prefill) {
         sessionStorage.removeItem('prefill_invoice');

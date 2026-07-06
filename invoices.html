@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -464,7 +464,10 @@
           + '<td>' + fmt(inv.amount||0) + '</td>'
           + '<td>' + (inv.date||'—') + '</td>'
           + '<td>' + makeBadge(status) + '</td>'
-          + '<td><div class="action-btns"><button class="icon-btn" title="Update payment status" onclick="openPayModal(\'' + inv.id + '\',\'' + status + '\')"><i class="ti ti-cash"></i></button><a href="#" class="icon-btn"><i class="ti ti-dots"></i></a></div></td>'
+          + '<td><div class="action-btns">'
+          + '<button class="icon-btn" title="Update payment status" onclick="openPayModal(\'' + inv.id + '\',\'' + status + '\')"><i class="ti ti-credit-card"></i></button>'
+          + '<button class="icon-btn" title="More actions" onclick="openActionsMenu(\'' + inv.id + '\',\'' + encodeURIComponent(custName) + '\',\'' + encodeURIComponent(inv.job||'') + '\',\'' + status + '\',event)"><i class="ti ti-dots"></i></button>'
+          + '</div></td>'
           + '</tr>';
       }).join('');
     }
@@ -578,5 +581,95 @@
     document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
     document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
   </script>
+  <!-- ACTIONS DROPDOWN -->
+  <div id="actions-menu" style="display:none;position:fixed;background:#fff;border:1px solid #E5E3DC;border-radius:12px;box-shadow:0 8px 24px rgba(10,37,64,0.15);width:200px;z-index:600;overflow:hidden">
+    <div id="actions-menu-inner"></div>
+  </div>
+
+  <script>
+    var _actTarget = null;
+
+    function openActionsMenu(invId, custName, job, status, e) {
+      e.stopPropagation();
+      _actTarget = invId;
+      var menu = document.getElementById('actions-menu');
+      var isDraft = status === 'draft';
+      var name = decodeURIComponent(custName);
+      var jobStr = decodeURIComponent(job);
+
+      document.getElementById('actions-menu-inner').innerHTML =
+        (isDraft
+          ? '<a href="create-invoice.html?draft=' + invId + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+            + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:14px;color:#0A2540"></i></div>'
+            + '<span style="font-size:13px;font-weight:600;color:#061A30">Resume draft</span></a>'
+          : '')
+        + '<button onclick="openPayModal(\'' + invId + '\',\'' + status + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:28px;height:28px;border-radius:7px;background:#E1F5EE;display:flex;align-items:center;justify-content:center"><i class="ti ti-credit-card" style="font-size:14px;color:#1D9E75"></i></div>'
+        + '<span style="font-size:13px;font-weight:600;color:#061A30">Mark as paid</span></button>'
+        + '<button onclick="copyPayLink(\'' + invId + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:13px;font-weight:600;color:#061A30">Copy payment link</span></button>'
+        + '<a href="create-invoice.html?customer=' + encodeURIComponent(name) + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-file-plus" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:13px;font-weight:600;color:#061A30">New invoice for ' + (name.split(' ')[0]||name) + '</span></a>'
+        + '<a href="customers.html?name=' + encodeURIComponent(name) + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
+        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:14px;color:#0A2540"></i></div>'
+        + '<span style="font-size:13px;font-weight:600;color:#061A30">View customer</span></a>'
+        + '<button onclick="deleteInvoice(\'' + invId + '\')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:28px;height:28px;border-radius:7px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:14px;color:#D14343"></i></div>'
+        + '<span style="font-size:13px;font-weight:600;color:#D14343">Delete invoice</span></button>';
+
+      // Position near the button
+      var btn = e.currentTarget || e.target;
+      var rect = btn.getBoundingClientRect();
+      menu.style.display = 'block';
+      var menuH = menu.offsetHeight || 280;
+      var top = rect.bottom + 6;
+      if (top + menuH > window.innerHeight) top = rect.top - menuH - 6;
+      menu.style.top = top + 'px';
+      menu.style.left = Math.min(rect.right - 200, window.innerWidth - 210) + 'px';
+    }
+
+    function closeActionsMenu() {
+      document.getElementById('actions-menu').style.display = 'none';
+      _actTarget = null;
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#actions-menu') && !e.target.closest('.icon-btn')) closeActionsMenu();
+    });
+
+    function copyPayLink(invId) {
+      var inv = _stored.find(function(i){ return i.id == invId; });
+      var link = (inv && inv.stripe_payment_link) ? inv.stripe_payment_link : '';
+      if (!link) { alert('No payment link found for this invoice.'); return; }
+      navigator.clipboard.writeText(link).then(function(){ showToast('Payment link copied!'); }).catch(function(){
+        var el = document.createElement('textarea'); el.value = link;
+        document.body.appendChild(el); el.select(); document.execCommand('copy');
+        document.body.removeChild(el); showToast('Payment link copied!');
+      });
+    }
+
+    async function deleteInvoice(invId) {
+      if (!confirm('Delete this invoice? This cannot be undone.')) return;
+      closeActionsMenu();
+      // Remove from Supabase
+      try { await supabase.from('invoices').delete().eq('id', invId); } catch(e) {}
+      // Remove from localStorage
+      var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+      localStorage.setItem('tb_invoices', JSON.stringify(invs.filter(function(i){ return i.id != invId; })));
+      // Remove from stored and re-render
+      _stored = _stored.filter(function(i){ return i.id != invId; });
+      renderView();
+    }
+
+    function showToast(msg) {
+      var t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+      t.textContent = msg; document.body.appendChild(t);
+      setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); }, 2200);
+    }
+  </script>
+
 </body>
 </html>
