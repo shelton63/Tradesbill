@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -289,7 +289,8 @@
         <div class="line-items-section">
           <div class="line-items-header">
             <div class="line-items-title">Line items</div>
-            <div style="display:flex;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn-add-line" onclick="openItemLibrary()" style="background:#F3F1FE;color:#635BFF;border:1px solid #D4CFFA"><i class="ti ti-library" style="font-size:12px"></i> Saved items</button>
               <button class="btn-add-line" onclick="addLine('Labour','',1,0)"><i class="ti ti-plus" style="font-size:12px"></i> Labour</button>
               <button class="btn-add-line" onclick="addLine('Materials','',1,0)" style="background:#5DCAA5;color:#061A30"><i class="ti ti-plus" style="font-size:12px"></i> Materials</button>
               <button class="btn-add-line" onclick="addLine('','',1,0)" style="background:rgba(255,255,255,0.15);color:#0A2540;border:1px solid #E5E3DC"><i class="ti ti-plus" style="font-size:12px"></i> Custom</button>
@@ -806,5 +807,201 @@
 
     init();
   </script>
+  <!-- ITEM LIBRARY MODAL -->
+  <div class="modal-overlay" id="library-modal" style="z-index:600">
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <div class="modal-title">Saved items library</div>
+        <button class="modal-close" onclick="closeLibrary()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body" style="padding:0">
+
+        <!-- Add new item -->
+        <div id="add-item-form" style="padding:16px;border-bottom:1px solid #F0EFEA;display:none;background:#F8F7F3">
+          <div style="font-size:12px;font-weight:700;color:#061A30;margin-bottom:10px" id="add-item-title">Add saved item</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <input id="lib-desc" type="text" placeholder="Description e.g. 22mm Copper Pipe (per metre)" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit;outline:none" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Unit price (£)</label>
+                <input id="lib-price" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit;outline:none" />
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Category</label>
+                <select id="lib-cat" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:#fff">
+                  <option value="Labour">Labour</option>
+                  <option value="Materials">Materials</option>
+                  <option value="Equipment">Equipment</option>
+                  <option value="Callout">Callout fee</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="cancelAddItem()" style="flex:1;padding:9px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+              <button onclick="saveLibraryItem()" id="lib-save-btn" style="flex:2;padding:9px;border-radius:8px;border:none;background:#0A2540;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Save item</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search + add button -->
+        <div style="padding:12px 16px;border-bottom:1px solid #F0EFEA;display:flex;gap:8px;align-items:center">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:#F8F7F3;border:1px solid #E5E3DC;border-radius:8px;padding:8px 12px">
+            <i class="ti ti-search" style="font-size:15px;color:#A3A29C"></i>
+            <input type="text" id="lib-search" placeholder="Search saved items..." oninput="renderLibrary()" style="border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;width:100%" />
+          </div>
+          <button onclick="showAddItemForm(null)" style="background:#0A2540;color:#fff;border:none;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="ti ti-plus"></i> New</button>
+        </div>
+
+        <!-- Category filter -->
+        <div style="display:flex;gap:6px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #F0EFEA">
+          <button class="lib-cat-btn active" onclick="setLibCat('all',this)" style="padding:5px 12px;border-radius:20px;border:1px solid #0A2540;background:#0A2540;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">All</button>
+          <button class="lib-cat-btn" onclick="setLibCat('Labour',this)" style="padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Labour</button>
+          <button class="lib-cat-btn" onclick="setLibCat('Materials',this)" style="padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Materials</button>
+          <button class="lib-cat-btn" onclick="setLibCat('Equipment',this)" style="padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Equipment</button>
+          <button class="lib-cat-btn" onclick="setLibCat('Callout',this)" style="padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Callout</button>
+        </div>
+
+        <!-- Items list -->
+        <div id="lib-list" style="max-height:340px;overflow-y:auto;padding:8px 0"></div>
+
+        <div style="padding:12px 16px;border-top:1px solid #F0EFEA;font-size:12px;color:#A3A29C;text-align:center">
+          Tap any item to add it to your quote · <button onclick="showAddItemForm(null)" style="background:none;border:none;color:#0A2540;font-weight:600;cursor:pointer;font-size:12px;font-family:inherit">+ Add new item</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var savedItems = [];
+    var libCatFilter = 'all';
+    var editingItemId = null;
+    var CAT_COLORS = { Labour:'#EEF3F8', Materials:'#E1F5EE', Equipment:'#FBF3E3', Callout:'#FAECE7', Other:'#F3F1FE' };
+    var CAT_FG = { Labour:'#0A2540', Materials:'#0F6E56', Equipment:'#C28A1E', Callout:'#993C1D', Other:'#635BFF' };
+
+    function loadLibrary(){
+      try{ savedItems=JSON.parse(localStorage.getItem('pi_item_library')||'[]'); }catch(e){ savedItems=[]; }
+    }
+    function saveLibrary(){ localStorage.setItem('pi_item_library',JSON.stringify(savedItems)); }
+
+    function setLibCat(cat, btn){
+      libCatFilter=cat;
+      document.querySelectorAll('.lib-cat-btn').forEach(function(b){
+        b.style.cssText='padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap';
+      });
+      btn.style.cssText='padding:5px 12px;border-radius:20px;border:1px solid #0A2540;background:#0A2540;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap';
+      renderLibrary();
+    }
+
+    function renderLibrary(){
+      var q=(document.getElementById('lib-search').value||'').toLowerCase();
+      var filtered=savedItems.filter(function(item){
+        if(libCatFilter!=='all' && item.cat!==libCatFilter) return false;
+        return !q || (item.desc||'').toLowerCase().includes(q);
+      });
+      var list=document.getElementById('lib-list');
+      if(!filtered.length){
+        list.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">'+(savedItems.length?'No items match your search':'No saved items yet — click "+ New" to add your first one')+'</div>';
+        return;
+      }
+      list.innerHTML=filtered.map(function(item){
+        var bg=CAT_COLORS[item.cat]||'#F0EFEA';
+        var fg=CAT_FG[item.cat]||'#6B6A65';
+        return '<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F8F7F3;cursor:pointer" onmouseenter="this.style.background=\'#F8F7F3\'" onmouseleave="this.style.background=\'#fff\'" onclick="addFromLibrary(\''+item.id+'\')">'
+          +'<div style="width:34px;height:34px;border-radius:9px;background:'+bg+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti '+(item.cat==='Labour'?'ti-user':item.cat==='Materials'?'ti-package':item.cat==='Equipment'?'ti-tool':item.cat==='Callout'?'ti-car':'ti-tag')+'" style="font-size:16px;color:'+fg+'"></i></div>'
+          +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.desc+'</div>'
+          +'<div style="font-size:11px;color:#8B8A84;margin-top:1px"><span style="background:'+bg+';color:'+fg+';padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-right:6px">'+item.cat+'</span>£'+Number(item.price||0).toFixed(2)+' per unit</div>'
+          +'</div>'
+          +'<div style="display:flex;gap:6px;flex-shrink:0">'
+          +'<button onclick="event.stopPropagation();showAddItemForm(\''+item.id+'\')" style="width:28px;height:28px;border-radius:7px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8B8A84"><i class="ti ti-pencil" style="font-size:13px"></i></button>'
+          +'<button onclick="event.stopPropagation();deleteLibraryItem(\''+item.id+'\')" style="width:28px;height:28px;border-radius:7px;border:1px solid #FDEDED;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#D14343"><i class="ti ti-trash" style="font-size:13px"></i></button>'
+          +'</div></div>';
+      }).join('');
+    }
+
+    function addFromLibrary(itemId){
+      var item=savedItems.find(function(x){return x.id===itemId;});
+      if(!item)return;
+      addLine(item.desc,'',1,item.price);
+      closeLibrary();
+      showToast(item.desc+' added');
+    }
+
+    function showAddItemForm(itemId){
+      editingItemId=itemId;
+      var form=document.getElementById('add-item-form');
+      var titleEl=document.getElementById('add-item-title');
+      var saveBtn=document.getElementById('lib-save-btn');
+      if(itemId){
+        var item=savedItems.find(function(x){return x.id===itemId;});
+        if(item){
+          document.getElementById('lib-desc').value=item.desc||'';
+          document.getElementById('lib-price').value=item.price||'';
+          document.getElementById('lib-cat').value=item.cat||'Materials';
+        }
+        titleEl.textContent='Edit saved item';
+        saveBtn.textContent='Update item';
+      } else {
+        document.getElementById('lib-desc').value='';
+        document.getElementById('lib-price').value='';
+        document.getElementById('lib-cat').value='Materials';
+        titleEl.textContent='Add saved item';
+        saveBtn.textContent='Save item';
+      }
+      form.style.display='block';
+      setTimeout(function(){ document.getElementById('lib-desc').focus(); },100);
+    }
+
+    function cancelAddItem(){
+      document.getElementById('add-item-form').style.display='none';
+      editingItemId=null;
+    }
+
+    function saveLibraryItem(){
+      var desc=document.getElementById('lib-desc').value.trim();
+      var price=parseFloat(document.getElementById('lib-price').value)||0;
+      var cat=document.getElementById('lib-cat').value;
+      if(!desc){ document.getElementById('lib-desc').style.borderColor='#D14343'; document.getElementById('lib-desc').focus(); return; }
+      document.getElementById('lib-desc').style.borderColor='#E5E3DC';
+
+      if(editingItemId){
+        var item=savedItems.find(function(x){return x.id===editingItemId;});
+        if(item){ item.desc=desc; item.price=price; item.cat=cat; }
+      } else {
+        savedItems.unshift({id:'item_'+Date.now(),desc:desc,price:price,cat:cat,created_at:new Date().toISOString()});
+      }
+      saveLibrary();
+      cancelAddItem();
+      renderLibrary();
+      showToast(editingItemId?'Item updated':'Item saved to library');
+      editingItemId=null;
+    }
+
+    function deleteLibraryItem(itemId){
+      if(!confirm('Remove this item from your library?'))return;
+      savedItems=savedItems.filter(function(x){return x.id!==itemId;});
+      saveLibrary(); renderLibrary();
+      showToast('Item removed');
+    }
+
+    function openItemLibrary(){
+      loadLibrary();
+      document.getElementById('lib-search').value='';
+      document.getElementById('add-item-form').style.display='none';
+      libCatFilter='all';
+      // Reset category buttons
+      document.querySelectorAll('.lib-cat-btn').forEach(function(b,i){
+        if(i===0) b.style.cssText='padding:5px 12px;border-radius:20px;border:1px solid #0A2540;background:#0A2540;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap';
+        else b.style.cssText='padding:5px 12px;border-radius:20px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap';
+      });
+      renderLibrary();
+      document.getElementById('library-modal').classList.add('open');
+    }
+
+    function closeLibrary(){ document.getElementById('library-modal').classList.remove('open'); }
+
+    document.getElementById('library-modal').addEventListener('click',function(e){if(e.target===this)closeLibrary();});
+  </script>
+
 </body>
 </html>
