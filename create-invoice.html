@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -1003,35 +1003,33 @@
     // Check Stripe connection on load
     // ── Auto-increment invoice number ──
     async function getNextInvoiceNumber() {
+      var maxNum = 1000;
+
+      // 1. Check localStorage invoices
       try {
-        // Get the highest existing invoice number from Supabase
-        var { data, error } = await supabase
-          .from('invoices')
-          .select('number')
-          .order('created_at', { ascending: false })
-          .limit(50);
-
-        if (error || !data || data.length === 0) {
-          return '#1001';
-        }
-
-        // Extract numeric parts and find the max
-        var maxNum = 1000;
-        data.forEach(function(inv) {
-          if (!inv.number) return;
-          var match = inv.number.toString().replace(/[^0-9]/g, '');
-          if (match) {
-            var n = parseInt(match);
-            if (n > maxNum) maxNum = n;
-          }
+        var localInvs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        localInvs.forEach(function(inv) {
+          var n = parseInt((inv.number || '').toString().replace(/[^0-9]/g, ''));
+          if (n > maxNum) maxNum = n;
         });
+      } catch(e) {}
 
-        return '#' + (maxNum + 1);
-      } catch(e) {
-        // Fallback to localStorage counter if Supabase fails
-        var last = parseInt(localStorage.getItem('pi_last_inv_num') || '1000');
-        return '#' + (last + 1);
-      }
+      // 2. Check pi_last_inv_num counter
+      var lastCounter = parseInt(localStorage.getItem('pi_last_inv_num') || '0');
+      if (lastCounter > maxNum) maxNum = lastCounter;
+
+      // 3. Check Supabase for highest number
+      try {
+        var { data } = await supabase.from('invoices').select('number').order('created_at', { ascending: false }).limit(100);
+        if (data && data.length > 0) {
+          data.forEach(function(inv) {
+            var n = parseInt((inv.number || '').toString().replace(/[^0-9]/g, ''));
+            if (n > maxNum) maxNum = n;
+          });
+        }
+      } catch(e) {}
+
+      return '#' + (maxNum + 1);
     }
 
     async function setAutoInvoiceNumber() {
@@ -1061,29 +1059,55 @@
     }
 
     async function checkStripe() {
+      // Always hide prompt first — show only if confirmed NOT connected
+      var sp = document.getElementById('stripe-prompt');
+
       try {
-        // Check localStorage first for instant result
+        // 1. Check localStorage cache first (instant)
         if (localStorage.getItem('pi_stripe_connected') === 'true') {
-          var sp = document.getElementById('stripe-prompt');
           if (sp) sp.style.display = 'none';
           loadBusinessFromStorage();
+          // Still load from Supabase in background to get latest data
+          supabase.auth.getUser().then(function(r) {
+            if (r.data && r.data.user) applyBusinessMeta(r.data.user.user_metadata || {});
+          }).catch(function(){});
           return;
         }
+
         if (SUPABASE_URL === 'YOUR_PROJECT_URL_HERE') { loadBusinessFromStorage(); return; }
-        const { data } = await supabase.auth.getUser();
+
+        // 2. Check Supabase user metadata
+        var { data } = await supabase.auth.getUser();
         if (!data || !data.user) { loadBusinessFromStorage(); return; }
-        const meta = data.user.user_metadata || {};
+        var meta = data.user.user_metadata || {};
+
+        // Cache business meta
         if (meta.business_name) localStorage.setItem('pi_biz_meta', JSON.stringify(meta));
         applyBusinessMeta(meta);
-        if (meta.stripe_connected) {
+
+        // 3. Check stripe_connected in metadata OR stripe_account_id exists
+        var isConnected = meta.stripe_connected === true || !!meta.stripe_account_id;
+
+        if (isConnected) {
           localStorage.setItem('pi_stripe_connected', 'true');
-          var sp = document.getElementById('stripe-prompt');
           if (sp) sp.style.display = 'none';
         } else {
-          var sp = document.getElementById('stripe-prompt');
-          if (sp) sp.style.display = 'block';
+          // 4. Double-check localStorage for stripe account saved during onboarding
+          var acctId = localStorage.getItem('pi_stripe_account_id');
+          if (acctId) {
+            localStorage.setItem('pi_stripe_connected', 'true');
+            // Sync back to Supabase
+            supabase.auth.updateUser({ data: { stripe_connected: true, stripe_account_id: acctId } }).catch(function(){});
+            if (sp) sp.style.display = 'none';
+          } else {
+            if (sp) sp.style.display = 'block';
+          }
         }
-      } catch(e) { loadBusinessFromStorage(); }
+      } catch(e) {
+        loadBusinessFromStorage();
+        // Don't show prompt on error — assume connected if we can't verify
+        if (sp) sp.style.display = 'none';
+      }
     }
 
     function loadBusinessFromStorage() {
