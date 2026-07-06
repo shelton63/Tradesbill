@@ -2,687 +2,180 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quotes — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { overflow-x: hidden; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; overflow-x: hidden; }
-    .db { display: flex; min-height: 100vh; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100vh;overflow-x:hidden;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#FAFAF8;}
+    .db{display:flex;min-height:100vh;}
+    .sidebar{width:210px;flex-shrink:0;background:#0A2540;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+    .sb-logo{display:flex;align-items:center;gap:8px;padding:20px 16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.1);text-decoration:none;}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;}
+    .sb-logo-icon i{color:#fff;font-size:18px;}
+    .sb-logo-text{font-size:16px;font-weight:600;color:#fff;}
+    .sb-nav{padding:16px 10px;flex:1;overflow-y:auto;}
+    .sb-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px;text-decoration:none;}
+    .sb-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+    .sb-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+    .sb-item i{font-size:18px;}
+    .sb-bottom{padding:12px 10px;border-top:0.5px solid rgba(255,255,255,0.1);}
+    .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;text-decoration:none;}
+    .sb-user:hover{background:rgba(255,255,255,0.08);}
+    .sb-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+    .sb-uname{font-size:12px;font-weight:600;color:#fff;}
+    .sb-uplan{font-size:11px;color:rgba(255,255,255,0.5);}
+    .main{flex:1;margin-left:210px;display:flex;flex-direction:column;}
+    .topbar{background:#fff;border-bottom:1px solid #E5E3DC;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar h1{font-size:16px;font-weight:600;color:#061A30;}
+    .btn-new{background:#0A2540;color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;}
+    .content{padding:24px;}
 
-    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
-    .sb-logo-icon i { color: #fff; font-size: 18px; }
-    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
-    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
-    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
-    .sb-item i { font-size: 18px; }
-    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
-    .sb-user:hover { background: rgba(255,255,255,0.08); }
-    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
-    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
-    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+    .stat{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:16px;}
+    .stat-label{font-size:12px;color:#8B8A84;margin-bottom:5px;}
+    .stat-value{font-size:22px;font-weight:700;color:#061A30;letter-spacing:-0.01em;}
 
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
-    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; font-family: inherit; }
-    .btn-new:hover { background: #061A30; }
-    .content { padding: 24px 28px; }
+    /* Search & filter */
+    .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .search-wrap{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E5E3DC;border-radius:9px;padding:9px 13px;}
+    .search-wrap i{font-size:16px;color:#A3A29C;flex-shrink:0;}
+    .search-wrap input{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;}
+    .filter-tabs{display:flex;gap:6px;}
+    .ftab{padding:8px 16px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+    .ftab.active{background:#0A2540;color:#fff;border-color:#0A2540;}
 
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
-    .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; }
-    .stat-value { font-size: 22px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
+    /* Table */
+    .table-wrap{background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;}
+    table{width:100%;border-collapse:collapse;}
+    th{padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #F0EFEA;background:#FAFAF8;}
+    td{padding:13px 16px;border-bottom:1px solid #F8F7F3;font-size:13px;color:#1A1A18;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:#FAFAF8;}
+    .q-num{font-weight:700;color:#0A2540;}
+    .cust-cell{display:flex;align-items:center;gap:8px;}
+    .avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+    .badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;}
+    .badge-pending{background:#FBF3E3;color:#C28A1E;}
+    .badge-accepted{background:#E1F5EE;color:#0F6E56;}
+    .badge-declined{background:#FDEDED;color:#D14343;}
+    .badge-draft{background:#F0EFEA;color:#6B6A65;}
+    .badge-expired{background:#F3F1FE;color:#635BFF;}
+    .action-btns{display:flex;gap:6px;}
+    .icon-btn{width:30px;height:30px;border-radius:7px;border:1px solid #E5E3DC;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8B8A84;text-decoration:none;}
+    .icon-btn:hover{background:#F0EFEA;color:#0A2540;}
+    .icon-btn i{font-size:14px;}
 
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-    .search-wrap { position: relative; flex: 1; min-width: 200px; }
-    .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #8B8A84; }
-    .search-wrap input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #E5E3DC; border-radius: 9px; font-size: 13px; color: #1A1A18; background: #fff; outline: none; font-family: inherit; }
-    .search-wrap input:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-    .filter-tab { padding: 8px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
-    .filter-tab.active { background: #0A2540; color: #fff; border-color: #0A2540; }
-    .filter-tab:hover:not(.active) { background: #F0EFEA; }
+    /* Empty state */
+    .empty-state{padding:60px 20px;text-align:center;}
+    .empty-state i{font-size:40px;color:#D3D1C7;display:block;margin-bottom:14px;}
+    .empty-state h3{font-size:16px;font-weight:600;color:#061A30;margin-bottom:6px;}
+    .empty-state p{font-size:13px;color:#8B8A84;margin-bottom:20px;}
 
-    .table-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead { background: #FAFAF8; }
-    th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: #8B8A84; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #E5E3DC; }
-    td { padding: 13px 16px; color: #1A1A18; border-bottom: 1px solid #F0EFEA; }
-    tr:last-child td { border-bottom: none; }
-    tr.q-row:hover td { background: #FAFAF8; cursor: pointer; }
-    .q-num { color: #0A2540; font-weight: 600; }
-    .cust-cell { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
-    .av-blue{background:#EEF3F8;color:#0A2540} .av-teal{background:#E1F5EE;color:#0F6E56}
-    .av-amber{background:#FBF3E3;color:#C28A1E} .av-coral{background:#FAECE7;color:#993C1D}
-    .cust-name-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    /* Quote detail modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,0.45);z-index:400;align-items:center;justify-content:center;padding:16px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:16px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.3);}
+    .modal-header{background:#0A2540;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+    .modal-title{font-size:15px;font-weight:700;color:#fff;}
+    .modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+    .modal-body{padding:22px;}
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:11px;font-weight:700;color:#8B8A84;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;}
+    .field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;color:#1A1A18;font-family:inherit;outline:none;background:#fff;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#0A2540;box-shadow:0 0 0 3px rgba(10,37,64,0.08);}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
-    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
-    .badge-accepted { background: #E1F5EE; color: #0F6E56; }
-    .badge-pending { background: #FBF3E3; color: #C28A1E; }
-    .badge-declined { background: #FDEDED; color: #D14343; }
-    .badge-draft { background: #F0EFEA; color: #6B6A65; }
-    .badge-partial { background: #FBF3E3; color: #C28A1E; }
-    .badge i { font-size: 11px; }
+    /* Line items */
+    .line-items-section{background:#F8F7F3;border-radius:12px;padding:16px;margin-bottom:16px;}
+    .line-items-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .line-items-title{font-size:12px;font-weight:700;color:#061A30;}
+    .btn-add-line{background:#0A2540;color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;}
+    .line-item{display:grid;grid-template-columns:1fr 80px 90px 90px 30px;gap:8px;align-items:center;margin-bottom:8px;}
+    .line-item input{padding:8px 10px;border:1.5px solid #E5E3DC;border-radius:8px;font-size:13px;font-family:inherit;outline:none;width:100%;background:#fff;}
+    .line-item input:focus{border-color:#0A2540;}
+    .btn-remove-line{width:28px;height:28px;border-radius:7px;background:#FDEDED;border:none;color:#D14343;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .totals-box{background:#fff;border:1px solid #E5E3DC;border-radius:10px;padding:12px 14px;}
+    .total-row{display:flex;justify-content:space-between;font-size:13px;color:#6B6A65;padding:3px 0;}
+    .total-grand{display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#061A30;border-top:1px solid #E5E3DC;padding-top:8px;margin-top:6px;}
 
-    .action-btns { display: flex; gap: 6px; }
-    .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8B8A84; text-decoration: none; }
-    .icon-btn:hover { background: #F0EFEA; color: #0A2540; border-color: #0A2540; }
-    .icon-btn i { font-size: 15px; }
+    /* Quote preview */
+    .quote-preview{background:#F8F7F3;border:1px solid #E5E3DC;border-radius:12px;padding:18px;margin-bottom:16px;}
+    .preview-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+    .preview-from{font-size:12px;color:#8B8A84;}
+    .preview-biz{font-size:15px;font-weight:700;color:#061A30;}
+    .preview-num{font-size:13px;font-weight:700;color:#0A2540;}
+    .preview-valid{font-size:11px;color:#8B8A84;margin-top:2px;}
 
-    .info-banner { display: flex; align-items: center; gap: 10px; background: #EEF3F8; border-radius: 12px; padding: 13px 16px; margin-bottom: 20px; }
-    .info-banner i { color: #0A2540; font-size: 18px; flex-shrink: 0; }
-    .info-banner p { font-size: 13px; color: #0A2540; line-height: 1.5; }
+    /* Mobile */
+    .mobile-topbar{display:none;}
+    .bottom-nav{display:none;}
+    .mob-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:299;}
+    .mob-menu-overlay.open{display:block;}
+    .mob-drawer{position:fixed;top:0;left:-280px;width:280px;height:100vh;background:#0A2540;z-index:300;transition:left 0.28s ease;display:flex;flex-direction:column;overflow-y:auto;}
+    .mob-drawer.open{left:0;}
+    .mob-drawer-head{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;}
+    .mob-drawer-logo{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+    .mob-drawer-logo i{color:#5DCAA5;}
+    .mob-drawer-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mob-drawer-section{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.07em;text-transform:uppercase;padding:14px 18px 6px;}
+    .mob-drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,0.75);text-decoration:none;}
+    .mob-drawer-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left:3px solid #5DCAA5;padding-left:15px;}
+    .mob-drawer-item i{font-size:20px;width:24px;}
+    .mob-drawer-bottom{margin-top:auto;padding:16px 18px;border-top:1px solid rgba(255,255,255,0.1);}
+    .mob-drawer-user{display:flex;align-items:center;gap:12px;}
+    .mob-drawer-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+    .mob-drawer-uname{font-size:13px;font-weight:600;color:#fff;}
+    .mob-drawer-plan{font-size:11px;color:#5DCAA5;}
+    .mob-burger{background:none;border:none;cursor:pointer;padding:2px;display:flex;flex-direction:column;gap:5px;}
+    .mob-burger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
 
-    /* Payment modal */
-    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
-    .pay-modal-overlay.open { display:flex; }
-    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
-    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
-    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
-    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
-    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
-    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; }
-    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
-    .pay-status-opt.selected { border-color:var(--c); background:var(--bg); }
-    .pay-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .pay-status-label { font-size:14px; font-weight:600; color:#061A30; }
-    .pay-status-desc { font-size:12px; color:#8B8A84; }
-    .pay-method-row { margin-bottom:14px; }
-    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
-    .pay-method-btn { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:4px; }
-    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
-    .pay-partial-row { margin-bottom:14px; display:none; }
-    .pay-partial-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-partial-row input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
-    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
-    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-
-    .mobile-topbar { display: none; }
-    .bottom-nav { display: none; }
-
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
-      .mob-logo i { color: #5DCAA5; font-size: 22px; }
-      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .content { padding: 14px 16px; }
-      .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-      th:nth-child(3), td:nth-child(3) { display: none; }
-      .table-wrap { overflow-x: auto; }
-      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
-      .nav-item i { font-size: 22px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
-      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
-      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
-      .nav-plus i { font-size: 23px; color: #fff; }
-      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
-      .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
-      .plus-menu-item:last-child { border-bottom: none; }
-      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
-      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    @media(max-width:768px){
+      .sidebar{display:none;} .main{margin-left:0;} .topbar{display:none;}
+      .mobile-topbar{display:flex;align-items:center;justify-content:space-between;background:#0A2540;padding:14px 16px;position:sticky;top:0;z-index:200;}
+      .content{padding:14px 16px 100px;}
+      .stats{grid-template-columns:1fr 1fr;gap:8px;}
+      .toolbar{flex-direction:column;align-items:stretch;}
+      .filter-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+      .filter-tabs::-webkit-scrollbar{display:none;}
+      table th:nth-child(4),table td:nth-child(4),table th:nth-child(5),table td:nth-child(5){display:none;}
+      .bottom-nav{display:flex;align-items:center;background:#fff;border-top:1px solid #E5E3DC;padding:8px 0 20px;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+      .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:4px 0;}
+      .nav-item i{font-size:22px;color:#A3A29C;}
+      .nav-item span{font-size:10px;color:#A3A29C;font-weight:500;}
+      .nav-item.active i,.nav-item.active span{color:#0A2540;font-weight:600;}
+      .nav-plus-wrap{flex:1;display:flex;justify-content:center;position:relative;}
+      .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
+      .nav-plus i{font-size:24px;color:#fff;}
+      .line-item{grid-template-columns:1fr 70px 80px 30px;}
+      .line-item .price-col{display:none;}
+      .field-row{grid-template-columns:1fr;}
+      .modal{max-height:100vh;border-radius:16px 16px 0 0;margin-top:auto;}
     }
-  
-    
-      /* Make mobile topbar sticky if not already */
-      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
-    }
-  
-    /* Hamburger menu */
-    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
-    .mob-menu-overlay.open { display: block; }
-    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
-    .mob-drawer.open { left: 0; }
-    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
-    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
-    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
-    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
-    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
-    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
-    .mob-drawer-item i { font-size: 20px; width: 24px; }
-    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
-    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
-    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
-    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
-    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
-
-  <!-- MOBILE TOP BAR -->
+  <!-- Mobile topbar -->
   <div class="mobile-topbar">
-    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
-      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
-    </div>
-    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
-  </div>
+    <button class="mob-burger" onclick="openMobMenu()"><span></span><span></span><span></span></button>
+    <div style="text-align:center"><div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div><div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div></div>
+    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none">+ Invoice</a>
   </div>
 
-  <div class="db">
-    <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
-      <div class="sb-nav">
-        <div class="sb-section-label">Main</div>
-        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
-        <a href="quotes.html" class="sb-item active"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
-        <div class="sb-section-label">Reports</div>
-        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
-        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
-        <div class="sb-section-label">Account</div>
-        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
-      </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
-    </nav>
-
-    <div class="main">
-      <div class="topbar">
-        <h1>Quotes</h1>
-        <button class="btn-new" onclick="openQuoteModal()"><i class="ti ti-plus"></i> New quote</button>
-      </div>
-
-      <div class="content">
-        <div id="quotes-intro">
-          <div style="max-width:480px;margin:0 auto;padding:20px 0 40px;text-align:center">
-            <div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-file-text" style="font-size:28px;color:#0A2540"></i></div>
-            <div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Win more jobs with quotes</div>
-            <div style="font-size:13px;color:#6B6A65;line-height:1.6;margin-bottom:24px">Send a professional quote before the job starts. Once accepted, convert it to an invoice in one tap — no re-entering data.</div>
-            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px;text-align:left">
-              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">One-tap conversion</div><div style="font-size:12px;color:#8B8A84">Turn an accepted quote into an invoice instantly</div></div></div>
-              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Track acceptance</div><div style="font-size:12px;color:#8B8A84">See which quotes are pending, accepted or declined</div></div></div>
-              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 16px"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-coin" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">See pending value</div><div style="font-size:12px;color:#8B8A84">Know how much work is waiting to be confirmed</div></div></div>
-            </div>
-            <button onclick="showQuoteTable()" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;border:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700;width:100%;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:17px"></i> Create your first quote</button>
-          </div>
-        </div>
-
-        <div id="quotes-table" style="display:none">
-          <div class="stats">
-            <div class="stat"><div class="stat-label">Total quotes</div><div class="stat-value">5</div></div>
-            <div class="stat"><div class="stat-label">Accepted</div><div class="stat-value">2</div></div>
-            <div class="stat"><div class="stat-label">Pending</div><div class="stat-value">2</div></div>
-            <div class="stat"><div class="stat-label">Value pending</div><div class="stat-value">£2,580</div></div>
-          </div>
-          <div class="toolbar">
-            <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search quotes..." oninput="filterQuotes(this.value)" /></div>
-          </div>
-          <div class="filter-tabs">
-            <div class="filter-tab active" onclick="setFilter(this,'all')">All</div>
-            <div class="filter-tab" onclick="setFilter(this,'accepted')">Accepted</div>
-            <div class="filter-tab" onclick="setFilter(this,'pending')">Pending</div>
-            <div class="filter-tab" onclick="setFilter(this,'declined')">Declined</div>
-            <div class="filter-tab" onclick="setFilter(this,'draft')">Draft</div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Quote</th><th>Customer</th><th>Job</th><th>Amount</th><th>Sent</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="q-body">
-                <tr class="q-row" data-status="pending" data-pay-id="Q-012">
-                  <td><span class="q-num">#Q-012</span></td>
-                  <td><div class="cust-cell"><div class="avatar av-blue">MT</div><span class="cust-name-text">Mark Taylor</span></div></td>
-                  <td>Extension wiring</td><td>£2,400</td><td>2 days ago</td>
-                  <td><span class="badge dyn-badge badge-pending"><i class="ti ti-clock"></i> Pending</span></td>
-                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-012','pending')"><i class="ti ti-cash"></i></button></div></td>
-                </tr>
-                <tr class="q-row" data-status="accepted" data-pay-id="Q-011">
-                  <td><span class="q-num">#Q-011</span></td>
-                  <td><div class="cust-cell"><div class="avatar av-teal">SC</div><span class="cust-name-text">Sarah Collins</span></div></td>
-                  <td>Loft conversion</td><td>£8,200</td><td>4 days ago</td>
-                  <td><span class="badge dyn-badge badge-accepted"><i class="ti ti-check"></i> Accepted</span></td>
-                  <td><div class="action-btns"><a href="create-invoice.html" class="icon-btn" title="Convert to invoice"><i class="ti ti-arrow-right"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-011','accepted')"><i class="ti ti-cash"></i></button></div></td>
-                </tr>
-                <tr class="q-row" data-status="declined" data-pay-id="Q-010">
-                  <td><span class="q-num">#Q-010</span></td>
-                  <td><div class="cust-cell"><div class="avatar av-amber">RH</div><span class="cust-name-text">Riverside Homes</span></div></td>
-                  <td>Roof repair</td><td>£1,650</td><td>1 week ago</td>
-                  <td><span class="badge dyn-badge badge-declined"><i class="ti ti-x"></i> Declined</span></td>
-                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-010','declined')"><i class="ti ti-cash"></i></button></div></td>
-                </tr>
-                <tr class="q-row" data-status="accepted" data-pay-id="Q-009">
-                  <td><span class="q-num">#Q-009</span></td>
-                  <td><div class="cust-cell"><div class="avatar av-coral">PL</div><span class="cust-name-text">Pete Lawson</span></div></td>
-                  <td>Bathroom suite</td><td>£1,200</td><td>2 weeks ago</td>
-                  <td><span class="badge dyn-badge badge-accepted"><i class="ti ti-check"></i> Accepted</span></td>
-                  <td><div class="action-btns"><a href="create-invoice.html" class="icon-btn" title="Convert to invoice"><i class="ti ti-arrow-right"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-009','accepted')"><i class="ti ti-cash"></i></button></div></td>
-                </tr>
-                <tr class="q-row" data-status="draft" data-pay-id="Q-013">
-                  <td><span class="q-num">#Q-013</span></td>
-                  <td><div class="cust-cell"><div class="avatar av-blue">TW</div><span class="cust-name-text">Tom Walsh</span></div></td>
-                  <td>Outdoor tap</td><td>£180</td><td>Not sent</td>
-                  <td><span class="badge dyn-badge badge-draft"><i class="ti ti-pencil"></i> Draft</span></td>
-                  <td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-edit"></i></a><button class="icon-btn" title="Payment status" onclick="openPayModal('Q-013','draft')"><i class="ti ti-cash"></i></button></div></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
-    </div>
-  </div>
-
-  <!-- PAYMENT STATUS MODAL -->
-  <div class="pay-modal-overlay" id="pay-modal">
-    <div class="pay-modal">
-      <div class="pay-modal-header">
-        <div class="pay-modal-title">Update payment status</div>
-        <button class="pay-modal-close" onclick="closePayModal()"><i class="ti ti-x"></i></button>
-      </div>
-      <div style="padding:20px">
-        <div class="pay-status-opts">
-          <div class="pay-status-opt" data-status="paid" style="--c:#1D9E75;--bg:#F0FAF6" onclick="selectPayStatus(this)">
-            <div class="pay-dot" style="background:#1D9E75"></div>
-            <div><div class="pay-status-label">Paid in full</div><div class="pay-status-desc">Full amount received</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="partial" style="--c:#C28A1E;--bg:#FBF9F0" onclick="selectPayStatus(this)">
-            <div class="pay-dot" style="background:#C28A1E"></div>
-            <div><div class="pay-status-label">Partially paid</div><div class="pay-status-desc">Deposit or part payment received</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="unpaid" style="--c:#D14343;--bg:#FEF5F5" onclick="selectPayStatus(this)">
-            <div class="pay-dot" style="background:#D14343"></div>
-            <div><div class="pay-status-label">Unpaid</div><div class="pay-status-desc">No payment received yet</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="overdue" style="--c:#991F1F;--bg:#FEF0F0" onclick="selectPayStatus(this)">
-            <div class="pay-dot" style="background:#991F1F"></div>
-            <div><div class="pay-status-label">Overdue</div><div class="pay-status-desc">Payment is past due</div></div>
-          </div>
-        </div>
-        <div class="pay-partial-row" id="pay-partial-row">
-          <label>Amount received so far (£)</label>
-          <input type="number" id="pay-partial-amt" placeholder="e.g. 500" min="0" />
-        </div>
-        <div class="pay-method-row">
-          <label>Payment method</label>
-          <div class="pay-method-btns">
-            <button class="pay-method-btn active" data-method="card" onclick="selectPayMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
-            <button class="pay-method-btn" data-method="cash" onclick="selectPayMethod(this)"><i class="ti ti-cash"></i> Cash</button>
-            <button class="pay-method-btn" data-method="bank" onclick="selectPayMethod(this)"><i class="ti ti-building-bank"></i> Bank</button>
-            <button class="pay-method-btn" data-method="mixed" onclick="selectPayMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
-          </div>
-        </div>
-      </div>
-      <div class="pay-modal-footer">
-        <button class="pay-btn-cancel" onclick="closePayModal()">Cancel</button>
-        <button class="pay-btn-save" onclick="savePayStatus()">Save status</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var _payTargetId = null;
-    var _payStatuses = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
-    var _badgeCls = { paid:'badge-accepted', partial:'badge-partial', unpaid:'badge-pending', overdue:'badge-declined', draft:'badge-draft' };
-    var _badgeLbl = { paid:'Paid', partial:'Partial paid', unpaid:'Unpaid', overdue:'Overdue', draft:'Draft' };
-    var _badgeIcon = { paid:'ti-check', partial:'ti-clock-pause', unpaid:'ti-clock', overdue:'ti-alert-circle', draft:'ti-pencil' };
-
-    async function loadUser() {
-      try {
-        var r = await supabase.auth.getUser();
-        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
-        var m = r.data.user.user_metadata || {};
-        var first = m.first_name || m.given_name || '';
-        var last = m.last_name || m.family_name || '';
-        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
-        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : r.data.user.email.split('@')[0];
-      } catch(e) {}
-    }
-    loadUser();
-
-    function showQuoteTable() {
-      document.getElementById('quotes-intro').style.display = 'none';
-      document.getElementById('quotes-table').style.display = 'block';
-    }
-
-    function filterQuotes(q) {
-      q = q.toLowerCase();
-      document.querySelectorAll('#q-body tr').forEach(function(r) {
-        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-      });
-    }
-
-    function setFilter(el, status) {
-      document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
-      el.classList.add('active');
-      document.querySelectorAll('#q-body tr').forEach(function(r) {
-        r.style.display = (status === 'all' || r.dataset.status === status) ? '' : 'none';
-      });
-    }
-
-    function openPayModal(id, currentStatus) {
-      _payTargetId = id;
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      var saved = _payStatuses[id] ? _payStatuses[id].status : currentStatus;
-      var cur = document.querySelector('.pay-status-opt[data-status="' + saved + '"]');
-      if (cur) cur.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = saved === 'partial' ? 'block' : 'none';
-      document.getElementById('pay-partial-amt').value = _payStatuses[id] ? (_payStatuses[id].partialAmt || '') : '';
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      var savedMethod = _payStatuses[id] ? _payStatuses[id].method : 'card';
-      var mb = document.querySelector('.pay-method-btn[data-method="' + savedMethod + '"]');
-      if (mb) mb.classList.add('active');
-      document.getElementById('pay-modal').classList.add('open');
-    }
-
-    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
-
-    function selectPayStatus(el) {
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      el.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
-    }
-
-    function selectPayMethod(el) {
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      el.classList.add('active');
-    }
-
-    function savePayStatus() {
-      var sel = document.querySelector('.pay-status-opt.selected');
-      if (!sel) return;
-      var status = sel.dataset.status;
-      var mb = document.querySelector('.pay-method-btn.active');
-      _payStatuses[_payTargetId] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status === 'partial' ? document.getElementById('pay-partial-amt').value : null };
-      localStorage.setItem('tb_pay_statuses', JSON.stringify(_payStatuses));
-      var row = document.querySelector('[data-pay-id="' + _payTargetId + '"]');
-      if (row) {
-        var badge = row.querySelector('.dyn-badge');
-        if (badge) {
-          badge.className = 'badge dyn-badge ' + (_badgeCls[status] || 'badge-pending');
-          badge.innerHTML = '<i class="ti ' + (_badgeIcon[status] || 'ti-clock') + '"></i> ' + (_badgeLbl[status] || status);
-        }
-      }
-      closePayModal();
-    }
-
-    document.getElementById('pay-modal').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
-    });
-  </script>
-
-  <!-- CREATE QUOTE MODAL -->
-  <div class="pay-modal-overlay" id="quote-modal">
-    <div class="pay-modal" style="max-width:500px;max-height:92vh;overflow-y:auto">
-      <div class="pay-modal-header" style="background:#0A2540;padding:18px 22px">
-        <div style="font-size:15px;font-weight:700;color:#fff" id="qm-title">New quote</div>
-        <button class="pay-modal-close" onclick="closeQuoteModal()" style="background:rgba(255,255,255,0.15);color:#fff"><i class="ti ti-x"></i></button>
-      </div>
-      <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-
-        <!-- Customer -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Customer name <span style="color:#D14343">*</span></label>
-          <input type="text" id="qm-customer" placeholder="e.g. Mark Taylor" autocomplete="off"
-            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
-        </div>
-
-        <!-- Job -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Job description <span style="color:#D14343">*</span></label>
-          <input type="text" id="qm-job" placeholder="e.g. Bathroom refit, boiler installation..." autocomplete="off"
-            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
-        </div>
-
-        <!-- Amount -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Quote amount <span style="color:#D14343">*</span></label>
-          <div style="position:relative">
-            <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:#6B6A65;font-weight:600">£</span>
-            <input type="number" id="qm-amount" placeholder="0.00" min="0" step="0.01" autocomplete="off"
-              style="padding-left:30px;width:100%;padding-top:11px;padding-bottom:11px;padding-right:13px;border:1px solid #E5E3DC;border-radius:9px;font-size:18px;font-weight:600;font-family:inherit;color:#061A30;background:#fff;outline:none"
-              oninput="updateQuoteTotal()" />
-          </div>
-        </div>
-
-        <!-- VAT -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">VAT</label>
-          <select id="qm-vat" onchange="updateQuoteTotal(); saveVatPref(this.value)"
-            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;color:#1A1A18;background:#fff;outline:none">
-            <option value="0">No VAT (0%)</option>
-            <option value="5">5% VAT</option>
-            <option value="20">20% VAT</option>
-          </select>
-        </div>
-
-        <!-- Breakdown -->
-        <div id="qm-breakdown" style="display:none;background:#F4F7FB;border-radius:9px;padding:12px 14px;flex-direction:column;gap:6px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="font-size:13px;color:#6B6A65">Subtotal</span>
-            <span id="qm-sub" style="font-size:13px;color:#6B6A65">£0.00</span>
-          </div>
-          <div id="qm-vat-row" style="display:none;justify-content:space-between">
-            <span id="qm-vat-label" style="font-size:13px;color:#6B6A65">VAT (20%)</span>
-            <span id="qm-vat-amt" style="font-size:13px;color:#6B6A65">£0.00</span>
-          </div>
-          <div style="border-top:1px solid #E5E3DC;padding-top:6px;display:flex;justify-content:space-between">
-            <span style="font-size:14px;font-weight:700;color:#061A30">Total</span>
-            <span id="qm-total" style="font-size:18px;font-weight:700;color:#061A30">£0.00</span>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Notes <span style="font-size:11px;font-weight:400;color:#A3A29C">(optional)</span></label>
-          <textarea id="qm-notes" placeholder="e.g. Valid for 30 days. Includes labour and materials."
-            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;min-height:70px;resize:vertical;outline:none"></textarea>
-        </div>
-
-        <!-- Quote number -->
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#6B6A65;margin-bottom:5px">Quote number</label>
-          <input type="text" id="qm-number" autocomplete="off"
-            style="width:100%;padding:10px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
-        </div>
-
-        <!-- Error -->
-        <div id="qm-error" style="display:none;background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 13px;font-size:13px"></div>
-
-        <!-- Actions -->
-        <div style="display:flex;gap:10px;padding-top:4px">
-          <button onclick="closeQuoteModal()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
-          <button onclick="saveQuote()" style="flex:2;padding:11px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" id="qm-save-btn">Save quote</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ── VAT pref memory (shared with invoices) ──
-    function saveVatPref(val) { localStorage.setItem('pi_vat_pref', val); }
-    function loadVatPref() {
-      var pref = localStorage.getItem('pi_vat_pref');
-      if (pref) { var el = document.getElementById('qm-vat'); if (el) el.value = pref; }
-    }
-
-    function updateQuoteTotal() {
-      var amt = parseFloat(document.getElementById('qm-amount').value) || 0;
-      var vatRate = parseInt(document.getElementById('qm-vat').value) || 0;
-      var vatAmt = amt * vatRate / 100;
-      var total = amt + vatAmt;
-      var breakdown = document.getElementById('qm-breakdown');
-      if (amt > 0) {
-        breakdown.style.display = 'flex';
-        document.getElementById('qm-sub').textContent = '£' + amt.toFixed(2);
-        var vatRow = document.getElementById('qm-vat-row');
-        if (vatRate > 0) {
-          vatRow.style.display = 'flex';
-          document.getElementById('qm-vat-label').textContent = 'VAT (' + vatRate + '%)';
-          document.getElementById('qm-vat-amt').textContent = '£' + vatAmt.toFixed(2);
-        } else {
-          vatRow.style.display = 'none';
-        }
-        document.getElementById('qm-total').textContent = '£' + total.toFixed(2);
-      } else {
-        breakdown.style.display = 'none';
-      }
-    }
-
-    async function getNextQuoteNumber() {
-      try {
-        var { data } = await supabase.from('quotes').select('number').order('created_at', { ascending: false }).limit(50);
-        var max = 1000;
-        (data || []).forEach(function(q) {
-          if (!q.number) return;
-          var n = parseInt(q.number.toString().replace(/[^0-9]/g, ''));
-          if (n > max) max = n;
-        });
-        return '#Q' + (max + 1);
-      } catch(e) {
-        var last = parseInt(localStorage.getItem('pi_last_q_num') || '1000');
-        return '#Q' + (last + 1);
-      }
-    }
-
-    async function openQuoteModal() {
-      document.getElementById('qm-customer').value = '';
-      document.getElementById('qm-job').value = '';
-      document.getElementById('qm-amount').value = '';
-      document.getElementById('qm-notes').value = '';
-      document.getElementById('qm-breakdown').style.display = 'none';
-      document.getElementById('qm-error').style.display = 'none';
-      document.getElementById('qm-save-btn').textContent = 'Save quote';
-      loadVatPref();
-      var num = await getNextQuoteNumber();
-      document.getElementById('qm-number').value = num;
-      document.getElementById('quote-modal').classList.add('open');
-      setTimeout(function(){ document.getElementById('qm-customer').focus(); }, 100);
-    }
-
-    function closeQuoteModal() {
-      document.getElementById('quote-modal').classList.remove('open');
-    }
-
-    async function saveQuote() {
-      var customer = document.getElementById('qm-customer').value.trim();
-      var job      = document.getElementById('qm-job').value.trim();
-      var amt      = parseFloat(document.getElementById('qm-amount').value) || 0;
-      var vatRate  = parseInt(document.getElementById('qm-vat').value) || 0;
-      var total    = amt + (amt * vatRate / 100);
-      var notes    = document.getElementById('qm-notes').value.trim();
-      var number   = document.getElementById('qm-number').value.trim();
-      var errEl    = document.getElementById('qm-error');
-
-      if (!customer) { errEl.textContent = 'Please enter a customer name.'; errEl.style.display = 'block'; return; }
-      if (!job)      { errEl.textContent = 'Please add a job description.';  errEl.style.display = 'block'; return; }
-      if (amt <= 0)  { errEl.textContent = 'Please enter a quote amount.';   errEl.style.display = 'block'; return; }
-      errEl.style.display = 'none';
-
-      var btn = document.getElementById('qm-save-btn');
-      btn.textContent = 'Saving...'; btn.disabled = true;
-
-      try {
-        var { data: { user } } = await supabase.auth.getUser();
-        var { data, error } = await supabase.from('quotes').insert({
-          user_id: user.id,
-          customer_name: customer,
-          job: job,
-          amount: total,
-          number: number,
-          notes: notes || null,
-          status: 'pending',
-          date: new Date().toISOString().split('T')[0]
-        }).select().single();
-
-        if (error) throw error;
-
-        // Save number to localStorage
-        var n = parseInt(number.replace(/[^0-9]/g, ''));
-        if (n) localStorage.setItem('pi_last_q_num', n.toString());
-
-        closeQuoteModal();
-        showQuoteTable();
-        addQuoteRow(data);
-      } catch(e) {
-        errEl.textContent = 'Could not save quote: ' + e.message;
-        errEl.style.display = 'block';
-      }
-      btn.textContent = 'Save quote'; btn.disabled = false;
-    }
-
-    function addQuoteRow(q) {
-      var tbody = document.getElementById('q-body');
-      if (!tbody) return;
-      var ini = (q.customer_name || '?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
-      var row = document.createElement('tr');
-      row.className = 'q-row';
-      row.dataset.status = q.status || 'pending';
-      row.dataset.payId = q.id;
-      row.innerHTML = '<td><span class="q-num">' + (q.number || '') + '</span></td>'
-        + '<td><div class="cust-cell"><div class="avatar av-blue">' + ini + '</div><span class="cust-name-text">' + q.customer_name + '</span></div></td>'
-        + '<td>' + (q.job || '—') + '</td>'
-        + '<td>£' + Number(q.amount).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>'
-        + '<td>Just now</td>'
-        + '<td><span class="badge dyn-badge badge-pending"><i class="ti ti-clock"></i> Pending</span></td>'
-        + '<td><div class="action-btns"><a href="#" class="icon-btn"><i class="ti ti-copy"></i></a>'
-        + '<button class="icon-btn" title="Payment status" onclick="openPayModal(\'' + q.id + '\',\'pending\')"><i class="ti ti-cash"></i></button></div></td>';
-      tbody.insertBefore(row, tbody.firstChild);
-    }
-
-    document.getElementById('quote-modal').addEventListener('click', function(e) { if (e.target === this) closeQuoteModal(); });
-  </script>
-
-
-  <!-- HAMBURGER OVERLAY + DRAWER -->
   <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
   <div class="mob-drawer" id="mob-drawer">
-    <div class="mob-drawer-head">
-      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
-      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
-    </div>
+    <div class="mob-drawer-head"><div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div><button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button></div>
     <div class="mob-drawer-section">Main</div>
     <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
     <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
@@ -694,24 +187,624 @@
     <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
     <div class="mob-drawer-section">Account</div>
     <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
-    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
-    <div class="mob-drawer-bottom">
-      <div class="mob-drawer-user">
-        <div class="mob-drawer-av" id="mob-drawer-av"></div>
-        <div>
-          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
-          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
+    <div class="mob-drawer-bottom"><div class="mob-drawer-user"><div class="mob-drawer-av" id="mob-drawer-av"></div><div><div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div><div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div></div></div></div>
+  </div>
+
+  <div class="db">
+    <nav class="sidebar">
+      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+      <div class="sb-nav">
+        <div class="sb-lbl">Main</div>
+        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item active"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Jobs</a>
+        <div class="sb-lbl">Reports</div>
+        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-lbl">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-av" id="sb-av"></div><div><div class="sb-uname" id="sb-uname"></div><div class="sb-uplan" id="sb-uplan">Free plan</div></div></a></div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar">
+        <h1>Quotes</h1>
+        <button class="btn-new" onclick="openQuoteModal(null)"><i class="ti ti-plus"></i> New quote</button>
+      </div>
+      <div class="content">
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Total quotes</div><div class="stat-value" id="stat-total">0</div></div>
+          <div class="stat"><div class="stat-label">Accepted</div><div class="stat-value" id="stat-accepted" style="color:#1D9E75">0</div></div>
+          <div class="stat"><div class="stat-label">Pending</div><div class="stat-value" id="stat-pending" style="color:#C28A1E">0</div></div>
+          <div class="stat"><div class="stat-label">Value pending</div><div class="stat-value" id="stat-value">£0</div></div>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap"><i class="ti ti-search"></i><input type="text" id="search-input" placeholder="Search quotes..." oninput="renderTable()"></div>
+          <div class="filter-tabs">
+            <button class="ftab active" onclick="setFilter('all',this)">All</button>
+            <button class="ftab" onclick="setFilter('pending',this)">Pending</button>
+            <button class="ftab" onclick="setFilter('accepted',this)">Accepted</button>
+            <button class="ftab" onclick="setFilter('declined',this)">Declined</button>
+            <button class="ftab" onclick="setFilter('draft',this)">Draft</button>
+            <button class="ftab" onclick="setFilter('expired',this)">Expired</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div id="quotes-empty" class="empty-state" style="display:none">
+            <i class="ti ti-file-text"></i>
+            <h3>No quotes yet</h3>
+            <p>Create your first quote — it takes 60 seconds and converts to an invoice in one click when accepted.</p>
+            <button class="btn-new" onclick="openQuoteModal(null)" style="margin:0 auto"><i class="ti ti-plus"></i> Create quote</button>
+          </div>
+          <table id="quotes-table" style="display:none">
+            <thead><tr>
+              <th>Quote</th><th>Customer</th><th>Job</th><th>Amount</th><th>Valid until</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="q-body"></tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+    <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+    <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+    <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+  </nav>
+
+  <!-- NEW / EDIT QUOTE MODAL -->
+  <div class="modal-overlay" id="quote-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">New quote</div>
+        <button class="modal-close" onclick="closeQuoteModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field"><label>Customer name *</label><input id="qm-customer" type="text" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="updatePreview()"/></div>
+          <div class="field"><label>Customer email</label><input id="qm-email" type="email" placeholder="customer@email.com" autocomplete="off"/></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Phone / WhatsApp</label><input id="qm-phone" type="tel" placeholder="07700 900123" autocomplete="off"/></div>
+          <div class="field"><label>Quote number</label><input id="qm-number" type="text" autocomplete="off"/></div>
+        </div>
+        <div class="field"><label>Job description *</label><input id="qm-job" type="text" placeholder="e.g. Full bathroom refit including tiling and plumbing" autocomplete="off" oninput="updatePreview()"/></div>
+        <div class="field-row">
+          <div class="field"><label>Valid for (days)</label><select id="qm-valid">
+            <option value="7">7 days</option><option value="14" selected>14 days</option>
+            <option value="30">30 days</option><option value="60">60 days</option><option value="90">90 days</option>
+          </select></div>
+          <div class="field"><label>VAT rate</label><select id="qm-vat" onchange="recalc()">
+            <option value="0">No VAT (0%)</option><option value="5">5% VAT</option><option value="20">20% VAT</option>
+          </select></div>
+        </div>
+
+        <!-- Line items -->
+        <div class="line-items-section">
+          <div class="line-items-header">
+            <div class="line-items-title">Line items</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn-add-line" onclick="addLine('Labour','',1,0)"><i class="ti ti-plus" style="font-size:12px"></i> Labour</button>
+              <button class="btn-add-line" onclick="addLine('Materials','',1,0)" style="background:#5DCAA5;color:#061A30"><i class="ti ti-plus" style="font-size:12px"></i> Materials</button>
+              <button class="btn-add-line" onclick="addLine('','',1,0)" style="background:rgba(255,255,255,0.15);color:#0A2540;border:1px solid #E5E3DC"><i class="ti ti-plus" style="font-size:12px"></i> Custom</button>
+            </div>
+          </div>
+          <!-- Column headers -->
+          <div style="display:grid;grid-template-columns:1fr 80px 90px 90px 30px;gap:8px;margin-bottom:6px;padding:0 2px">
+            <div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.04em">Description</div>
+            <div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.04em">Qty</div>
+            <div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.04em;text-align:right">Unit price</div>
+            <div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.04em;text-align:right">Total</div>
+            <div></div>
+          </div>
+          <div id="line-items-container"></div>
+          <div class="totals-box" style="margin-top:12px" id="totals-box">
+            <div class="total-row"><span>Subtotal</span><span id="subtotal">£0.00</span></div>
+            <div class="total-row" id="vat-row" style="display:none"><span id="vat-label">VAT (20%)</span><span id="vat-amount">£0.00</span></div>
+            <div class="total-grand"><span>Total</span><span id="grand-total">£0.00</span></div>
+          </div>
+        </div>
+
+        <div class="field"><label>Notes / Terms</label><textarea id="qm-notes" rows="3" placeholder="e.g. Quote valid for 14 days. Price includes all labour and materials. Payment due within 7 days of completion."></textarea></div>
+
+        <!-- Live preview -->
+        <div class="quote-preview" id="quote-preview">
+          <div class="preview-header">
+            <div><div class="preview-from" id="prev-biz">Your business</div><div id="prev-to" style="font-size:12px;color:#8B8A84;margin-top:2px">To: —</div></div>
+            <div style="text-align:right"><div class="preview-num" id="prev-num">—</div><div class="preview-valid" id="prev-valid"></div></div>
+          </div>
+          <div style="font-size:12px;color:#8B8A84;margin-bottom:6px;font-weight:700">JOB</div>
+          <div id="prev-job" style="font-size:13px;color:#061A30;margin-bottom:12px">—</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:9px;padding:11px 13px">
+            <span style="font-size:13px;color:#6B6A65">Quote total</span>
+            <span id="prev-total" style="font-size:18px;font-weight:700;color:#061A30">£0.00</span>
+          </div>
+        </div>
+
+        <div id="qm-error" style="display:none;background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 13px;font-size:13px;margin-bottom:12px"></div>
+
+        <div style="display:flex;gap:10px">
+          <button onclick="saveQuote('draft')" style="flex:1;padding:11px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Save draft</button>
+          <button onclick="saveQuote('send')" style="flex:2;padding:11px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" id="qm-save-btn">Send quote</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW QUOTE MODAL -->
+  <div class="modal-overlay" id="view-modal">
+    <div class="modal" id="view-modal-inner"></div>
+  </div>
+
   <script>
-    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
-    // Swipe to close
-    var _swipeStartX = 0;
-    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
-    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
+    var quotes = [];
+    var activeFilter = 'all';
+    var editingId = null;
+    var lineCounter = 0;
+    var AV_COLORS = ['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'];
+    var AV_FG = ['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'];
+
+    function ini(n){ return (n||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2); }
+    function fmt(n){ return '£'+Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtDate(d){ if(!d)return'—'; try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;} }
+    function addDays(d,n){ var dt=new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().split('T')[0]; }
+
+    // ── Mobile menu ──
+    function openMobMenu(){ document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeMobMenu(){ document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
+
+    // ── Filter & search ──
+    function setFilter(f, btn){
+      activeFilter = f;
+      document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    // ── Stats ──
+    function updateStats(){
+      var total = quotes.length;
+      var accepted = quotes.filter(function(q){ return q.status==='accepted'; }).length;
+      var pending  = quotes.filter(function(q){ return q.status==='pending'; }).length;
+      var pendingVal = quotes.filter(function(q){ return q.status==='pending'; }).reduce(function(a,q){ return a+Number(q.amount||0); },0);
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-accepted').textContent = accepted;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-value').textContent = fmt(pendingVal);
+    }
+
+    // ── Render table ──
+    function renderTable(){
+      var q2 = document.getElementById('search-input').value.toLowerCase();
+      var filtered = quotes.filter(function(q){
+        if (activeFilter !== 'all' && q.status !== activeFilter) return false;
+        if (!q2) return true;
+        return (q.customer_name||'').toLowerCase().includes(q2) || (q.job||'').toLowerCase().includes(q2) || (q.number||'').toLowerCase().includes(q2);
+      });
+      var empty = document.getElementById('quotes-empty');
+      var table = document.getElementById('quotes-table');
+      var tbody = document.getElementById('q-body');
+      if (filtered.length === 0){
+        empty.style.display='block'; table.style.display='none';
+      } else {
+        empty.style.display='none'; table.style.display='table';
+        tbody.innerHTML = filtered.map(function(q,i){
+          var bg=AV_COLORS[i%5]; var fg=AV_FG[i%5];
+          var st = q.status||'pending';
+          var BADGE = { pending:'<span class="badge badge-pending"><i class="ti ti-clock"></i> Pending</span>', accepted:'<span class="badge badge-accepted"><i class="ti ti-check"></i> Accepted</span>', declined:'<span class="badge badge-declined"><i class="ti ti-x"></i> Declined</span>', draft:'<span class="badge badge-draft"><i class="ti ti-pencil"></i> Draft</span>', expired:'<span class="badge badge-expired"><i class="ti ti-clock-off"></i> Expired</span>' };
+          var actions = '';
+          if (st==='accepted'){
+            actions='<button class="icon-btn" title="Convert to invoice" onclick="convertToInvoice(\''+q.id+'\')"><i class="ti ti-file-invoice"></i></button>';
+          } else if (st==='pending'||st==='draft'){
+            actions='<button class="icon-btn" title="Edit" onclick="openQuoteModal(\''+q.id+'\')"><i class="ti ti-pencil"></i></button>';
+          } else {
+            actions='<button class="icon-btn" title="Duplicate" onclick="duplicateQuote(\''+q.id+'\')"><i class="ti ti-copy"></i></button>';
+          }
+          actions += '<button class="icon-btn" title="View / Update status" onclick="viewQuote(\''+q.id+'\')"><i class="ti ti-dots"></i></button>';
+          return '<tr>'
+            +'<td><span class="q-num">'+(q.number||'—')+'</span></td>'
+            +'<td><div class="cust-cell"><div class="avatar" style="background:'+bg+';color:'+fg+'">'+ini(q.customer_name)+'</div><a href="customers.html?name='+encodeURIComponent(q.customer_name||'')+'" style="font-weight:600;color:#061A30;text-decoration:none">'+q.customer_name+'</a></div></td>'
+            +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(q.job||'—')+'</td>'
+            +'<td style="font-weight:600">'+fmt(q.amount)+'</td>'
+            +'<td style="font-size:12px;color:#8B8A84">'+(q.expires_at ? fmtDate(q.expires_at) : '—')+'</td>'
+            +'<td>'+(BADGE[st]||BADGE.pending)+'</td>'
+            +'<td><div class="action-btns">'+actions+'</div></td>'
+            +'</tr>';
+        }).join('');
+      }
+      updateStats();
+    }
+
+    // ── Line items ──
+    function addLine(desc, cat, qty, price){
+      var id = ++lineCounter;
+      var container = document.getElementById('line-items-container');
+      var div = document.createElement('div');
+      div.className='line-item'; div.id='line-'+id;
+      div.innerHTML =
+        '<input type="text" placeholder="'+(desc||'Description')+'" value="'+(desc&&cat?desc+' — '+cat:desc||'')+'" oninput="recalc()" />'
+        +'<input type="number" class="qty-input" value="'+(qty||1)+'" min="0" step="any" oninput="recalc()" style="text-align:center" />'
+        +'<input type="number" class="price-input price-col" value="'+(price||'')+'" min="0" step="0.01" placeholder="£0.00" oninput="recalc()" style="text-align:right" />'
+        +'<input type="text" class="line-total" readonly style="text-align:right;background:#F8F7F3;color:#061A30;font-weight:600" value="£0.00" />'
+        +'<button class="btn-remove-line" onclick="removeLine('+id+')"><i class="ti ti-x" style="font-size:12px"></i></button>';
+      container.appendChild(div);
+      recalc();
+      div.querySelector('input').focus();
+    }
+
+    function removeLine(id){ var el=document.getElementById('line-'+id); if(el)el.remove(); recalc(); }
+
+    function recalc(){
+      var vat=parseInt(document.getElementById('qm-vat').value)||0;
+      var sub=0;
+      document.querySelectorAll('.line-item').forEach(function(li){
+        var qty=parseFloat(li.querySelector('.qty-input').value)||0;
+        var price=parseFloat(li.querySelector('.price-input').value)||0;
+        var total=qty*price;
+        li.querySelector('.line-total').value='£'+total.toFixed(2);
+        sub+=total;
+      });
+      var vatAmt=sub*vat/100;
+      var grand=sub+vatAmt;
+      document.getElementById('subtotal').textContent=fmt(sub);
+      document.getElementById('vat-amount').textContent=fmt(vatAmt);
+      document.getElementById('grand-total').textContent=fmt(grand);
+      document.getElementById('vat-row').style.display=vat>0?'flex':'none';
+      document.getElementById('vat-label').textContent='VAT ('+vat+'%)';
+      document.getElementById('prev-total').textContent=fmt(grand);
+      return { sub:sub, vat:vatAmt, grand:grand };
+    }
+
+    function updatePreview(){
+      var cust=document.getElementById('qm-customer').value||'Customer';
+      var job=document.getElementById('qm-job').value||'—';
+      var num=document.getElementById('qm-number').value||'—';
+      var validDays=parseInt(document.getElementById('qm-valid').value)||14;
+      document.getElementById('prev-to').textContent='To: '+cust;
+      document.getElementById('prev-job').textContent=job;
+      document.getElementById('prev-num').textContent=num;
+      document.getElementById('prev-valid').textContent='Valid for '+validDays+' days from sending';
+      recalc();
+    }
+
+    // ── Open quote modal ──
+    async function openQuoteModal(id){
+      editingId=id;
+      document.getElementById('line-items-container').innerHTML='';
+      lineCounter=0;
+      document.getElementById('qm-error').style.display='none';
+      document.getElementById('modal-title').textContent=id?'Edit quote':'New quote';
+      document.getElementById('qm-save-btn').textContent=id?'Update quote':'Send quote';
+
+      if(id){
+        var q=quotes.find(function(x){return x.id===id;});
+        if(q){
+          document.getElementById('qm-customer').value=q.customer_name||'';
+          document.getElementById('qm-email').value=q.email||'';
+          document.getElementById('qm-phone').value=q.phone||'';
+          document.getElementById('qm-number').value=q.number||'';
+          document.getElementById('qm-job').value=q.job||'';
+          document.getElementById('qm-notes').value=q.notes||'';
+          document.getElementById('qm-vat').value=q.vat_rate||0;
+          var lines=q.line_items||[];
+          if(lines.length>0){ lines.forEach(function(l){ addLine('','',l.qty,l.price); var li=document.getElementById('line-'+lineCounter); if(li){ li.querySelectorAll('input')[0].value=l.desc||''; } }); }
+          else if(q.amount){ addLine('','',1,q.amount); }
+        }
+      } else {
+        // Default lines
+        addLine('Labour','',1,0); addLine('Materials','',1,0);
+        // Auto number
+        var nextNum=await getNextQuoteNumber();
+        document.getElementById('qm-number').value=nextNum;
+        // Prefill from sessionStorage if came from customer
+        try {
+          var prefill=JSON.parse(sessionStorage.getItem('prefill_quote')||'null');
+          if(prefill){ sessionStorage.removeItem('prefill_quote'); document.getElementById('qm-customer').value=prefill.name||''; document.getElementById('qm-email').value=prefill.email||''; document.getElementById('qm-phone').value=prefill.phone||''; }
+        } catch(e) {}
+        // Load business name for preview
+        try { var biz=JSON.parse(localStorage.getItem('pi_biz_meta')||'{}'); document.getElementById('prev-biz').textContent=biz.business_name||'Your business'; } catch(e){}
+      }
+      updatePreview();
+      document.getElementById('quote-modal').classList.add('open');
+      setTimeout(function(){ document.getElementById('qm-customer').focus(); },100);
+    }
+
+    function closeQuoteModal(){ document.getElementById('quote-modal').classList.remove('open'); editingId=null; }
+
+    // ── Save quote ──
+    async function saveQuote(action){
+      var customer=document.getElementById('qm-customer').value.trim();
+      var job=document.getElementById('qm-job').value.trim();
+      var errEl=document.getElementById('qm-error');
+      if(!customer){errEl.textContent='Please enter a customer name.';errEl.style.display='block';return;}
+      if(!job){errEl.textContent='Please add a job description.';errEl.style.display='block';return;}
+      errEl.style.display='none';
+
+      var btn=document.getElementById('qm-save-btn'); btn.textContent='Saving...'; btn.disabled=true;
+
+      // Collect line items
+      var lines=[];
+      var tots=recalc();
+      document.querySelectorAll('.line-item').forEach(function(li){
+        var desc=li.querySelectorAll('input')[0].value.trim();
+        var qty=parseFloat(li.querySelector('.qty-input').value)||0;
+        var price=parseFloat(li.querySelector('.price-input').value)||0;
+        if(desc||price>0) lines.push({desc:desc,qty:qty,price:price,total:qty*price});
+      });
+
+      var validDays=parseInt(document.getElementById('qm-valid').value)||14;
+      var expiresAt=addDays(new Date().toISOString().split('T')[0],validDays);
+      var status=action==='draft'?'draft':'pending';
+
+      var quoteData={
+        id: editingId||('q_'+Date.now()),
+        number: document.getElementById('qm-number').value.trim(),
+        customer_name: customer,
+        email: document.getElementById('qm-email').value.trim(),
+        phone: document.getElementById('qm-phone').value.trim(),
+        job: job,
+        notes: document.getElementById('qm-notes').value.trim(),
+        vat_rate: parseInt(document.getElementById('qm-vat').value)||0,
+        line_items: lines,
+        amount: tots.grand,
+        subtotal: tots.sub,
+        vat_amount: tots.vat,
+        status: status,
+        expires_at: expiresAt,
+        sent_at: action==='send'?new Date().toISOString():null,
+        created_at: editingId?(quotes.find(function(x){return x.id===editingId;})||{}).created_at||new Date().toISOString():new Date().toISOString()
+      };
+
+      // Save localStorage
+      var qs=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      var idx=qs.findIndex(function(x){return x.id===quoteData.id;});
+      if(idx>-1)qs[idx]=quoteData; else qs.unshift(quoteData);
+      localStorage.setItem('tb_quotes',JSON.stringify(qs));
+      // Save counter
+      var n=parseInt((quoteData.number||'').replace(/[^0-9]/g,''));
+      if(n) localStorage.setItem('pi_last_q_num',n.toString());
+
+      // Save Supabase
+      try {
+        var {data:{user}}=await supabase.auth.getUser();
+        if(user){ await supabase.from('quotes').upsert({...quoteData,user_id:user.id}); }
+      } catch(e){}
+
+      // Update local array
+      var qi=quotes.findIndex(function(x){return x.id===quoteData.id;});
+      if(qi>-1)quotes[qi]=quoteData; else quotes.unshift(quoteData);
+
+      closeQuoteModal();
+      renderTable();
+      btn.textContent=editingId?'Update quote':'Send quote'; btn.disabled=false;
+
+      if(action==='send' && status==='pending'){
+        showToast('Quote saved — share it with '+customer.split(' ')[0]);
+        // Auto-create customer if not exists
+        autoCreateCustomer(quoteData);
+      } else {
+        showToast('Draft saved');
+      }
+    }
+
+    async function autoCreateCustomer(q){
+      try {
+        var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+        var exists=custs.find(function(c){return(c.name||'').toLowerCase()===(q.customer_name||'').toLowerCase();});
+        if(!exists){
+          var nc={id:'c_q_'+Date.now(),name:q.customer_name,email:q.email||null,phone:q.phone||null,notes:'',createdAt:new Date().toISOString()};
+          custs.unshift(nc); localStorage.setItem('tb_customers',JSON.stringify(custs));
+          var {data:{user}}=await supabase.auth.getUser();
+          if(user) await supabase.from('customers').insert({...nc,user_id:user.id}).catch(function(){});
+        }
+      }catch(e){}
+    }
+
+    // ── View / Status modal ──
+    function viewQuote(id){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      var inner=document.getElementById('view-modal-inner');
+      var BADGE_STYLES={pending:'background:#FBF3E3;color:#C28A1E',accepted:'background:#E1F5EE;color:#0F6E56',declined:'background:#FDEDED;color:#D14343',draft:'background:#F0EFEA;color:#6B6A65',expired:'background:#F3F1FE;color:#635BFF'};
+      var lines=(q.line_items||[]).map(function(l){
+        return '<tr><td style="padding:7px 0;font-size:13px;color:#1A1A18">'+(l.desc||'—')+'</td><td style="padding:7px 0;font-size:13px;text-align:center;color:#6B6A65">'+l.qty+'</td><td style="padding:7px 0;font-size:13px;text-align:right;color:#6B6A65">£'+(l.price||0).toFixed(2)+'</td><td style="padding:7px 0;font-size:13px;text-align:right;font-weight:600;color:#061A30">£'+((l.qty||0)*(l.price||0)).toFixed(2)+'</td></tr>';
+      }).join('');
+
+      inner.innerHTML=
+        '<div class="modal-header"><div class="modal-title">'+q.number+' — '+q.customer_name+'</div><button class="modal-close" onclick="closeViewModal()"><i class="ti ti-x"></i></button></div>'
+        +'<div class="modal-body">'
+        // Status update
+        +'<div style="background:#F8F7F3;border-radius:12px;padding:16px;margin-bottom:16px">'
+        +'<div style="font-size:12px;font-weight:700;color:#8B8A84;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em">Update status</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+        +'<button onclick="updateQuoteStatus(\''+id+'\',\'accepted\')" style="padding:10px;border-radius:9px;background:#E1F5EE;color:#0F6E56;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-check"></i> Accepted</button>'
+        +'<button onclick="updateQuoteStatus(\''+id+'\',\'declined\')" style="padding:10px;border-radius:9px;background:#FDEDED;color:#D14343;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-x"></i> Declined</button>'
+        +'<button onclick="updateQuoteStatus(\''+id+'\',\'pending\')" style="padding:10px;border-radius:9px;background:#FBF3E3;color:#C28A1E;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-clock"></i> Pending</button>'
+        +'<button onclick="updateQuoteStatus(\''+id+'\',\'expired\')" style="padding:10px;border-radius:9px;background:#F3F1FE;color:#635BFF;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-clock-off"></i> Expired</button>'
+        +'</div></div>'
+
+        // Quote details
+        +'<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:#8B8A84;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Job</div><div style="font-size:14px;color:#061A30">'+(q.job||'—')+'</div></div>'
+        +'<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:#8B8A84;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Contact</div><div style="font-size:13px;color:#061A30">'+(q.email||'—')+(q.phone?' · '+q.phone:'')+'</div></div>'
+        +'<div style="margin-bottom:14px;overflow:auto"><table style="width:100%"><thead><tr><th style="text-align:left;font-size:11px;color:#8B8A84;padding:6px 0;border-bottom:1px solid #F0EFEA">Description</th><th style="font-size:11px;color:#8B8A84;padding:6px 0;border-bottom:1px solid #F0EFEA;text-align:center">Qty</th><th style="font-size:11px;color:#8B8A84;padding:6px 0;border-bottom:1px solid #F0EFEA;text-align:right">Price</th><th style="font-size:11px;color:#8B8A84;padding:6px 0;border-bottom:1px solid #F0EFEA;text-align:right">Total</th></tr></thead><tbody>'+lines+'</tbody></table></div>'
+        +'<div style="background:#F8F7F3;border-radius:9px;padding:12px 14px;margin-bottom:14px">'
+        +(q.subtotal?(('<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B6A65;padding:3px 0"><span>Subtotal</span><span>'+fmt(q.subtotal)+'</span></div>')):(''))
+        +(q.vat_amount&&q.vat_amount>0?('<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B6A65;padding:3px 0"><span>VAT ('+q.vat_rate+'%)</span><span>'+fmt(q.vat_amount)+'</span></div>'):'')
+        +'<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#061A30;border-top:1px solid #E5E3DC;padding-top:8px;margin-top:6px"><span>Total</span><span>'+fmt(q.amount)+'</span></div>'
+        +'</div>'
+        +(q.notes?('<div style="background:#FBF3E3;border-radius:9px;padding:11px 13px;font-size:13px;color:#854F0B;margin-bottom:14px">'+q.notes+'</div>'):'')
+
+        // Actions
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+        +(q.status==='accepted'
+          ?'<button onclick="convertToInvoice(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#0A2540;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;grid-column:span 2"><i class="ti ti-file-invoice"></i> Convert to invoice</button>'
+          :'')
+        +'<button onclick="openQuoteModal(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#EEF3F8;color:#0A2540;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-pencil"></i> Edit quote</button>'
+        +'<button onclick="sendQuoteToCustomer(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#25D366;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-brand-whatsapp"></i> Send quote</button>'
+        +(q.status==='accepted'
+          ?'<button onclick="bookJobForQuote(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#5DCAA5;color:#061A30;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;grid-column:span 2"><i class="ti ti-calendar-plus"></i> Book job & add to calendar</button>'
+          :'')
+        +'<button onclick="deleteQuote(\''+id+'\');closeViewModal()" style="padding:10px;border-radius:9px;background:#FDEDED;color:#D14343;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;grid-column:span 2"><i class="ti ti-trash"></i> Delete quote</button>'
+        +'</div>'
+        +'</div>';
+
+      document.getElementById('view-modal').classList.add('open');
+    }
+    function closeViewModal(){ document.getElementById('view-modal').classList.remove('open'); }
+
+    // ── Update status ──
+    async function updateQuoteStatus(id, status){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      q.status=status;
+      var qs=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      var qi=qs.findIndex(function(x){return x.id===id;});
+      if(qi>-1)qs[qi]=q; localStorage.setItem('tb_quotes',JSON.stringify(qs));
+      try{ await supabase.from('quotes').update({status:status}).eq('id',id); }catch(e){}
+      closeViewModal();
+      renderTable();
+      showToast('Quote marked as '+status.charAt(0).toUpperCase()+status.slice(1));
+      if(status==='accepted'){
+        setTimeout(function(){ if(confirm('Quote accepted! Convert to invoice now?')){ convertToInvoice(id); } },300);
+      }
+    }
+
+    // ── Convert to invoice ──
+    function convertToInvoice(id){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      // Store in sessionStorage for create-invoice to pick up
+      sessionStorage.setItem('prefill_invoice',JSON.stringify({
+        name:q.customer_name, email:q.email||'', phone:q.phone||'',
+        job:q.job, amount:q.amount, fromQuote:q.number
+      }));
+      // Also prefill line items
+      sessionStorage.setItem('prefill_lines',JSON.stringify(q.line_items||[]));
+      window.location.href='create-invoice.html?from_quote='+id;
+    }
+
+    // ── Send quote to customer ──
+    function sendQuoteToCustomer(id){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      var msg='Hi '+q.customer_name.split(' ')[0]+', please find your quote below:\n\n'
+        +'Job: '+q.job+'\n'
+        +'Quote ref: '+q.number+'\n'
+        +'Total: '+fmt(q.amount)+'\n'
+        +(q.expires_at?'Valid until: '+fmtDate(q.expires_at)+'\n':'')
+        +(q.notes?'\nTerms: '+q.notes+'\n':'')
+        +'\nPlease reply to accept or discuss. Thank you!';
+      if(q.phone){
+        var num=q.phone.replace(/\s+/g,'').replace(/^0/,'44');
+        window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+      } else if(q.email){
+        window.location.href='mailto:'+q.email+'?subject=Quote '+q.number+' — '+q.job+'&body='+encodeURIComponent(msg);
+      } else {
+        navigator.clipboard.writeText(msg).then(function(){ showToast('Quote text copied — paste into WhatsApp or email'); });
+      }
+    }
+
+    // ── Book job after quote accepted ──
+    function bookJobForQuote(id){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      sessionStorage.setItem('prefill_job',JSON.stringify({customer:q.customer_name,title:q.job,notes:'Quote '+q.number+' — '+fmt(q.amount)}));
+      window.location.href='jobs.html?new=true';
+    }
+
+    // ── Duplicate quote ──
+    function duplicateQuote(id){
+      var q=quotes.find(function(x){return x.id===id;});
+      if(!q)return;
+      var dup=Object.assign({},q,{id:'q_'+Date.now(),number:'',status:'draft',created_at:new Date().toISOString()});
+      quotes.unshift(dup);
+      var qs=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      qs.unshift(dup); localStorage.setItem('tb_quotes',JSON.stringify(qs));
+      renderTable();
+      showToast('Quote duplicated as draft');
+      setTimeout(function(){ openQuoteModal(dup.id); },300);
+    }
+
+    // ── Delete quote ──
+    async function deleteQuote(id){
+      if(!confirm('Delete this quote? This cannot be undone.'))return;
+      quotes=quotes.filter(function(x){return x.id!==id;});
+      var qs=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      localStorage.setItem('tb_quotes',JSON.stringify(qs.filter(function(x){return x.id!==id;})));
+      try{ await supabase.from('quotes').delete().eq('id',id); }catch(e){}
+      renderTable(); showToast('Quote deleted');
+    }
+
+    // ── Auto quote number ──
+    async function getNextQuoteNumber(){
+      var max=0;
+      var local=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      local.forEach(function(q){ var n=parseInt((q.number||'').replace(/[^0-9]/g,'')); if(n>max)max=n; });
+      var counter=parseInt(localStorage.getItem('pi_last_q_num')||'0');
+      if(counter>max)max=counter;
+      try{
+        var {data}=await supabase.from('quotes').select('number').order('created_at',{ascending:false}).limit(50);
+        (data||[]).forEach(function(q){ var n=parseInt((q.number||'').replace(/[^0-9]/g,'')); if(n>max)max=n; });
+      }catch(e){}
+      return '#Q'+(max+1);
+    }
+
+    // ── Toast ──
+    function showToast(msg){
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
+      t.textContent=msg; document.body.appendChild(t);
+      setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
+    }
+
+    // ── Load user & data ──
+    async function init(){
+      try{
+        var {data}=await supabase.auth.getUser();
+        if(!data||!data.user){ window.location.href='login.html'; return; }
+        var m=data.user.user_metadata||{};
+        var first=m.first_name||''; var last=m.last_name||'';
+        var fullName=(first+' '+last).trim()||data.user.email.split('@')[0];
+        var ini2=((first.charAt(0))+(last.charAt(0))).toUpperCase()||data.user.email.charAt(0).toUpperCase();
+        var av=document.getElementById('sb-av'); if(av)av.textContent=ini2;
+        var nm=document.getElementById('sb-uname'); if(nm)nm.textContent=fullName;
+        var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan':'Free plan';
+        // Mobile greeting
+        var h=new Date().getHours();
+        var gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+        var gt=document.getElementById('mob-greet-time'); if(gt)gt.textContent=gr;
+        var gn=document.getElementById('mob-greet-name'); if(gn)gn.textContent=first||fullName;
+        var da=document.getElementById('mob-drawer-av'); if(da)da.textContent=ini2;
+        var dn=document.getElementById('mob-drawer-name'); if(dn)dn.textContent=fullName;
+        var dp=document.getElementById('mob-drawer-plan'); if(dp)dp.textContent=m.plan?m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan':'Free plan';
+        // Business name for preview
+        if(m.business_name){ document.getElementById('prev-biz').textContent=m.business_name; }
+      }catch(e){ console.warn('Auth error:',e); }
+
+      // Load quotes — Supabase first, then localStorage
+      try{
+        var {data:qData}=await supabase.from('quotes').select('*').order('created_at',{ascending:false});
+        quotes=qData||[];
+      }catch(e){ quotes=[]; }
+      if(!quotes.length) quotes=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+
+      // Check for expired quotes
+      var now=new Date().toISOString().split('T')[0];
+      quotes.forEach(function(q){ if(q.status==='pending'&&q.expires_at&&q.expires_at<now) q.status='expired'; });
+
+      renderTable();
+    }
+
+    document.getElementById('quote-modal').addEventListener('click',function(e){if(e.target===this)closeQuoteModal();});
+    document.getElementById('view-modal').addEventListener('click',function(e){if(e.target===this)closeViewModal();});
+
+    init();
   </script>
 </body>
 </html>
