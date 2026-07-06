@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -976,6 +976,8 @@
       showToast('Draft saved — find it in your Invoices tab');
       setTimeout(function(){ window.location.href = 'invoices.html'; }, 1800);
     }
+
+    async function markCashPaid(paymentUrl) {
       // Update the most recent invoice to paid/cash in localStorage
       try {
         var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
@@ -986,9 +988,11 @@
       } catch(e) {}
       // Update in Supabase
       try {
-        var { data: { user } } = await supabase.auth.getUser();
-        await supabase.from('invoices').update({ status: 'paid', payment_method: 'cash' })
-          .eq('user_id', user.id).eq('stripe_payment_link', paymentUrl);
+        var { data } = await supabase.auth.getUser();
+        if (data && data.user) {
+          await supabase.from('invoices').update({ status: 'paid', payment_method: 'cash' })
+            .eq('user_id', data.user.id).eq('stripe_payment_link', paymentUrl);
+        }
       } catch(e) {}
       showToast('Marked as cash paid — synced to earnings!');
       setTimeout(function(){ window.location.href = 'invoices.html'; }, 1800);
@@ -1161,18 +1165,27 @@
       var custEl = document.getElementById('cust-name');
       if (custEl) { custEl.value = decodeURIComponent(_custParam); updatePreview(); updateProgress(); }
     }
+
+    // Prefill from customers tab / invoices new-invoice-for action
+    try {
       var _prefill = JSON.parse(sessionStorage.getItem('prefill_invoice') || 'null');
       if (_prefill) {
         sessionStorage.removeItem('prefill_invoice');
-        if (_prefill.name)  { var el = document.getElementById('cust-name');  if(el) el.value = _prefill.name; }
-        if (_prefill.email) { var el = document.getElementById('cust-email'); if(el) el.value = _prefill.email; }
-        if (_prefill.phone && _prefill.phone !== '') {
+        var _setField = function(id, val) { var el = document.getElementById(id); if (el && val) { el.value = val; } };
+        _setField('cust-name',    _prefill.name);
+        _setField('cust-address', _prefill.address);
+        if (_prefill.phone && _prefill.phone.trim()) {
           switchContactTab('whatsapp');
-          var el = document.getElementById('cust-phone'); if(el) el.value = _prefill.phone;
+          _setField('cust-phone', _prefill.phone);
+        } else if (_prefill.email) {
+          _setField('cust-email', _prefill.email);
         }
         updatePreview(); updateProgress();
+        // Show a toast so user knows details were loaded
+        if (_prefill.name) showToast('Details loaded for ' + _prefill.name.split(' ')[0]);
       }
     } catch(e) {}
+
     updatePreview();
 
     document.addEventListener('click', function(e) {
