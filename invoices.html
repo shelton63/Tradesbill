@@ -9,13 +9,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
   <script>
@@ -542,9 +538,89 @@
     });
 
     loadUser();
-  </script>
 
-  <!-- HAMBURGER OVERLAY + DRAWER -->
+    // ── Actions dropdown ──
+    var _actTarget = null;
+
+    function openActionsMenu(invId, custName, job, status, e) {
+      e.stopPropagation();
+      _actTarget = invId;
+      var menu = document.getElementById('actions-menu');
+      if (!menu) return;
+      var isDraft = status === 'draft';
+      var name = decodeURIComponent(custName);
+      document.getElementById('actions-menu-inner').innerHTML =
+        (isDraft ? '<a href="create-invoice.html?draft=' + invId + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none"><div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:14px;color:#0A2540"></i></div><span style="font-size:13px;font-weight:600;color:#061A30">Resume draft</span></a>' : '')
+        + '<button onclick="openPayModal(\'' + invId + '\',\'' + status + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit"><div style="width:28px;height:28px;border-radius:7px;background:#E1F5EE;display:flex;align-items:center;justify-content:center"><i class="ti ti-credit-card" style="font-size:14px;color:#1D9E75"></i></div><span style="font-size:13px;font-weight:600;color:#061A30">Mark as paid</span></button>'
+        + '<button onclick="copyPayLink(\'' + invId + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit"><div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:14px;color:#0A2540"></i></div><span style="font-size:13px;font-weight:600;color:#061A30">Copy payment link</span></button>'
+        + '<a href="#" onclick="newInvoiceForCustomer(\'' + invId + '\');return false;" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none"><div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-file-plus" style="font-size:14px;color:#0A2540"></i></div><span style="font-size:13px;font-weight:600;color:#061A30">New invoice for ' + (name.split(' ')[0]||name) + '</span></a>'
+        + '<a href="customers.html?name=' + encodeURIComponent(name) + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none"><div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:14px;color:#0A2540"></i></div><span style="font-size:13px;font-weight:600;color:#061A30">View customer</span></a>'
+        + '<button onclick="deleteInvoice(\'' + invId + '\')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit"><div style="width:28px;height:28px;border-radius:7px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:14px;color:#D14343"></i></div><span style="font-size:13px;font-weight:600;color:#D14343">Delete invoice</span></button>';
+      var rect = (e.currentTarget||e.target).getBoundingClientRect();
+      menu.style.display = 'block';
+      var top = rect.bottom + 6;
+      if (top + 300 > window.innerHeight) top = rect.top - 300 - 6;
+      menu.style.top = Math.max(6, top) + 'px';
+      menu.style.left = Math.min(rect.right - 200, window.innerWidth - 210) + 'px';
+    }
+
+    function closeActionsMenu() {
+      var m = document.getElementById('actions-menu'); if (m) m.style.display = 'none';
+      _actTarget = null;
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#actions-menu') && !e.target.closest('.icon-btn')) closeActionsMenu();
+      if (!e.target.closest('.nav-plus-wrap')) { var m=document.getElementById('plus-menu'); if(m) m.classList.remove('open'); }
+    });
+
+    function copyPayLink(invId) {
+      var inv = _stored.find(function(i){ return i.id == invId; });
+      var link = inv && inv.stripe_payment_link ? inv.stripe_payment_link : '';
+      if (!link) { showToast('No payment link for this invoice'); return; }
+      navigator.clipboard.writeText(link).then(function(){ showToast('Payment link copied!'); }).catch(function(){
+        var el = document.createElement('textarea'); el.value = link; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast('Copied!');
+      });
+    }
+
+    async function deleteInvoice(invId) {
+      if (!confirm('Delete this invoice? This cannot be undone.')) return;
+      closeActionsMenu();
+      try { await supabase.from('invoices').delete().eq('id', invId); } catch(e) {}
+      var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+      localStorage.setItem('tb_invoices', JSON.stringify(invs.filter(function(i){ return i.id != invId; })));
+      _stored = _stored.filter(function(i){ return i.id != invId; });
+      renderView();
+    }
+
+    async function newInvoiceForCustomer(invId) {
+      closeActionsMenu();
+      var inv = _stored.find(function(i){ return i.id == invId; });
+      var custName = inv ? (inv.customer_name || inv.customer || '') : '';
+      var prefill = { name: custName, email: '', phone: '', address: '' };
+      try {
+        var { data: custs } = await supabase.from('customers').select('*').ilike('name', custName).limit(1);
+        if (custs && custs.length > 0) { var c = custs[0]; prefill.email = c.email||''; prefill.phone = c.phone||''; prefill.address = c.address||''; }
+      } catch(e) {}
+      if (!prefill.email && !prefill.phone) {
+        var lc = JSON.parse(localStorage.getItem('tb_customers')||'[]').find(function(c){ return (c.name||'').toLowerCase()===custName.toLowerCase(); });
+        if (lc) { prefill.email=lc.email||''; prefill.phone=lc.phone||''; prefill.address=lc.address||''; }
+      }
+      if (!prefill.email && !prefill.phone) {
+        var pi = _stored.find(function(i){ return (i.customer_name||i.customer||'').toLowerCase()===custName.toLowerCase() && (i.email||i.phone); });
+        if (pi) { prefill.email=pi.email||''; prefill.phone=pi.phone||''; }
+      }
+      sessionStorage.setItem('prefill_invoice', JSON.stringify(prefill));
+      window.location.href = 'create-invoice.html';
+    }
+
+    function showToast(msg) {
+      var t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+      t.textContent = msg; document.body.appendChild(t);
+      setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); }, 2200);
+    }
+  </script>
   <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
   <div class="mob-drawer" id="mob-drawer">
     <div class="mob-drawer-head">
@@ -585,126 +661,6 @@
   <div id="actions-menu" style="display:none;position:fixed;background:#fff;border:1px solid #E5E3DC;border-radius:12px;box-shadow:0 8px 24px rgba(10,37,64,0.15);width:200px;z-index:600;overflow:hidden">
     <div id="actions-menu-inner"></div>
   </div>
-
-  <script>
-    var _actTarget = null;
-
-    function openActionsMenu(invId, custName, job, status, e) {
-      e.stopPropagation();
-      _actTarget = invId;
-      var menu = document.getElementById('actions-menu');
-      var isDraft = status === 'draft';
-      var name = decodeURIComponent(custName);
-      var jobStr = decodeURIComponent(job);
-
-      document.getElementById('actions-menu-inner').innerHTML =
-        (isDraft
-          ? '<a href="create-invoice.html?draft=' + invId + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
-            + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:14px;color:#0A2540"></i></div>'
-            + '<span style="font-size:13px;font-weight:600;color:#061A30">Resume draft</span></a>'
-          : '')
-        + '<button onclick="openPayModal(\'' + invId + '\',\'' + status + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:28px;height:28px;border-radius:7px;background:#E1F5EE;display:flex;align-items:center;justify-content:center"><i class="ti ti-credit-card" style="font-size:14px;color:#1D9E75"></i></div>'
-        + '<span style="font-size:13px;font-weight:600;color:#061A30">Mark as paid</span></button>'
-        + '<button onclick="copyPayLink(\'' + invId + '\');closeActionsMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:14px;color:#0A2540"></i></div>'
-        + '<span style="font-size:13px;font-weight:600;color:#061A30">Copy payment link</span></button>'
-        + '<a href="#" onclick="newInvoiceForCustomer(\'' + invId + '\');return false;" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
-        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-file-plus" style="font-size:14px;color:#0A2540"></i></div>'
-        + '<span style="font-size:13px;font-weight:600;color:#061A30">New invoice for ' + (name.split(' ')[0]||name) + '</span></a>'
-        + '<a href="customers.html?name=' + encodeURIComponent(name) + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
-        + '<div style="width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:14px;color:#0A2540"></i></div>'
-        + '<span style="font-size:13px;font-weight:600;color:#061A30">View customer</span></a>'
-        + '<button onclick="deleteInvoice(\'' + invId + '\')" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:28px;height:28px;border-radius:7px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:14px;color:#D14343"></i></div>'
-        + '<span style="font-size:13px;font-weight:600;color:#D14343">Delete invoice</span></button>';
-
-      // Position near the button
-      var btn = e.currentTarget || e.target;
-      var rect = btn.getBoundingClientRect();
-      menu.style.display = 'block';
-      var menuH = menu.offsetHeight || 280;
-      var top = rect.bottom + 6;
-      if (top + menuH > window.innerHeight) top = rect.top - menuH - 6;
-      menu.style.top = top + 'px';
-      menu.style.left = Math.min(rect.right - 200, window.innerWidth - 210) + 'px';
-    }
-
-    function closeActionsMenu() {
-      document.getElementById('actions-menu').style.display = 'none';
-      _actTarget = null;
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('#actions-menu') && !e.target.closest('.icon-btn')) closeActionsMenu();
-    });
-
-    function copyPayLink(invId) {
-      var inv = _stored.find(function(i){ return i.id == invId; });
-      var link = (inv && inv.stripe_payment_link) ? inv.stripe_payment_link : '';
-      if (!link) { alert('No payment link found for this invoice.'); return; }
-      navigator.clipboard.writeText(link).then(function(){ showToast('Payment link copied!'); }).catch(function(){
-        var el = document.createElement('textarea'); el.value = link;
-        document.body.appendChild(el); el.select(); document.execCommand('copy');
-        document.body.removeChild(el); showToast('Payment link copied!');
-      });
-    }
-
-    async function deleteInvoice(invId) {
-      if (!confirm('Delete this invoice? This cannot be undone.')) return;
-      closeActionsMenu();
-      // Remove from Supabase
-      try { await supabase.from('invoices').delete().eq('id', invId); } catch(e) {}
-      // Remove from localStorage
-      var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-      localStorage.setItem('tb_invoices', JSON.stringify(invs.filter(function(i){ return i.id != invId; })));
-      // Remove from stored and re-render
-      _stored = _stored.filter(function(i){ return i.id != invId; });
-      renderView();
-    }
-
-    async function newInvoiceForCustomer(invId) {
-      closeActionsMenu();
-      // Find the invoice to get customer name
-      var inv = _stored.find(function(i){ return i.id == invId; });
-      var custName = inv ? (inv.customer_name || inv.customer || '') : '';
-
-      // Try to find full customer details from Supabase
-      var prefill = { name: custName, email: '', phone: '', address: '' };
-      try {
-        var { data: custs } = await supabase.from('customers').select('*').ilike('name', custName).limit(1);
-        if (custs && custs.length > 0) {
-          var c = custs[0];
-          prefill.email   = c.email   || '';
-          prefill.phone   = c.phone   || '';
-          prefill.address = c.address || '';
-        }
-      } catch(e) {}
-
-      // Fallback — check localStorage
-      if (!prefill.email && !prefill.phone) {
-        var localCusts = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-        var lc = localCusts.find(function(c){ return (c.name||'').toLowerCase() === custName.toLowerCase(); });
-        if (lc) { prefill.email = lc.email||''; prefill.phone = lc.phone||''; prefill.address = lc.address||''; }
-      }
-
-      // Also check previous invoices for contact info
-      if (!prefill.email && !prefill.phone) {
-        var prevInv = _stored.find(function(i){
-          return (i.customer_name||i.customer||'').toLowerCase() === custName.toLowerCase() && (i.email || i.phone);
-        });
-        if (prevInv) { prefill.email = prevInv.email||''; prefill.phone = prevInv.phone||''; }
-      }
-
-      sessionStorage.setItem('prefill_invoice', JSON.stringify(prefill));
-      window.location.href = 'create-invoice.html';
-    }
-      var t = document.createElement('div');
-      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
-      t.textContent = msg; document.body.appendChild(t);
-      setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); }, 2200);
-    }
-  </script>
 
 </body>
 </html>
