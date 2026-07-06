@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -199,6 +199,59 @@
     .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
     .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
+  <script>
+    if (typeof DB === 'undefined') {
+      window.DB = {
+        getNextNumber: async function(type) {
+          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
+          var last = parseInt(localStorage.getItem(key) || '1000');
+          var next = last + 1; localStorage.setItem(key, String(next));
+          return (type === 'quote' ? '#Q' : '#') + next;
+        },
+        saveInvoice: async function(inv) {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
+          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
+          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
+        },
+        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
+        updateInvoiceStatus: async function(id, status, method) {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var inv = invs.find(function(i){ return i.id == id; });
+          if (inv) { inv.status = status; if (method) inv.payment_method = method; if (status === 'paid') inv.paid_at = new Date().toISOString(); }
+          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
+        },
+        saveCustomer: async function(c) {
+          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+          var idx = custs.findIndex(function(x){ return x.id === c.id; });
+          if (idx > -1) custs[idx] = c; else custs.unshift(c);
+          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
+        },
+        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
+        deleteCustomer: async function(id) {
+          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
+        },
+        saveQuote: async function(q) {
+          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
+          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
+        },
+        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
+        saveJob: async function(j) {
+          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
+          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
+          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
+        },
+        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
+        getEarningsSummary: async function() {
+          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+          var paid = invs.filter(function(i){ return i.status === 'paid'; });
+          return { totalEarned: paid.reduce(function(a,i){ return a + Number(i.amount||0); }, 0), invoiceCount: invs.length, paidCount: paid.length };
+        }
+      };
+    }
+  </script>
 </head>
 <body>
 
@@ -387,14 +440,26 @@
       }).join('');
 
       // ── Jobs rows ──
+      // Merge Supabase jobs with localStorage jobs
+      var localJobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+      var allJobIds = new Set(jobs.map(function(j){ return j.id; }));
+      localJobs.forEach(function(lj){ if(!allJobIds.has(lj.id)) jobs.push(lj); });
+      // Sort by date, filter to upcoming only
+      var today = new Date().toISOString().split('T')[0];
+      jobs = jobs.filter(function(j){ return j.status !== 'done' && j.status !== 'cancelled'; })
+        .sort(function(a,b){ return (a.date||'9999') < (b.date||'9999') ? -1 : 1; });
+
       var jobRows = jobs.length === 0
         ? '<div style="padding:16px;text-align:center;font-size:12px;color:#A3A29C">No upcoming jobs — <a href="jobs.html" style="color:#0A2540;font-weight:600">schedule one</a></div>'
-        : jobs.slice(0,4).map(function(j) {
-            return '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA">'
-              + '<div style="width:8px;height:8px;border-radius:50%;background:' + jobDot(j.status) + ';flex-shrink:0"></div>'
-              + '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:#061A30">' + j.title + '</div>'
-              + '<div style="font-size:11px;color:#8B8A84">' + (j.date ? fmtDate(j.date) : 'No date') + (j.time ? ' · ' + j.time : '') + (j.customer_name ? ' · ' + j.customer_name : '') + '</div></div>'
-              + '</div>';
+        : jobs.slice(0,5).map(function(j) {
+            var isToday = j.date === today;
+            var dot = jobDot(j.status);
+            return '<a href="jobs.html" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none;background:' + (isToday?'#F0FAF6':'transparent') + '">'
+              + '<div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0"></div>'
+              + '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:#061A30">' + (j.title||'Job') + (isToday?'<span style="font-size:10px;font-weight:700;background:#1D9E75;color:#fff;padding:1px 6px;border-radius:4px;margin-left:6px">Today</span>':'') + '</div>'
+              + '<div style="font-size:11px;color:#8B8A84">' + (j.date?fmtDate(j.date):'No date') + (j.time?' · '+j.time:'') + (j.customer_name?' · '+j.customer_name:'') + (j.address?' · '+j.address.split(',')[0]:'') + '</div></div>'
+              + '<i class="ti ti-chevron-right" style="font-size:13px;color:#D3D1C7;flex-shrink:0"></i>'
+              + '</a>';
           }).join('');
 
       // ── Who owes you ──
