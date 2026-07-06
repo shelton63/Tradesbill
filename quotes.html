@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -649,9 +649,11 @@
         +'<button onclick="openQuoteModal(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#EEF3F8;color:#0A2540;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-pencil"></i> Edit quote</button>'
         +'<button onclick="sendQuoteToCustomer(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#25D366;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-brand-whatsapp"></i> Send quote</button>'
         +(q.status==='accepted'
-          ?'<button onclick="bookJobForQuote(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#5DCAA5;color:#061A30;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;grid-column:span 2"><i class="ti ti-calendar-plus"></i> Book job & add to calendar</button>'
+          ?'<button onclick="openBookJobFromQuote(\''+id+'\');closeViewModal()" style="padding:11px;border-radius:9px;background:#5DCAA5;color:#061A30;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;grid-column:span 2"><i class="ti ti-calendar-plus"></i> Book job & add to calendar</button>'
           :'')
-        +'<button onclick="deleteQuote(\''+id+'\');closeViewModal()" style="padding:10px;border-radius:9px;background:#FDEDED;color:#D14343;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;grid-column:span 2"><i class="ti ti-trash"></i> Delete quote</button>'
+        +'</div>'
+        +'<div style="text-align:center;padding-top:4px">'
+        +'<button onclick="deleteQuote(\''+id+'\');closeViewModal()" style="background:none;border:none;color:#C5C3BB;font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:6px">Delete quote</button>'
         +'</div>'
         +'</div>';
 
@@ -711,12 +713,23 @@
       }
     }
 
-    // ── Book job after quote accepted ──
-    function bookJobForQuote(id){
+    // ── Book job — full modal ──
+    var _bookingQuoteId = null;
+    function openBookJobFromQuote(id){
       var q=quotes.find(function(x){return x.id===id;});
       if(!q)return;
-      sessionStorage.setItem('prefill_job',JSON.stringify({customer:q.customer_name,title:q.job,notes:'Quote '+q.number+' — '+fmt(q.amount)}));
-      window.location.href='jobs.html?new=true';
+      _bookingQuoteId=id;
+      document.getElementById('bj-title').value=q.job||'';
+      document.getElementById('bj-customer').value=q.customer_name||'';
+      document.getElementById('bj-address').value='';
+      document.getElementById('bj-notes').value=q.notes?'Quote ref: '+q.number+'\n'+q.notes:'Quote ref: '+q.number;
+      document.getElementById('bj-error').style.display='none';
+      // Default date = tomorrow
+      var tm=new Date(); tm.setDate(tm.getDate()+1);
+      document.getElementById('bj-date').value=tm.toISOString().split('T')[0];
+      document.getElementById('bj-time').value='09:00';
+      document.getElementById('book-job-modal').classList.add('open');
+      setTimeout(function(){ document.getElementById('bj-date').focus(); },100);
     }
 
     // ── Duplicate quote ──
@@ -807,7 +820,154 @@
 
     init();
   </script>
-  <!-- ITEM LIBRARY MODAL -->
+  <!-- BOOK JOB MODAL -->
+  <div class="modal-overlay" id="book-job-modal" style="z-index:600">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <div class="modal-title"><i class="ti ti-calendar-plus" style="margin-right:6px;color:#5DCAA5"></i>Book job & add to calendar</div>
+        <button class="modal-close" onclick="document.getElementById('book-job-modal').classList.remove('open')"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label>Job title *</label><input id="bj-title" type="text" placeholder="e.g. Bathroom refit, boiler service..." /></div>
+        <div class="field-row">
+          <div class="field"><label>Date *</label><input id="bj-date" type="date" /></div>
+          <div class="field"><label>Start time</label><input id="bj-time" type="time" value="09:00" /></div>
+        </div>
+        <div class="field"><label>Customer name</label><input id="bj-customer" type="text" placeholder="Customer name" /></div>
+        <div class="field"><label>Site address</label><input id="bj-address" type="text" placeholder="e.g. 14 Elm Street, Manchester, M1 4BT" /></div>
+        <div class="field"><label>Internal notes</label><textarea id="bj-notes" rows="3" placeholder="Access details, materials needed, parking info..."></textarea></div>
+
+        <!-- Reminder toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#F8F7F3;border-radius:10px;padding:13px 15px;margin-bottom:16px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#061A30">Morning reminder</div>
+            <div style="font-size:11px;color:#8B8A84">Browser notification at 8am on the day of the job</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+            <input type="checkbox" id="bj-reminder" checked style="opacity:0;width:0;height:0">
+            <span style="position:absolute;inset:0;background:#5DCAA5;border-radius:24px"></span>
+            <span id="bj-knob" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:0.2s;transform:translateX(20px)"></span>
+          </label>
+        </div>
+
+        <div id="bj-error" style="display:none;background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 13px;font-size:13px;margin-bottom:12px"></div>
+
+        <button onclick="saveBookedJob()" style="width:100%;padding:13px;border-radius:10px;border:none;background:#0A2540;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px" id="bj-save-btn">
+          <i class="ti ti-calendar-check" style="font-size:17px"></i> Save & add to calendar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('book-job-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+    document.getElementById('bj-reminder').addEventListener('change',function(){
+      document.getElementById('bj-knob').style.transform=this.checked?'translateX(20px)':'translateX(0)';
+    });
+
+    async function saveBookedJob(){
+      var title  = document.getElementById('bj-title').value.trim();
+      var date   = document.getElementById('bj-date').value;
+      var time   = document.getElementById('bj-time').value;
+      var cust   = document.getElementById('bj-customer').value.trim();
+      var addr   = document.getElementById('bj-address').value.trim();
+      var notes  = document.getElementById('bj-notes').value.trim();
+      var remind = document.getElementById('bj-reminder').checked;
+      var errEl  = document.getElementById('bj-error');
+      var btn    = document.getElementById('bj-save-btn');
+
+      if(!title){errEl.textContent='Please enter a job title.';errEl.style.display='block';return;}
+      if(!date) {errEl.textContent='Please pick a date.';errEl.style.display='block';return;}
+      errEl.style.display='none';
+      btn.innerHTML='<i class="ti ti-loader" style="font-size:17px"></i> Saving...'; btn.disabled=true;
+
+      var job={
+        id:'job_'+Date.now(),
+        title:title,
+        customer_name:cust,
+        address:addr,
+        date:date,
+        time:time,
+        notes:notes,
+        reminder:remind,
+        status:'scheduled',
+        quote_id:_bookingQuoteId,
+        created_at:new Date().toISOString()
+      };
+
+      // Save to localStorage (syncs to dashboard)
+      var jobs=JSON.parse(localStorage.getItem('tb_jobs')||'[]');
+      jobs.unshift(job);
+      localStorage.setItem('tb_jobs',JSON.stringify(jobs));
+
+      // Save to Supabase
+      try{
+        var {data}=await supabase.auth.getUser();
+        if(data&&data.user) await supabase.from('jobs').insert({...job,user_id:data.user.id});
+      }catch(e){}
+
+      // Browser reminder at 8am on job day
+      if(remind&&'Notification' in window){
+        Notification.requestPermission().then(function(perm){
+          if(perm==='granted'){
+            var jobDay=new Date(date+'T08:00:00');
+            var delay=jobDay.getTime()-Date.now();
+            if(delay>0&&delay<7*24*3600*1000){
+              setTimeout(function(){
+                new Notification('Job today — '+title,{
+                  body:(cust?cust+' · ':'')+date+(time?' at '+time:'')+(addr?'\n'+addr:''),
+                  icon:'/favicon.svg'
+                });
+              },delay);
+            }
+          }
+        });
+      }
+
+      document.getElementById('book-job-modal').classList.remove('open');
+      btn.innerHTML='<i class="ti ti-calendar-check" style="font-size:17px"></i> Save & add to calendar'; btn.disabled=false;
+
+      // Calendar links
+      var start=date.replace(/-/g,'')+'T'+(time||'090000').replace(':','')+'00';
+      var endHr=String(parseInt((time||'09:00').split(':')[0])+2).padStart(2,'0');
+      var endMin=(time||'09:00').split(':')[1]||'00';
+      var end=date.replace(/-/g,'')+'T'+endHr+endMin+'00';
+      var gcalDetails=[cust?'Customer: '+cust:'',addr?'Address: '+addr:'',notes?'Notes: '+notes:''].filter(Boolean).join('\n');
+      var gcal='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+start+'/'+end+'&details='+encodeURIComponent(gcalDetails)+(addr?'&location='+encodeURIComponent(addr):'');
+      var ical='data:text/calendar;charset=utf-8,'+encodeURIComponent(
+        'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n'+
+        'DTSTART:'+start+'\nDTEND:'+end+'\n'+
+        'SUMMARY:'+title+'\n'+
+        (addr?'LOCATION:'+addr+'\n':'')+
+        'DESCRIPTION:'+gcalDetails.replace(/\n/g,'\\n')+'\n'+
+        'BEGIN:VALARM\nTRIGGER:-PT8H\nACTION:DISPLAY\nDESCRIPTION:Job today — '+title+'\nEND:VALARM\n'+
+        'END:VEVENT\nEND:VCALENDAR'
+      );
+
+      // Show success with calendar options
+      var overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML=
+        '<div style="background:#fff;border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">'
+        +'<div style="background:#1D9E75;padding:22px;text-align:center">'
+        +'<div style="font-size:32px;margin-bottom:8px">📅</div>'
+        +'<div style="font-size:17px;font-weight:700;color:#fff">Job scheduled!</div>'
+        +'<div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px">'+title+(cust?' · '+cust:'')+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px">'+new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+(time?' at '+time:'')+'</div>'
+        +'</div>'
+        +'<div style="padding:20px;display:flex;flex-direction:column;gap:10px">'
+        +'<div style="font-size:13px;color:#6B6A65;text-align:center;margin-bottom:2px">Add to your calendar so you never miss it:</div>'
+        +'<a href="'+gcal+'" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#4285F4;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-brand-google" style="font-size:16px"></i> Add to Google Calendar</a>'
+        +'<a href="'+ical+'" download="job-'+date+'.ics" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-calendar" style="font-size:16px"></i> Add to Apple / Outlook Calendar</a>'
+        +'<a href="jobs.html" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#F0EFEA;color:#0A2540;text-decoration:none;border-radius:10px;font-size:13px;font-weight:600"><i class="ti ti-briefcase" style="font-size:15px"></i> View jobs calendar</a>'
+        +'<a href="dashboard.html" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#EEF3F8;color:#0A2540;text-decoration:none;border-radius:10px;font-size:13px;font-weight:600"><i class="ti ti-layout-dashboard" style="font-size:15px"></i> Back to dashboard</a>'
+        +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:8px;background:transparent;border:none;color:#A3A29C;font-size:12px;cursor:pointer;font-family:inherit">Dismiss</button>'
+        +'</div></div>';
+      document.body.appendChild(overlay);
+    }
+  </script>
+
+</body>
   <div class="modal-overlay" id="library-modal" style="z-index:600">
     <div class="modal" style="max-width:500px">
       <div class="modal-header">
