@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <script src="db.js"></script>
@@ -367,8 +367,7 @@
         + '</div>'
 
         // Contact details
-        + '<div class="detail-card">'
-        + '<div class="detail-card-header"><div class="detail-card-title">Contact details</div>'
+        + '<div class="detail-card" id="contact-card-' + c.id + '">'
         + '<button onclick="editContact(\'' + c.id + '\')" style="font-size:12px;color:#0A2540;font-weight:600;background:none;border:none;cursor:pointer">Edit</button>'
         + '</div>'
         + '<div class="detail-card-body">'
@@ -444,21 +443,47 @@
     function editContact(custId) {
       var c = customers.find(function(x){ return x.id === custId; });
       if (!c) return;
-      var email   = prompt('Email address:', c.email || '');
-      if (email === null) return;
-      var phone   = prompt('Phone number:', c.phone || '');
-      if (phone === null) return;
-      var address = prompt('Address:', c.address || '');
-      if (address === null) return;
-      var postcode = prompt('Postcode:', c.postcode || '');
-      if (postcode === null) return;
+      var card = document.getElementById('contact-card-' + custId);
+      if (!card) return;
+      card.innerHTML =
+        '<div style="padding:16px;display:flex;flex-direction:column;gap:12px">'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px">EMAIL</label>'
+        + '<input id="ec-email" type="email" value="' + (c.email||'') + '" placeholder="customer@email.com" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px">PHONE</label>'
+        + '<input id="ec-phone" type="tel" value="' + (c.phone||'') + '" placeholder="07700 900123" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>'
+        + '</div>'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px">ADDRESS</label>'
+        + '<input id="ec-address" type="text" value="' + (c.address||'') + '" placeholder="14 Elm Street, Manchester" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:4px">POSTCODE</label>'
+        + '<input id="ec-postcode" type="text" value="' + (c.postcode||'') + '" placeholder="M1 4BT" style="width:100%;padding:9px 12px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>'
+        + '<div style="display:flex;gap:10px;padding-top:4px">'
+        + '<button onclick="saveContact(\'' + custId + '\')" style="flex:2;padding:10px;background:#0A2540;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Save details</button>'
+        + '<button onclick="renderDetail(customers.find(function(x){return x.id===\'' + custId + '\';}))" style="flex:1;padding:10px;background:#F0EFEA;color:#6B6A65;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>'
+        + '</div>'
+        + '<div id="ec-msg" style="display:none;font-size:12px;font-weight:600;text-align:center"></div>'
+        + '</div>';
+      document.getElementById('ec-email').focus();
+    }
+
+    async function saveContact(custId) {
+      var c = customers.find(function(x){ return x.id === custId; });
+      if (!c) return;
+      var email    = document.getElementById('ec-email').value.trim();
+      var phone    = document.getElementById('ec-phone').value.trim();
+      var address  = document.getElementById('ec-address').value.trim();
+      var postcode = document.getElementById('ec-postcode').value.trim();
       c.email = email; c.phone = phone; c.address = address; c.postcode = postcode;
-      // Save
-      supabase.from('customers').update({ email: email, phone: phone, address: address, postcode: postcode }).eq('id', custId).catch(function(){});
+
+      var msg = document.getElementById('ec-msg');
+      try {
+        await supabase.from('customers').update({ email: email||null, phone: phone||null, address: address||null, postcode: postcode||null }).eq('id', custId);
+      } catch(e) {}
       var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
       var lc = custs.find(function(x){ return x.id === custId; });
       if (lc) { lc.email=email; lc.phone=phone; lc.address=address; lc.postcode=postcode; localStorage.setItem('tb_customers', JSON.stringify(custs)); }
-      renderDetail(c);
+      if (msg) { msg.style.display='block'; msg.style.color='#1D9E75'; msg.textContent='✓ Saved!'; }
+      setTimeout(function(){ renderDetail(c); }, 700);
     }
 
     function openAddCustomer() {
