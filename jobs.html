@@ -2,849 +2,882 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jobs — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
-  </script>
-  <script src="db.js"></script>
-  <script>
-    if (typeof DB === 'undefined') {
-      window.DB = {
-        getNextNumber: async function(type) {
-          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
-          var last = parseInt(localStorage.getItem(key) || '1000');
-          var next = last + 1; localStorage.setItem(key, next.toString());
-          return (type === 'quote' ? '#Q' : '#') + next;
-        },
-        saveInvoice: async function(inv) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
-          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
-        },
-        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
-        updateInvoiceStatus: async function(id, status, method) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var inv = invs.find(function(i){ return i.id == id; });
-          if (inv) { inv.status = status; if (method) inv.payment_method = method; }
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
-        },
-        saveCustomer: async function(c) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          var idx = custs.findIndex(function(x){ return x.id === c.id; });
-          if (idx > -1) custs[idx] = c; else custs.unshift(c);
-          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
-        },
-        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
-        deleteCustomer: async function(id) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
-        },
-        saveQuote: async function(q) {
-          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
-          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
-        },
-        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
-        saveJob: async function(j) {
-          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
-          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
-          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
-          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
-        },
-        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
-        getEarningsSummary: async function() {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var paid = invs.filter(function(i){ return i.status==='paid'; });
-          return { totalEarned: paid.reduce(function(a,i){ return a+Number(i.amount||0); },0), invoiceCount: invs.length, paidCount: paid.length };
-        }
-      };
-    }
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
-    .db { display: flex; min-height: 100vh; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow-x:hidden;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#FAFAF8;color:#1A1A18;}
+    .db{display:flex;min-height:100vh;}
 
     /* ── Sidebar ── */
-    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
-    .sb-logo-icon i { color: #fff; font-size: 18px; }
-    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
-    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
-    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
-    .sb-item i { font-size: 18px; }
-    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
-    .sb-user:hover { background: rgba(255,255,255,0.08); }
-    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
-    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
-    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .sidebar{width:210px;flex-shrink:0;background:#0A2540;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+    .sb-logo{display:flex;align-items:center;gap:8px;padding:20px 16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.1);text-decoration:none;}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;}
+    .sb-logo-icon i{color:#fff;font-size:18px;}
+    .sb-logo-text{font-size:16px;font-weight:600;color:#fff;}
+    .sb-nav{padding:16px 10px;flex:1;overflow-y:auto;}
+    .sb-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px;text-decoration:none;}
+    .sb-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+    .sb-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+    .sb-item i{font-size:18px;}
+    .sb-bottom{padding:12px 10px;border-top:0.5px solid rgba(255,255,255,0.1);}
+    .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;text-decoration:none;}
+    .sb-user:hover{background:rgba(255,255,255,0.08);}
+    .sb-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
 
     /* ── Main ── */
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
-    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .btn-new { background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; font-family: inherit; }
-    .btn-new:hover { background: #061A30; }
-    .content { padding: 24px 28px; }
+    .main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{background:#fff;border-bottom:1px solid #E5E3DC;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar h1{font-size:16px;font-weight:600;color:#061A30;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .view-toggle{display:flex;background:#F0EFEA;border-radius:8px;padding:3px;gap:2px;}
+    .view-btn{padding:6px 12px;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B6A65;display:flex;align-items:center;gap:5px;}
+    .view-btn.active{background:#fff;color:#0A2540;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+    .btn-new{background:#0A2540;color:#fff;border:none;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;}
 
-    /* ── View toggle ── */
-    .view-toggle { display: flex; gap: 4px; background: #F0EFEA; border-radius: 9px; padding: 3px; margin-bottom: 20px; width: fit-content; }
-    .view-btn { padding: 6px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: #6B6A65; cursor: pointer; border: none; background: transparent; font-family: inherit; display: flex; align-items: center; gap: 6px; }
-    .view-btn.active { background: #fff; color: #061A30; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    /* ── Content ── */
+    .content{flex:1;padding:20px 24px;}
 
-    /* ── Board view ── */
-    .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: start; }
-    .col { background: #F0EFEA; border-radius: 12px; padding: 12px; }
-    .col-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .col-label { font-size: 12px; font-weight: 700; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
-    .col-count { font-size: 11px; font-weight: 600; color: #8B8A84; background: #E5E3DC; border-radius: 5px; padding: 1px 7px; }
-    .col-add { width: 24px; height: 24px; border-radius: 6px; background: transparent; border: none; cursor: pointer; color: #8B8A84; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .col-add:hover { background: #E5E3DC; color: #0A2540; }
-
-    .job-card { background: #fff; border-radius: 10px; padding: 13px; margin-bottom: 8px; cursor: pointer; border: 1px solid #E8E6DF; transition: box-shadow 0.15s; }
-    .job-card:hover { box-shadow: 0 2px 8px rgba(10,37,64,0.08); border-color: #C5C3BB; }
-    .job-card:last-child { margin-bottom: 0; }
-    .job-title { font-size: 13px; font-weight: 600; color: #061A30; margin-bottom: 6px; }
-    .job-customer { font-size: 12px; color: #6B6A65; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; }
-    .job-customer i { font-size: 13px; }
-    .job-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .job-date { font-size: 11px; color: #8B8A84; display: flex; align-items: center; gap: 3px; }
-    .job-date i { font-size: 12px; }
-    .job-tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; }
-    .tag-urgent { background: #FDEDED; color: #D14343; }
-    .tag-quote { background: #EEF3F8; color: #0A2540; }
-    .tag-invoice { background: #E1F5EE; color: #0F6E56; }
-    .col-empty { text-align: center; padding: 20px 10px; color: #A3A29C; font-size: 12px; }
+    /* ── Stats bar ── */
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+    .stat{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:13px 16px;cursor:pointer;transition:border-color 0.15s;}
+    .stat:hover,.stat.active{border-color:#0A2540;}
+    .stat.active .stat-value{color:#0A2540;}
+    .stat-label{font-size:11px;color:#8B8A84;margin-bottom:4px;}
+    .stat-value{font-size:20px;font-weight:700;color:#061A30;letter-spacing:-0.01em;}
 
     /* ── Calendar view ── */
-    .calendar-wrap { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; }
-    .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #F0EFEA; }
-    .cal-month { font-size: 16px; font-weight: 700; color: #061A30; }
-    .cal-nav { display: flex; gap: 6px; }
-    .cal-nav button { width: 30px; height: 30px; border-radius: 7px; border: 1px solid #E5E3DC; background: #fff; cursor: pointer; color: #6B6A65; font-size: 16px; display: flex; align-items: center; justify-content: center; }
-    .cal-nav button:hover { background: #F0EFEA; }
-    .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #F0EFEA; }
-    .cal-day-name { text-align: center; padding: 8px; font-size: 11px; font-weight: 700; color: #8B8A84; text-transform: uppercase; letter-spacing: 0.04em; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-    .cal-cell { min-height: 90px; padding: 6px; border-right: 1px solid #F0EFEA; border-bottom: 1px solid #F0EFEA; cursor: pointer; transition: background 0.1s; }
-    .cal-cell:hover { background: #FAFAF8; }
-    .cal-cell:nth-child(7n) { border-right: none; }
-    .cal-cell.today .cal-date { background: #0A2540; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-    .cal-cell.other-month .cal-date { color: #C5C3BB; }
-    .cal-date { font-size: 12px; font-weight: 600; color: #061A30; margin-bottom: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-    .cal-event { font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
-    .cal-event.ev-scheduled { background: #EEF3F8; color: #0A2540; }
-    .cal-event.ev-inprogress { background: #FBF3E3; color: #C28A1E; }
-    .cal-event.ev-urgent { background: #FDEDED; color: #D14343; }
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .cal-nav-btn{width:34px;height:34px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .cal-title{font-size:16px;font-weight:700;color:#061A30;}
+    .cal-today-btn{padding:6px 14px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#0A2540;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#E5E3DC;border-radius:12px;overflow:hidden;}
+    .cal-day-header{background:#F8F7F3;padding:8px;text-align:center;font-size:11px;font-weight:700;color:#8B8A84;text-transform:uppercase;}
+    .cal-day{background:#fff;min-height:100px;padding:6px;position:relative;cursor:pointer;}
+    .cal-day:hover{background:#FAFAF8;}
+    .cal-day.today{background:#F0FAF6;}
+    .cal-day.other-month .cal-day-num{color:#D3D1C7;}
+    .cal-day.selected{outline:2px solid #0A2540;outline-offset:-2px;}
+    .cal-day-num{font-size:12px;font-weight:600;color:#6B6A65;margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+    .cal-day.today .cal-day-num{background:#0A2540;color:#fff;}
+    .cal-job-chip{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+
+    /* ── List view ── */
+    .list-group{margin-bottom:20px;}
+    .list-group-title{font-size:12px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+    .list-group-title::after{content:'';flex:1;height:1px;background:#E5E3DC;}
+    .job-card{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s;}
+    .job-card:hover{box-shadow:0 2px 12px rgba(10,37,64,0.08);border-color:#C5C3BB;}
+    .job-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .job-info{flex:1;min-width:0;}
+    .job-title{font-size:14px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .job-meta{font-size:12px;color:#8B8A84;margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .job-meta i{font-size:13px;}
+    .job-actions{display:flex;gap:6px;flex-shrink:0;}
+    .job-action-btn{width:32px;height:32px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8B8A84;text-decoration:none;}
+    .job-action-btn:hover{background:#F0EFEA;color:#0A2540;border-color:#0A2540;}
+    .job-action-btn i{font-size:15px;}
+    .job-action-btn.green{border-color:#9FE1CB;color:#0F6E56;background:#F0FAF6;}
+    .job-action-btn.blue{border-color:#90CAF9;color:#1565C0;background:#EEF3FB;}
+
+    /* ── Status chips ── */
+    .status-chip{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0;}
+    .chip-scheduled{background:#EEF3F8;color:#0A2540;}
+    .chip-inprogress{background:#FBF3E3;color:#C28A1E;}
+    .chip-done{background:#E1F5EE;color:#0F6E56;}
+    .chip-cancelled{background:#F0EFEA;color:#6B6A65;}
+    .chip-todo{background:#F3F1FE;color:#635BFF;}
+
+    /* ── Empty state ── */
+    .empty-state{text-align:center;padding:60px 20px;}
+    .empty-state i{font-size:48px;color:#D3D1C7;display:block;margin-bottom:16px;}
+    .empty-state h3{font-size:17px;font-weight:600;color:#061A30;margin-bottom:8px;}
+    .empty-state p{font-size:13px;color:#8B8A84;max-width:300px;margin:0 auto 20px;}
 
     /* ── Modal ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,37,64,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #F0EFEA; }
-    .modal-title { font-size: 16px; font-weight: 700; color: #061A30; }
-    .modal-close { width: 30px; height: 30px; border-radius: 7px; border: none; background: #F0EFEA; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6B6A65; font-size: 18px; }
-    .modal-close:hover { background: #E5E3DC; }
-    .modal-body { padding: 22px; }
-    .field { margin-bottom: 16px; }
-    .field:last-child { margin-bottom: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
-    .field input, .field select, .field textarea {
-      width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 9px;
-      font-size: 14px; color: #1A1A18; background: #fff; outline: none; font-family: inherit;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: #0A2540; box-shadow: 0 0 0 3px rgba(10,37,64,0.08); }
-    .field textarea { min-height: 80px; resize: vertical; }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .reminder-row { display: flex; align-items: center; gap: 10px; padding: 11px 13px; background: #F8F7F3; border-radius: 9px; border: 1px solid #E5E3DC; }
-    .reminder-row i { font-size: 18px; color: #0A2540; flex-shrink: 0; }
-    .reminder-row p { font-size: 13px; font-weight: 600; color: #061A30; flex: 1; }
-    .reminder-row span { font-size: 11px; color: #8B8A84; }
-    .toggle { width: 36px; height: 20px; border-radius: 10px; background: #0A2540; position: relative; cursor: pointer; flex-shrink: 0; }
-    .toggle.off { background: #D3D1C7; }
-    .toggle-dot { width: 16px; height: 16px; border-radius: 50%; background: #fff; position: absolute; top: 2px; right: 2px; transition: right 0.2s; }
-    .toggle.off .toggle-dot { right: auto; left: 2px; }
-    .modal-footer { padding: 16px 22px; border-top: 1px solid #F0EFEA; display: flex; gap: 10px; justify-content: flex-end; }
-    .btn-cancel { padding: 9px 18px; border-radius: 8px; border: 1px solid #E5E3DC; background: #fff; color: #6B6A65; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-    .btn-save { padding: 9px 18px; border-radius: 8px; border: none; background: #0A2540; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-    .btn-save:hover { background: #061A30; }
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,0.45);z-index:500;align-items:flex-end;justify-content:center;padding:0;}
+    .modal-overlay.open{display:flex;}
+    @media(min-width:600px){ .modal-overlay{align-items:center;padding:20px;} .modal{border-radius:16px!important;max-height:92vh;} }
+    .modal{background:#fff;width:100%;max-width:540px;border-radius:16px 16px 0 0;max-height:95vh;overflow-y:auto;box-shadow:0 -8px 32px rgba(0,0,0,0.2);}
+    .modal-header{background:#0A2540;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;border-radius:16px 16px 0 0;}
+    .modal-title{font-size:15px;font-weight:700;color:#fff;}
+    .modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+    .modal-body{padding:20px;}
+    .field{margin-bottom:15px;}
+    .field label{display:block;font-size:11px;font-weight:700;color:#8B8A84;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;}
+    .field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:15px;color:#1A1A18;font-family:inherit;outline:none;background:#fff;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#0A2540;box-shadow:0 0 0 3px rgba(10,37,64,0.08);}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
-    /* ── Mobile ── */
-    .mobile-topbar { display: none; }
-    .bottom-nav { display: none; }
-    @media (max-width: 768px) {
-      /* Prevent table overflow on mobile */
-      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: unset; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .range-scroll { -webkit-overflow-scrolling: touch; }
-      .board { grid-template-columns: 1fr; }
-      .top-grid { grid-template-columns: 1fr; }
-      .bottom-grid { grid-template-columns: 1fr; }
+    /* Job detail panel */
+    .detail-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,0.45);z-index:400;align-items:flex-end;justify-content:center;}
+    .detail-overlay.open{display:flex;}
+    @media(min-width:600px){ .detail-overlay{align-items:center;justify-content:flex-end;} .detail-panel{border-radius:0!important;width:380px!important;height:100vh!important;max-height:100vh!important;box-shadow:-8px 0 32px rgba(0,0,0,0.15)!important;} }
+    .detail-panel{background:#fff;width:100%;border-radius:16px 16px 0 0;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;}
+    .detail-header{background:#0A2540;padding:18px 20px;position:sticky;top:0;z-index:10;}
+    .detail-actions-bar{display:flex;gap:8px;padding:14px 16px;border-bottom:1px solid #F0EFEA;flex-wrap:wrap;}
+    .action-pill{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-decoration:none;white-space:nowrap;}
+    .pill-call{background:#E1F5EE;color:#0F6E56;}
+    .pill-map{background:#EEF3FB;color:#1565C0;}
+    .pill-invoice{background:#EEF3F8;color:#0A2540;}
+    .pill-wa{background:#F0FEF4;color:#1A5C2E;}
+    .detail-body{padding:16px;flex:1;}
+    .detail-section{margin-bottom:18px;}
+    .detail-section-title{font-size:11px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;}
+    .detail-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #F8F7F3;}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-icon{width:28px;height:28px;border-radius:7px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .detail-icon i{font-size:14px;color:#0A2540;}
+    .detail-label{font-size:11px;color:#A3A29C;margin-bottom:1px;}
+    .detail-value{font-size:13px;font-weight:600;color:#061A30;}
+    .status-select{padding:6px 12px;border-radius:20px;border:1.5px solid #E5E3DC;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;outline:none;background:#fff;}
 
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
-      .mob-logo i { color: #5DCAA5; font-size: 22px; }
-      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .mob-add-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: inherit; }
-      .content { padding: 14px 16px; }
-      .board { grid-template-columns: 1fr; }
-      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; text-decoration: none; }
-      .nav-item i { font-size: 22px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
-      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
-      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
-      .nav-plus i { font-size: 23px; color: #fff; }
-      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
-      .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
-      .plus-menu-item:last-child { border-bottom: none; }
-      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
-      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
-    }
-  
-    /* ── Mobile distortion fix ── */
-    html { overflow-x: hidden; }
-    body { overflow-x: hidden; max-width: 100vw; }
-    * { max-width: 100%; }
-    img, video, iframe, table { max-width: 100%; }
+    /* Mobile */
+    .mobile-topbar{display:none;}
+    .bottom-nav{display:none;}
+    .mob-drawer{position:fixed;top:0;left:-280px;width:280px;height:100vh;background:#0A2540;z-index:600;transition:left 0.28s ease;display:flex;flex-direction:column;overflow-y:auto;}
+    .mob-drawer.open{left:0;}
+    .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:599;}
+    .mob-overlay.open{display:block;}
+    .mob-drawer-head{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;}
+    .mob-drawer-logo{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+    .mob-drawer-logo i{color:#5DCAA5;}
+    .mob-drawer-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mob-drawer-section{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.07em;text-transform:uppercase;padding:14px 18px 6px;}
+    .mob-drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,0.75);text-decoration:none;}
+    .mob-drawer-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left:3px solid #5DCAA5;padding-left:15px;}
+    .mob-drawer-item i{font-size:20px;width:24px;}
+    .mob-drawer-bottom{margin-top:auto;padding:16px 18px;border-top:1px solid rgba(255,255,255,0.1);}
+    .mob-burger{background:none;border:none;cursor:pointer;padding:2px;display:flex;flex-direction:column;gap:5px;}
+    .mob-burger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
 
-  
-    .pay-modal-overlay { display:none; position:fixed; inset:0; background:rgba(10,37,64,0.45); z-index:500; align-items:center; justify-content:center; padding:20px; }
-    .pay-modal-overlay.open { display:flex; }
-    .pay-modal { background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; }
-    .pay-modal-header { padding:16px 20px; border-bottom:1px solid #F0EFEA; display:flex; align-items:center; justify-content:space-between; }
-    .pay-modal-title { font-size:15px; font-weight:700; color:#061A30; }
-    .pay-modal-close { width:28px; height:28px; border-radius:7px; border:none; background:#F0EFEA; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B6A65; font-size:17px; }
-    .pay-status-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-    .pay-status-opt { display:flex; align-items:center; gap:12px; padding:13px 14px; border:1.5px solid #E5E3DC; border-radius:11px; cursor:pointer; }
-    .pay-status-opt:hover { border-color:#B5CCE0; background:#FAFAF8; }
-    .pay-status-opt.selected { border-color:var(--opt-color); background:var(--opt-bg); }
-    .pay-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .pay-status-label { font-size:14px; font-weight:600; color:#061A30; }
-    .pay-status-desc { font-size:12px; color:#8B8A84; margin-top:1px; }
-    .pay-method-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
-    .pay-method-btn { padding:7px 13px; border-radius:8px; font-size:12px; font-weight:600; border:1.5px solid #E5E3DC; background:#fff; color:#6B6A65; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px; }
-    .pay-method-btn.active { border-color:#0A2540; background:#EEF3F8; color:#0A2540; }
-    .pay-partial-row { margin-bottom:14px; display:none; }
-    .pay-partial-row label { display:block; font-size:12px; font-weight:700; color:#6B6A65; margin-bottom:6px; }
-    .pay-partial-row input { width:100%; padding:10px 13px; border:1px solid #E5E3DC; border-radius:9px; font-size:14px; font-family:inherit; outline:none; }
-    .pay-modal-footer { padding:14px 20px; border-top:1px solid #F0EFEA; display:flex; gap:8px; }
-    .pay-btn-cancel { flex:1; padding:10px; border-radius:9px; border:1px solid #E5E3DC; background:#fff; color:#6B6A65; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .pay-btn-save { flex:2; padding:10px; border-radius:9px; border:none; background:#0A2540; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .job-pay-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; display:inline-block; }
-    .job-pay-paid { background:#E1F5EE; color:#0F6E56; }
-    .job-pay-partial { background:#FBF3E3; color:#C28A1E; }
-    .job-pay-unpaid { background:#F0EFEA; color:#6B6A65; }
-    .job-pay-overdue { background:#FDEDED; color:#D14343; }
-  
-    
-      /* Make mobile topbar sticky if not already */
-      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
+    @media(max-width:768px){
+      .sidebar{display:none;} .main{margin-left:0;}  .topbar{display:none;}
+      .mobile-topbar{display:flex;align-items:center;justify-content:space-between;background:#0A2540;padding:14px 16px;position:sticky;top:0;z-index:200;}
+      .content{padding:12px 14px 100px;}
+      .stats{grid-template-columns:repeat(3,1fr);}
+      .stat:nth-child(4),.stat:nth-child(5){display:none;}
+      .cal-grid{display:none;}
+      .cal-week{display:flex!important;}
+      .job-actions{display:none;}
+      .bottom-nav{display:flex;align-items:center;background:#fff;border-top:1px solid #E5E3DC;padding:8px 0 20px;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+      .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:4px 0;}
+      .nav-item i{font-size:22px;color:#A3A29C;}
+      .nav-item span{font-size:10px;color:#A3A29C;font-weight:500;}
+      .nav-item.active i,.nav-item.active span{color:#0A2540;font-weight:600;}
+      .nav-plus-wrap{flex:1;display:flex;justify-content:center;}
+      .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
+      .nav-plus i{font-size:24px;color:#fff;}
+      input,select,textarea{font-size:16px!important;}
+      .field-row{grid-template-columns:1fr;}
     }
-  
-    /* Hamburger menu */
-    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
-    .mob-menu-overlay.open { display: block; }
-    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
-    .mob-drawer.open { left: 0; }
-    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
-    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
-    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
-    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
-    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
-    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
-    .mob-drawer-item i { font-size: 20px; width: 24px; }
-    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
-    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
-    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
-    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
-    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
 
-  <!-- MOBILE TOP BAR -->
-  <div class="mobile-topbar">
-    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
-      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
-    </div>
-    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
+<!-- Mobile topbar -->
+<div class="mobile-topbar">
+  <button class="mob-burger" onclick="openDrawer()"><span></span><span></span><span></span></button>
+  <div style="text-align:center">
+    <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
+    <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Jobs</div>
   </div>
+  <button onclick="openJobModal(null)" style="background:#5DCAA5;color:#061A30;border:none;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Job</button>
+</div>
 
-  <div class="db">
-    <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
-      <div class="sb-nav">
-        <div class="sb-section-label">Main</div>
-        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
-        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="jobs.html" class="sb-item active"><i class="ti ti-briefcase"></i> Jobs</a>
-        <div class="sb-section-label">Reports</div>
-        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
-        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
-        <div class="sb-section-label">Account</div>
-        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
-      </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
-    </nav>
+<div class="mob-overlay" id="mob-overlay" onclick="closeDrawer()"></div>
+<div class="mob-drawer" id="mob-drawer">
+  <div class="mob-drawer-head"><div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div><button class="mob-drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
+  <div class="mob-drawer-section">Main</div>
+  <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
+  <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+  <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
+  <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
+  <a href="jobs.html" class="mob-drawer-item active"><i class="ti ti-briefcase"></i> Jobs</a>
+  <div class="mob-drawer-section">Reports</div>
+  <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+  <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
+  <div class="mob-drawer-section">Account</div>
+  <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
+  <div class="mob-drawer-bottom"><div style="display:flex;align-items:center;gap:10px"><div class="sb-av" id="mob-av"></div><div><div style="font-size:13px;font-weight:600;color:#fff" id="mob-name"></div><div style="font-size:11px;color:#5DCAA5" id="mob-plan">Free plan</div></div></div></div>
+</div>
 
-    <div class="main">
-      <div class="topbar">
-        <h1>Jobs</h1>
-        <button class="btn-new" onclick="openModal()"><i class="ti ti-plus"></i> New job</button>
-      </div>
+<div class="db">
+  <nav class="sidebar">
+    <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+    <div class="sb-nav">
+      <div class="sb-lbl">Main</div>
+      <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+      <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+      <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+      <a href="jobs.html" class="sb-item active"><i class="ti ti-briefcase"></i> Jobs</a>
+      <div class="sb-lbl">Reports</div>
+      <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+      <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+      <div class="sb-lbl">Account</div>
+      <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+    </div>
+    <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-av" id="sb-av"></div><div><div style="font-size:12px;font-weight:600;color:#fff" id="sb-uname"></div><div style="font-size:11px;color:rgba(255,255,255,0.5)" id="sb-uplan">Free plan</div></div></a></div>
+  </nav>
 
-      <div class="content">
-
+  <div class="main">
+    <div class="topbar">
+      <h1>Jobs</h1>
+      <div class="topbar-right">
         <div class="view-toggle">
-          <button class="view-btn active" id="btn-board" onclick="switchView('board')"><i class="ti ti-layout-columns"></i> Board</button>
-          <button class="view-btn" id="btn-calendar" onclick="switchView('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
+          <button class="view-btn active" id="btn-cal" onclick="setView('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
+          <button class="view-btn" id="btn-list" onclick="setView('list')"><i class="ti ti-list"></i> List</button>
         </div>
-
-        <div id="jobs-intro" style=""><div style="max-width:480px;margin:0 auto;padding:20px 0 40px"><div style="text-align:center;padding:28px 0 24px"><div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-briefcase" style="font-size:28px;color:#0A2540"></i></div><div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Plan and schedule your jobs</div><div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto">Organise your work week in a Notion-style board or calendar view. Schedule jobs, set reminders the day before, and track progress from To do → In progress → Done.</div></div><div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px"><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-layout-columns" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Board view</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Drag jobs across To do, Scheduled, In progress, Done</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-calendar" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Calendar view</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">See your whole week at a glance</div></div></div><div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F0EFEA"><div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-bell" style="font-size:17px;color:#0A2540"></i></div><div><div style="font-size:13px;font-weight:600;color:#061A30;margin-bottom:2px">Reminders</div><div style="font-size:12px;color:#8B8A84;line-height:1.4">Get notified the day before each job</div></div></div><div style="padding:12px 0;border:none"></div></div><a href="#" onclick="openModal(); return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Add your first job</a></div></div>
-        <div id="jobs-content" style="display:none">
-        <!-- BOARD VIEW -->
-        <div id="view-board">
-          <div class="board">
-            <div class="col">
-              <div class="col-title">
-                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#8B8A84;display:inline-block"></span> To do</div>
-                <span class="col-count" id="count-todo">0</span>
-              </div>
-              <div id="col-todo">
-                <div class="col-empty">No jobs yet<br><small>Click + to add one</small></div>
-              </div>
-              <button class="col-add" onclick="openModal('todo')" style="width:100%;border-radius:8px;padding:7px;margin-top:6px;font-size:12px;color:#8B8A84;background:transparent;border:1.5px dashed #D3D1C7;cursor:pointer;font-family:inherit">+ Add job</button>
-            </div>
-            <div class="col">
-              <div class="col-title">
-                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#C28A1E;display:inline-block"></span> Scheduled</div>
-                <span class="col-count" id="count-scheduled">0</span>
-              </div>
-              <div id="col-scheduled">
-                <div class="col-empty">No scheduled jobs</div>
-              </div>
-            </div>
-            <div class="col">
-              <div class="col-title">
-                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#635BFF;display:inline-block"></span> In progress</div>
-                <span class="col-count" id="count-inprogress">0</span>
-              </div>
-              <div id="col-inprogress">
-                <div class="col-empty">No jobs in progress</div>
-              </div>
-            </div>
-            <div class="col">
-              <div class="col-title">
-                <div class="col-label"><span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block"></span> Done</div>
-                <span class="col-count" id="count-done">0</span>
-              </div>
-              <div id="col-done">
-                <div class="col-empty">No completed jobs</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CALENDAR VIEW -->
-        <div id="view-calendar" style="display:none">
-          <div class="calendar-wrap">
-            <div class="cal-header">
-              <div class="cal-month" id="cal-month">July 2026</div>
-              <div class="cal-nav">
-                <button onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
-                <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
-              </div>
-            </div>
-            <div class="cal-days-header">
-              <div class="cal-day-name">Mon</div>
-              <div class="cal-day-name">Tue</div>
-              <div class="cal-day-name">Wed</div>
-              <div class="cal-day-name">Thu</div>
-              <div class="cal-day-name">Fri</div>
-              <div class="cal-day-name">Sat</div>
-              <div class="cal-day-name">Sun</div>
-            </div>
-            <div class="cal-grid" id="cal-grid"></div>
-          </div>
-        </div>
-
+        <button class="btn-new" onclick="openJobModal(null)"><i class="ti ti-plus"></i> New job</button>
       </div>
-
-        </div>
-      <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item active"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
     </div>
-  </div>
 
-  <!-- NEW JOB MODAL -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-title">New job</div>
-        <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat" onclick="filterByStatus('all')"><div class="stat-label">All jobs</div><div class="stat-value" id="stat-all">0</div></div>
+        <div class="stat" onclick="filterByStatus('scheduled')"><div class="stat-label">Scheduled</div><div class="stat-value" id="stat-scheduled" style="color:#0A2540">0</div></div>
+        <div class="stat" onclick="filterByStatus('inprogress')"><div class="stat-label">In progress</div><div class="stat-value" id="stat-inprogress" style="color:#C28A1E">0</div></div>
+        <div class="stat" onclick="filterByStatus('done')"><div class="stat-label">Completed</div><div class="stat-value" id="stat-done" style="color:#1D9E75">0</div></div>
+        <div class="stat" onclick="filterByStatus('today')"><div class="stat-label">Today</div><div class="stat-value" id="stat-today" style="color:#D14343">0</div></div>
       </div>
-      <div class="modal-body">
-        <div class="field">
-          <label>Job title</label>
-          <input type="text" id="f-title" placeholder="e.g. Bathroom refit at 14 Elm St" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Customer name</label>
-          <input type="text" id="f-customer" placeholder="e.g. Mark Taylor" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Notes</label>
-          <textarea id="f-notes" placeholder="Job details, access notes, materials needed..."></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Date</label>
-            <input type="date" id="f-date" />
-          </div>
-          <div class="field">
-            <label>Time</label>
-            <input type="time" id="f-time" />
+
+      <!-- Calendar view -->
+      <div id="view-calendar">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calNav(-1)"><i class="ti ti-chevron-left" style="font-size:16px;color:#0A2540"></i></button>
+          <div class="cal-title" id="cal-title"></div>
+          <div style="display:flex;gap:8px">
+            <button class="cal-today-btn" onclick="goToday()">Today</button>
+            <button class="cal-nav-btn" onclick="calNav(1)"><i class="ti ti-chevron-right" style="font-size:16px;color:#0A2540"></i></button>
           </div>
         </div>
-        <div class="field">
-          <label>Status</label>
-          <select id="f-status">
-            <option value="todo">To do</option>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-day-header">Mon</div>
+          <div class="cal-day-header">Tue</div>
+          <div class="cal-day-header">Wed</div>
+          <div class="cal-day-header">Thu</div>
+          <div class="cal-day-header">Fri</div>
+          <div class="cal-day-header" style="color:#D14343">Sat</div>
+          <div class="cal-day-header" style="color:#D14343">Sun</div>
+        </div>
+        <!-- Mobile week strip -->
+        <div class="cal-week" id="cal-week" style="display:none;gap:6px;overflow-x:auto;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+        <div id="selected-day-jobs" style="display:none;margin-top:16px"></div>
+      </div>
+
+      <!-- List view -->
+      <div id="view-list" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E5E3DC;border-radius:9px;padding:9px 13px">
+            <i class="ti ti-search" style="font-size:16px;color:#A3A29C"></i>
+            <input type="text" id="list-search" placeholder="Search jobs..." oninput="renderList()" style="border:none;background:transparent;font-size:14px;font-family:inherit;outline:none;width:100%" />
+          </div>
+          <select id="list-filter" onchange="renderList()" style="padding:9px 13px;border:1px solid #E5E3DC;border-radius:9px;font-size:13px;font-family:inherit;outline:none;background:#fff">
+            <option value="all">All statuses</option>
             <option value="scheduled">Scheduled</option>
             <option value="inprogress">In progress</option>
-            <option value="done">Done</option>
+            <option value="todo">To do</option>
+            <option value="done">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
-        <div class="field">
-          <label>Priority</label>
-          <select id="f-priority">
-            <option value="normal">Normal</option>
-            <option value="urgent">Urgent</option>
-          </select>
-        </div>
-        <div class="field" style="margin-bottom:0">
-          <label>Reminder</label>
-          <div class="reminder-row">
-            <i class="ti ti-bell"></i>
-            <div>
-              <p>Get a reminder before this job</p>
-              <span>We'll remind you the day before</span>
-            </div>
-            <div class="toggle" id="reminder-toggle" onclick="this.classList.toggle('off')">
-              <div class="toggle-dot"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-save" onclick="saveJob()">Save job</button>
+        <div id="list-container"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // ── State ──
-    var jobs = [];
-    var currentView = 'board';
-    var calDate = new Date(2026, 6, 1); // July 2026
-    var editingId = null;
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+  <a href="jobs.html" class="nav-item active"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+  <div class="nav-plus-wrap"><a href="#" onclick="openJobModal(null);return false;" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+  <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
+  <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+</nav>
 
-    // ── Auth ──
-    async function loadUser() {
-      try {
-        var result = await supabase.auth.getUser();
-        if (!result.data || !result.data.user) { window.location.href = 'login.html'; return; }
-        var meta = result.data.user.user_metadata || {};
-        var first = meta.first_name || meta.given_name || '';
-        var last = meta.last_name || meta.family_name || '';
-        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (result.data.user.email ? result.data.user.email.charAt(0).toUpperCase() : '?');
-        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first || last) ? (first + ' ' + last).trim() : result.data.user.email.split('@')[0];
-      } catch(e) {}
+<!-- ADD/EDIT JOB MODAL -->
+<div class="modal-overlay" id="job-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="job-modal-title">New job</div>
+      <button class="modal-close" onclick="closeJobModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Job title *</label><input id="jm-title" type="text" placeholder="e.g. Boiler service, bathroom refit..." /></div>
+      <div class="field"><label>Customer name</label><input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" /></div>
+      <div class="field-row">
+        <div class="field"><label>Phone</label><input id="jm-phone" type="tel" placeholder="07700 900123" /></div>
+        <div class="field"><label>Email</label><input id="jm-email" type="email" placeholder="customer@email.com" /></div>
+      </div>
+      <div class="field"><label>Address / Location</label><input id="jm-address" type="text" placeholder="14 Elm Street, Manchester, M1 4BT" /></div>
+      <div class="field-row">
+        <div class="field"><label>Date</label><input id="jm-date" type="date" /></div>
+        <div class="field"><label>Time</label><input id="jm-time" type="time" value="09:00" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Duration</label>
+          <select id="jm-duration">
+            <option value="30">30 mins</option><option value="60">1 hour</option>
+            <option value="120" selected>2 hours</option><option value="180">3 hours</option>
+            <option value="240">4 hours</option><option value="480">Full day</option>
+          </select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select id="jm-status">
+            <option value="scheduled">Scheduled</option>
+            <option value="todo">To do</option>
+            <option value="inprogress">In progress</option>
+            <option value="done">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="jm-notes" rows="3" placeholder="Access details, materials needed, parking info..."></textarea></div>
+      <!-- Reminder -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#F8F7F3;border-radius:10px;padding:12px 14px;margin-bottom:16px">
+        <div><div style="font-size:13px;font-weight:600;color:#061A30">Morning reminder</div><div style="font-size:11px;color:#8B8A84">Notification at 8am on the day</div></div>
+        <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+          <input type="checkbox" id="jm-reminder" checked style="opacity:0;width:0;height:0">
+          <span id="jm-toggle-bg" style="position:absolute;inset:0;background:#5DCAA5;border-radius:24px;transition:0.2s"></span>
+          <span id="jm-knob" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:0.2s;transform:translateX(20px)"></span>
+        </label>
+      </div>
+      <div id="jm-error" style="display:none;background:#FDEDED;color:#D14343;border:1px solid #F09595;border-radius:9px;padding:10px 13px;font-size:13px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeJobModal()" style="flex:1;padding:12px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+        <button onclick="saveJob()" id="jm-save-btn" style="flex:2;padding:12px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Save job</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOB DETAIL PANEL -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:700;color:#fff" id="dp-title">Job details</div>
+        <button onclick="closeDetail()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="dp-status-sel" onchange="updateJobStatus()" style="padding:5px 10px;border-radius:20px;border:none;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;background:rgba(255,255,255,0.2);color:#fff;outline:none">
+          <option value="scheduled">Scheduled</option>
+          <option value="todo">To do</option>
+          <option value="inprogress">In progress</option>
+          <option value="done">✓ Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div class="detail-actions-bar" id="dp-actions"></div>
+    <div class="detail-body">
+      <div class="detail-section">
+        <div class="detail-section-title">Job details</div>
+        <div id="dp-info"></div>
+      </div>
+      <div class="detail-section" id="dp-notes-section" style="display:none">
+        <div class="detail-section-title">Notes</div>
+        <div id="dp-notes-text" style="font-size:13px;color:#1A1A18;line-height:1.6;background:#F8F7F3;border-radius:9px;padding:11px 13px;white-space:pre-wrap"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button onclick="editCurrentJob()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#061A30"><i class="ti ti-pencil" style="font-size:16px;color:#0A2540"></i> Edit job</button>
+          <button onclick="createInvoiceForJob()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#061A30"><i class="ti ti-file-plus" style="font-size:16px;color:#1D9E75"></i> Create invoice for this job</button>
+          <button onclick="addToCalendar()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#061A30"><i class="ti ti-calendar-plus" style="font-size:16px;color:#635BFF"></i> Add to Google / Apple Calendar</button>
+          <button onclick="deleteCurrentJob()" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#C5C3BB;text-align:left"><i class="ti ti-trash" style="font-size:15px"></i> Delete job</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var jobs = [];
+  var currentView = 'calendar';
+  var calYear = new Date().getFullYear();
+  var calMonth = new Date().getMonth();
+  var activeFilter = 'all';
+  var editingJobId = null;
+  var detailJobId = null;
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var STATUS_COLORS = { scheduled:'#0A2540', inprogress:'#C28A1E', done:'#1D9E75', cancelled:'#A3A29C', todo:'#635BFF' };
+  var STATUS_BG = { scheduled:'#EEF3F8', inprogress:'#FBF3E3', done:'#E1F5EE', cancelled:'#F0EFEA', todo:'#F3F1FE' };
+  var STATUS_LABEL = { scheduled:'Scheduled', inprogress:'In progress', done:'Completed', cancelled:'Cancelled', todo:'To do' };
+
+  // Mobile drawer
+  function openDrawer(){ document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeDrawer(){ document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
+
+  // View toggle
+  function setView(v){
+    currentView=v;
+    document.getElementById('view-calendar').style.display=v==='calendar'?'block':'none';
+    document.getElementById('view-list').style.display=v==='list'?'block':'none';
+    document.getElementById('btn-cal').classList.toggle('active',v==='calendar');
+    document.getElementById('btn-list').classList.toggle('active',v==='list');
+    if(v==='calendar') renderCalendar(); else renderList();
+  }
+
+  function filterByStatus(s){
+    activeFilter=s;
+    if(currentView==='list') renderList(); else renderCalendar();
+  }
+
+  // ── Stats ──
+  function updateStats(){
+    var today=new Date().toISOString().split('T')[0];
+    document.getElementById('stat-all').textContent=jobs.length;
+    document.getElementById('stat-scheduled').textContent=jobs.filter(function(j){return j.status==='scheduled';}).length;
+    document.getElementById('stat-inprogress').textContent=jobs.filter(function(j){return j.status==='inprogress';}).length;
+    document.getElementById('stat-done').textContent=jobs.filter(function(j){return j.status==='done';}).length;
+    document.getElementById('stat-today').textContent=jobs.filter(function(j){return j.date===today;}).length;
+  }
+
+  // ── Calendar ──
+  function renderCalendar(){
+    var isMobile=window.innerWidth<=768;
+    updateStats();
+    document.getElementById('cal-title').textContent=MONTHS[calMonth]+' '+calYear;
+    if(isMobile){ renderWeekStrip(); return; }
+
+    var grid=document.getElementById('cal-grid');
+    // Remove old day cells (keep headers)
+    var cells=grid.querySelectorAll('.cal-day');
+    cells.forEach(function(c){c.remove();});
+
+    var today=new Date(); today.setHours(0,0,0,0);
+    var firstDay=new Date(calYear,calMonth,1);
+    var startDow=(firstDay.getDay()+6)%7; // Mon=0
+    var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+    var prevDays=new Date(calYear,calMonth,0).getDate();
+
+    // Prev month filler
+    for(var i=0;i<startDow;i++){
+      var d=document.createElement('div'); d.className='cal-day other-month';
+      var n=document.createElement('div'); n.className='cal-day-num'; n.textContent=prevDays-startDow+1+i;
+      d.appendChild(n); grid.appendChild(d);
     }
-    loadUser();
 
-    // ── Modal ──
-    function openModal(status) {
-      editingId = null;
-      document.getElementById('modal-title').textContent = 'New job';
-      document.getElementById('f-title').value = '';
-      document.getElementById('f-customer').value = '';
-      document.getElementById('f-notes').value = '';
-      document.getElementById('f-date').value = '';
-      document.getElementById('f-time').value = '';
-      document.getElementById('f-status').value = status || 'todo';
-      document.getElementById('f-priority').value = 'normal';
-      document.getElementById('reminder-toggle').classList.remove('off');
-      document.getElementById('modal').classList.add('open');
-      setTimeout(function() { document.getElementById('f-title').focus(); }, 100);
+    // This month
+    for(var day=1;day<=daysInMonth;day++){
+      var iso=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var dt=new Date(calYear,calMonth,day);
+      var isToday=dt.toDateString()===today.toDateString();
+      var cell=document.createElement('div');
+      cell.className='cal-day'+(isToday?' today':'');
+      cell.dataset.date=iso;
+      var numEl=document.createElement('div'); numEl.className='cal-day-num'; numEl.textContent=day;
+      cell.appendChild(numEl);
+
+      // Jobs for this day
+      var dayJobs=jobs.filter(function(j){return j.date===iso && (activeFilter==='all'||j.status===activeFilter);});
+      dayJobs.slice(0,3).forEach(function(j){
+        var chip=document.createElement('div'); chip.className='cal-job-chip';
+        chip.style.cssText='background:'+STATUS_BG[j.status||'scheduled']+';color:'+STATUS_COLORS[j.status||'scheduled']+';font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer';
+        chip.textContent=(j.time?j.time.slice(0,5)+' ':'')+j.title;
+        chip.onclick=function(e){ e.stopPropagation(); openDetail(j.id); };
+        cell.appendChild(chip);
+      });
+      if(dayJobs.length>3){ var more=document.createElement('div'); more.style.cssText='font-size:10px;color:#8B8A84;font-weight:600;padding:1px 4px'; more.textContent='+'+(dayJobs.length-3)+' more'; cell.appendChild(more); }
+
+      cell.onclick=function(){ openJobModal(null,this.dataset.date); };
+      grid.appendChild(cell);
     }
 
-    function openEditModal(id) {
-      var job = jobs.find(function(j) { return j.id === id; });
-      if (!job) return;
-      editingId = id;
-      document.getElementById('modal-title').textContent = 'Edit job';
-      document.getElementById('f-title').value = job.title;
-      document.getElementById('f-customer').value = job.customer || '';
-      document.getElementById('f-notes').value = job.notes || '';
-      document.getElementById('f-date').value = job.date || '';
-      document.getElementById('f-time').value = job.time || '';
-      document.getElementById('f-status').value = job.status;
-      document.getElementById('f-priority').value = job.priority || 'normal';
-      if (!job.reminder) document.getElementById('reminder-toggle').classList.add('off');
-      else document.getElementById('reminder-toggle').classList.remove('off');
-      document.getElementById('modal').classList.add('open');
+    // Next month filler
+    var total=startDow+daysInMonth;
+    var rows=Math.ceil(total/7)*7;
+    for(var n=1;n<=rows-total;n++){
+      var d=document.createElement('div'); d.className='cal-day other-month';
+      var numEl=document.createElement('div'); numEl.className='cal-day-num'; numEl.textContent=n;
+      d.appendChild(numEl); grid.appendChild(d);
     }
+  }
 
-    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function renderWeekStrip(){
+    var strip=document.getElementById('cal-week');
+    var today=new Date(); today.setHours(0,0,0,0);
+    var todayStr=today.toISOString().split('T')[0];
+    var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    strip.innerHTML='';
+    // Show 14 days from today
+    for(var i=-1;i<13;i++){
+      var dt=new Date(today); dt.setDate(today.getDate()+i);
+      var iso=dt.toISOString().split('T')[0];
+      var isToday=iso===todayStr;
+      var dayJobs=jobs.filter(function(j){return j.date===iso;});
+      var dayOfWeek=days[(dt.getDay()+6)%7];
+      var btn=document.createElement('div');
+      btn.style.cssText='flex-shrink:0;width:52px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 4px;border-radius:12px;background:'+(isToday?'#0A2540':'transparent')+';';
+      btn.innerHTML='<div style="font-size:10px;font-weight:600;color:'+(isToday?'rgba(255,255,255,0.7)':'#8B8A84')+'">'+dayOfWeek+'</div>'
+        +'<div style="font-size:16px;font-weight:700;color:'+(isToday?'#fff':'#061A30')+'">'+dt.getDate()+'</div>'
+        +(dayJobs.length?'<div style="width:6px;height:6px;border-radius:50%;background:'+(isToday?'#5DCAA5':'#0A2540')+';"></div>':'<div style="width:6px;height:6px;"></div>');
+      (function(isoStr,jobList){
+        btn.onclick=function(){
+          showDayJobs(isoStr,jobList);
+        };
+      })(iso,dayJobs);
+      strip.appendChild(btn);
+    }
+    // Show today's jobs by default
+    showDayJobs(todayStr,jobs.filter(function(j){return j.date===todayStr;}));
+  }
 
-    async function saveJob() {
-      var title = document.getElementById('f-title').value.trim();
-      if (!title) { document.getElementById('f-title').focus(); return; }
-      var reminder = !document.getElementById('reminder-toggle').classList.contains('off');
-      var job = {
-        id: editingId || Date.now().toString(),
-        title: title,
-        customer: document.getElementById('f-customer').value.trim(),
-        notes: document.getElementById('f-notes').value.trim(),
-        date: document.getElementById('f-date').value,
-        time: document.getElementById('f-time').value,
-        status: document.getElementById('f-status').value,
-        priority: document.getElementById('f-priority').value,
-        reminder: reminder,
-        created: editingId ? (jobs.find(function(j){return j.id===editingId;})||{}).created : new Date().toISOString()
-      };
-      var saved = await DB.saveJob(editingId ? {...job, id: editingId} : {...job, isNew: true});
-      if (!saved) { alert('Could not save job.'); return; }
-      jobs = await DB.getJobs();
-      async function init() {
-      try {
-        jobs = await DB.getJobs();
-      } catch(e) { jobs = []; }
+  function showDayJobs(date,dayJobs){
+    var panel=document.getElementById('selected-day-jobs');
+    panel.style.display='block';
+    var d=new Date(date+'T12:00:00');
+    var label=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+    if(!dayJobs.length){
+      panel.innerHTML='<div style="text-align:center;padding:24px;color:#A3A29C;font-size:13px"><i class="ti ti-calendar-off" style="font-size:24px;display:block;margin-bottom:8px"></i>No jobs on '+label+'</div>'
+        +'<div style="text-align:center;padding:0 20px 20px"><button onclick="openJobModal(null,\''+date+'\')" style="padding:10px 22px;background:#0A2540;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Add job for this day</button></div>';
+      return;
+    }
+    panel.innerHTML='<div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:10px;padding:0 2px">'+label+'</div>'
+      +dayJobs.map(function(j){
+        return '<div onclick="openDetail(\''+j.id+'\')" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px">'
+          +'<div style="width:8px;height:8px;border-radius:50%;background:'+STATUS_COLORS[j.status||'scheduled']+';flex-shrink:0"></div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+j.title+'</div>'
+          +'<div style="font-size:11px;color:#8B8A84;margin-top:2px">'+(j.time||'')+(j.customer_name?' · '+j.customer_name:'')+'</div></div>'
+          +'<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:'+STATUS_BG[j.status||'scheduled']+';color:'+STATUS_COLORS[j.status||'scheduled']+'">'+STATUS_LABEL[j.status||'scheduled']+'</span>'
+          +'</div>';
+      }).join('');
+  }
 
-      // localStorage fallback
-      if (jobs.length === 0) {
-        jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+  function calNav(dir){
+    calMonth+=dir;
+    if(calMonth>11){calMonth=0;calYear++;}
+    if(calMonth<0){calMonth=11;calYear--;}
+    renderCalendar();
+  }
+  function goToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); renderCalendar(); }
+
+  // ── List view ──
+  function renderList(){
+    var q=(document.getElementById('list-search').value||'').toLowerCase();
+    var f=document.getElementById('list-filter').value;
+    var today=new Date().toISOString().split('T')[0];
+    var filtered=jobs.filter(function(j){
+      if(f!=='all'&&j.status!==f)return false;
+      if(!q)return true;
+      return (j.title||'').toLowerCase().includes(q)||(j.customer_name||'').toLowerCase().includes(q)||(j.address||'').toLowerCase().includes(q);
+    });
+    if(!filtered.length){
+      document.getElementById('list-container').innerHTML='<div class="empty-state"><i class="ti ti-calendar-off"></i><h3>No jobs found</h3><p>Try changing the filter or search term</p></div>';
+      return;
+    }
+    // Group by date
+    var groups={};
+    filtered.forEach(function(j){
+      var grp=j.date||'No date';
+      if(!groups[grp])groups[grp]=[];
+      groups[grp].push(j);
+    });
+    var sortedGroups=Object.keys(groups).sort();
+    document.getElementById('list-container').innerHTML=sortedGroups.map(function(date){
+      var label=date==='No date'?'No date':new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      var isToday=date===today;
+      return '<div class="list-group">'
+        +'<div class="list-group-title">'+(isToday?'<span style="background:#D14343;color:#fff;font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700">TODAY</span> ':'')+label+'</div>'
+        +groups[date].map(function(j){
+          var mapUrl=j.address?'https://maps.google.com/?q='+encodeURIComponent(j.address):'';
+          var appleUrl=j.address?'https://maps.apple.com/?q='+encodeURIComponent(j.address):'';
+          return '<div class="job-card" onclick="openDetail(\''+j.id+'\')">'
+            +'<div class="job-status-dot" style="background:'+STATUS_COLORS[j.status||'scheduled']+'"></div>'
+            +'<div class="job-info">'
+            +'<div class="job-title">'+j.title+'</div>'
+            +'<div class="job-meta">'
+            +(j.time?'<span><i class="ti ti-clock"></i> '+j.time+'</span>':'')
+            +(j.customer_name?'<span><i class="ti ti-user"></i> '+j.customer_name+'</span>':'')
+            +(j.address?'<span><i class="ti ti-map-pin"></i> '+j.address.split(',')[0]+'</span>':'')
+            +'</div></div>'
+            +'<span class="status-chip chip-'+j.status+'">'+STATUS_LABEL[j.status||'scheduled']+'</span>'
+            +'<div class="job-actions">'
+            +(j.phone?'<a href="tel:'+j.phone+'" class="job-action-btn green" onclick="event.stopPropagation()" title="Call"><i class="ti ti-phone"></i></a>':'')
+            +(j.address?'<a href="'+mapUrl+'" target="_blank" class="job-action-btn blue" onclick="event.stopPropagation()" title="Directions"><i class="ti ti-map-2"></i></a>':'')
+            +'<button class="job-action-btn" onclick="event.stopPropagation();openJobModal(\''+j.id+'\')" title="Edit"><i class="ti ti-pencil"></i></button>'
+            +'</div></div>';
+        }).join('')
+        +'</div>';
+    }).join('');
+  }
+
+  // ── Detail panel ──
+  function openDetail(id){
+    var j=jobs.find(function(x){return x.id===id;});
+    if(!j)return;
+    detailJobId=id;
+    document.getElementById('dp-title').textContent=j.title||'Job';
+    document.getElementById('dp-status-sel').value=j.status||'scheduled';
+
+    // Action pills
+    var actions='';
+    if(j.phone) actions+='<a href="tel:'+j.phone+'" class="action-pill pill-call"><i class="ti ti-phone" style="font-size:16px"></i> Call</a>';
+    if(j.phone){ var wnum=j.phone.replace(/\s+/g,'').replace(/^0/,'44'); actions+='<a href="https://wa.me/'+wnum+'" target="_blank" class="action-pill pill-wa"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i> WhatsApp</a>'; }
+    if(j.address){
+      var gmaps='https://maps.google.com/?q='+encodeURIComponent(j.address);
+      var amaps='https://maps.apple.com/?q='+encodeURIComponent(j.address);
+      actions+='<a href="'+gmaps+'" target="_blank" class="action-pill pill-map" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')"><i class="ti ti-map-2" style="font-size:16px"></i> Directions</a>';
+    }
+    document.getElementById('dp-actions').innerHTML=actions||'<div style="font-size:12px;color:#A3A29C;padding:4px">Add phone/address to enable quick actions</div>';
+
+    // Info rows
+    var rows='';
+    if(j.date||j.time) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-calendar"></i></div><div><div class="detail-label">Date & time</div><div class="detail-value">'+(j.date?new Date(j.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'')+' '+(j.time?'at '+j.time:'')+'</div></div></div>';
+    if(j.customer_name) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-user"></i></div><div><div class="detail-label">Customer</div><div class="detail-value">'+j.customer_name+'</div></div></div>';
+    if(j.phone) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-phone"></i></div><div><div class="detail-label">Phone</div><a href="tel:'+j.phone+'" class="detail-value" style="color:#0A2540;text-decoration:none">'+j.phone+'</a></div></div>';
+    if(j.email) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-mail"></i></div><div><div class="detail-label">Email</div><div class="detail-value">'+j.email+'</div></div></div>';
+    if(j.address) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-map-pin"></i></div><div><div class="detail-label">Address</div><div class="detail-value">'+j.address+'</div></div></div>';
+    if(j.duration) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-clock"></i></div><div><div class="detail-label">Duration</div><div class="detail-value">'+(j.duration>=480?'Full day':j.duration>=60?Math.floor(j.duration/60)+'h '+(j.duration%60?j.duration%60+'m':''):j.duration+'m')+'</div></div></div>';
+    document.getElementById('dp-info').innerHTML=rows||'<div style="font-size:13px;color:#A3A29C">No details</div>';
+
+    if(j.notes){ document.getElementById('dp-notes-section').style.display='block'; document.getElementById('dp-notes-text').textContent=j.notes; }
+    else { document.getElementById('dp-notes-section').style.display='none'; }
+
+    document.getElementById('detail-overlay').classList.add('open');
+  }
+  function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); detailJobId=null; }
+
+  function openMapsChoice(e,addr){
+    e.preventDefault();
+    var decoded=decodeURIComponent(addr);
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:700;display:flex;align-items:flex-end;justify-content:center;padding:16px';
+    overlay.innerHTML='<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;padding:16px;display:flex;flex-direction:column;gap:10px">'
+      +'<div style="font-size:14px;font-weight:700;color:#061A30;text-align:center;margin-bottom:4px">Open in maps</div>'
+      +'<a href="https://maps.google.com/?q='+encodeURIComponent(decoded)+'" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#4285F4;color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700"><i class="ti ti-brand-google" style="font-size:18px"></i> Google Maps</a>'
+      +'<a href="https://maps.apple.com/?q='+encodeURIComponent(decoded)+'" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700"><i class="ti ti-map-2" style="font-size:18px"></i> Apple Maps</a>'
+      +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:11px;border-radius:10px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>'
+      +'</div>';
+    overlay.onclick=function(e){ if(e.target===overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+  }
+
+  async function updateJobStatus(){
+    if(!detailJobId)return;
+    var status=document.getElementById('dp-status-sel').value;
+    var j=jobs.find(function(x){return x.id===detailJobId;});
+    if(j){ j.status=status; saveJobsLocal(); }
+    try{ await supabase.from('jobs').update({status:status}).eq('id',detailJobId); }catch(e){}
+    if(currentView==='calendar') renderCalendar(); else renderList();
+    showToast('Status updated to '+STATUS_LABEL[status]);
+    if(status==='done'){
+      setTimeout(function(){
+        if(confirm('Job completed! Create an invoice now?')){ createInvoiceForJob(); }
+      },400);
+    }
+  }
+
+  function editCurrentJob(){ if(detailJobId){ closeDetail(); openJobModal(detailJobId); } }
+
+  function createInvoiceForJob(){
+    var j=jobs.find(function(x){return x.id===detailJobId;});
+    if(!j)return;
+    sessionStorage.setItem('prefill_invoice',JSON.stringify({name:j.customer_name||'',email:j.email||'',phone:j.phone||'',job:j.title||'',address:j.address||''}));
+    window.location.href='create-invoice.html';
+  }
+
+  function addToCalendar(){
+    var j=jobs.find(function(x){return x.id===detailJobId;});
+    if(!j)return;
+    var date=(j.date||'').replace(/-/g,'');
+    var startTime=(j.time||'09:00').replace(':','')+'00';
+    var endHr=String(parseInt((j.time||'09:00').split(':')[0])+Math.ceil((j.duration||120)/60)).padStart(2,'0');
+    var endMin=(j.time||'09:00').split(':')[1]||'00';
+    var start=date+'T'+startTime;
+    var end=date+'T'+endHr+endMin+'00';
+    var details=[j.customer_name?'Customer: '+j.customer_name:'',j.phone?'Phone: '+j.phone:'',j.notes?'Notes: '+j.notes:''].filter(Boolean).join('\n');
+    var gcal='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(j.title||'Job')+'&dates='+start+'/'+end+'&details='+encodeURIComponent(details)+(j.address?'&location='+encodeURIComponent(j.address):'');
+    var ical='data:text/calendar;charset=utf-8,'+encodeURIComponent('BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:'+start+'\nDTEND:'+end+'\nSUMMARY:'+(j.title||'Job')+'\n'+(j.address?'LOCATION:'+j.address+'\n':'')+('DESCRIPTION:'+details.replace(/\n/g,'\\n')+'\n')+'BEGIN:VALARM\nTRIGGER:-PT8H\nACTION:DISPLAY\nDESCRIPTION:Job reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR');
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:700;display:flex;align-items:flex-end;justify-content:center;padding:16px';
+    overlay.innerHTML='<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;padding:16px;display:flex;flex-direction:column;gap:10px">'
+      +'<div style="font-size:14px;font-weight:700;color:#061A30;text-align:center;margin-bottom:4px">Add to calendar</div>'
+      +'<a href="'+gcal+'" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#4285F4;color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700"><i class="ti ti-brand-google" style="font-size:18px"></i> Google Calendar</a>'
+      +'<a href="'+ical+'" download="job.ics" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700"><i class="ti ti-calendar" style="font-size:18px"></i> Apple / Outlook (.ics)</a>'
+      +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:11px;border-radius:10px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>'
+      +'</div>';
+    overlay.onclick=function(e){ if(e.target===overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+  }
+
+  async function deleteCurrentJob(){
+    if(!detailJobId)return;
+    if(!confirm('Delete this job? This cannot be undone.'))return;
+    jobs=jobs.filter(function(j){return j.id!==detailJobId;});
+    saveJobsLocal();
+    try{ await supabase.from('jobs').delete().eq('id',detailJobId); }catch(e){}
+    closeDetail();
+    if(currentView==='calendar') renderCalendar(); else renderList();
+    showToast('Job deleted');
+  }
+
+  // ── Add/Edit modal ──
+  function openJobModal(id, preDate){
+    editingJobId=id;
+    document.getElementById('jm-error').style.display='none';
+    document.getElementById('job-modal-title').textContent=id?'Edit job':'New job';
+    document.getElementById('jm-save-btn').textContent=id?'Update job':'Save job';
+    if(id){
+      var j=jobs.find(function(x){return x.id===id;});
+      if(j){
+        document.getElementById('jm-title').value=j.title||'';
+        document.getElementById('jm-customer').value=j.customer_name||'';
+        document.getElementById('jm-phone').value=j.phone||'';
+        document.getElementById('jm-email').value=j.email||'';
+        document.getElementById('jm-address').value=j.address||'';
+        document.getElementById('jm-date').value=j.date||'';
+        document.getElementById('jm-time').value=j.time||'09:00';
+        document.getElementById('jm-duration').value=j.duration||120;
+        document.getElementById('jm-status').value=j.status||'scheduled';
+        document.getElementById('jm-notes').value=j.notes||'';
       }
-      // Build payStatuses map from jobs
-      jobs.forEach(function(j) { _payStatuses[j.id] = { status: j.payment_status || 'unpaid', method: j.payment_method || 'card' }; });
-      if (jobs.length > 0) {
-        var intro = document.getElementById('jobs-intro'); if (intro) intro.style.display = 'none';
-        var cont = document.getElementById('jobs-content'); if (cont) cont.style.display = 'block';
-      }
-      closeModal();
-      if (jobs.length > 0) {
-      var intro = document.getElementById('jobs-intro'); if (intro) intro.style.display = 'none';
-      var cont = document.getElementById('jobs-content'); if (cont) cont.style.display = 'block';
-    }
-    renderBoard();
-      renderCalendar();
-    }
-
-    // ── Board ──
-    function renderBoard() {
-      var cols = { todo: [], scheduled: [], inprogress: [], done: [] };
-      jobs.forEach(function(j) { if (cols[j.status]) cols[j.status].push(j); });
-      Object.keys(cols).forEach(function(status) {
-        var el = document.getElementById('col-' + status);
-        var count = document.getElementById('count-' + status);
-        if (count) count.textContent = cols[status].length;
-        if (!el) return;
-        if (cols[status].length === 0) {
-          var empty = { todo: 'No jobs yet<br><small>Click + to add one</small>', scheduled: 'No scheduled jobs', inprogress: 'No jobs in progress', done: 'No completed jobs' };
-          el.innerHTML = '<div class="col-empty">' + (empty[status] || '') + '</div>';
-          return;
+    } else {
+      document.getElementById('jm-title').value='';
+      document.getElementById('jm-customer').value='';
+      document.getElementById('jm-phone').value='';
+      document.getElementById('jm-email').value='';
+      document.getElementById('jm-address').value='';
+      document.getElementById('jm-date').value=preDate||new Date().toISOString().split('T')[0];
+      document.getElementById('jm-time').value='09:00';
+      document.getElementById('jm-duration').value='120';
+      document.getElementById('jm-status').value='scheduled';
+      document.getElementById('jm-notes').value='';
+      // Prefill from sessionStorage
+      try{
+        var pf=JSON.parse(sessionStorage.getItem('prefill_job')||'null');
+        if(pf){ sessionStorage.removeItem('prefill_job');
+          if(pf.customer) document.getElementById('jm-customer').value=pf.customer;
+          if(pf.title) document.getElementById('jm-title').value=pf.title;
+          if(pf.notes) document.getElementById('jm-notes').value=pf.notes;
         }
-        el.innerHTML = cols[status].map(function(j) {
-          var dateStr = j.date ? '<div class="job-date"><i class="ti ti-calendar"></i>' + formatDate(j.date) + (j.time ? ' · ' + j.time : '') + '</div>' : '';
-          var tag = j.priority === 'urgent' ? '<span class="job-tag tag-urgent">Urgent</span>' : '';
-          var payStatus = _payStatuses && _payStatuses[j.id] ? _payStatuses[j.id].status : 'unpaid';
-          var payBadgeCls = { paid:'job-pay-paid', partial:'job-pay-partial', unpaid:'job-pay-unpaid', overdue:'job-pay-overdue' };
-          var payBadgeLbl = { paid:'Paid', partial:'Partial', unpaid:'Unpaid', overdue:'Overdue' };
-          var payBadge = '<span class="job-pay-badge ' + (payBadgeCls[payStatus] || 'job-pay-unpaid') + '" id="pay-badge-' + j.id + '">' + (payBadgeLbl[payStatus] || payStatus) + '</span>';
-          return '<div class="job-card" data-pay-id="' + j.id + '">'
-            + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:5px">'
-            + '<div class="job-title" style="margin-bottom:0;cursor:pointer" onclick="openEditModal(\'' + j.id + '\')">' + j.title + '</div>'
-            + payBadge + '</div>'
-            + (j.customer ? '<div class="job-customer" onclick="openEditModal(\'' + j.id + '\')" style="cursor:pointer"><i class="ti ti-user"></i>' + j.customer + '</div>' : '')
-            + '<div class="job-meta">' + dateStr + tag + '</div>'
-            + '<button onclick="openPayModal(\'' + j.id + '\', \'' + payStatus + '\')" style="margin-top:8px;width:100%;padding:5px 8px;border-radius:7px;border:1px solid #E5E3DC;background:#FAFAF8;font-size:11px;font-weight:600;color:#6B6A65;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px"><i class="ti ti-cash" style="font-size:12px"></i> Mark payment</button>'
-            + '</div>';
-        }).join('');
+      }catch(e){}
+    }
+    document.getElementById('job-modal').classList.add('open');
+    setTimeout(function(){ document.getElementById('jm-title').focus(); },150);
+  }
+  function closeJobModal(){ document.getElementById('job-modal').classList.remove('open'); editingJobId=null; }
+
+  async function saveJob(){
+    var title=document.getElementById('jm-title').value.trim();
+    var errEl=document.getElementById('jm-error');
+    if(!title){ errEl.textContent='Please enter a job title.'; errEl.style.display='block'; return; }
+    errEl.style.display='none';
+    var btn=document.getElementById('jm-save-btn'); btn.textContent='Saving...'; btn.disabled=true;
+
+    var job={
+      id:editingJobId||('job_'+Date.now()),
+      title:title,
+      customer_name:document.getElementById('jm-customer').value.trim(),
+      phone:document.getElementById('jm-phone').value.trim(),
+      email:document.getElementById('jm-email').value.trim(),
+      address:document.getElementById('jm-address').value.trim(),
+      date:document.getElementById('jm-date').value,
+      time:document.getElementById('jm-time').value,
+      duration:parseInt(document.getElementById('jm-duration').value)||120,
+      status:document.getElementById('jm-status').value,
+      notes:document.getElementById('jm-notes').value.trim(),
+      reminder:document.getElementById('jm-reminder').checked,
+      created_at:editingJobId?(jobs.find(function(x){return x.id===editingJobId;})||{}).created_at||new Date().toISOString():new Date().toISOString()
+    };
+
+    // Update local array
+    var idx=jobs.findIndex(function(x){return x.id===job.id;});
+    if(idx>-1) jobs[idx]=job; else jobs.unshift(job);
+    saveJobsLocal();
+
+    // Save to Supabase
+    try{ var {data:{user}}=await supabase.auth.getUser(); if(user) await supabase.from('jobs').upsert({...job,user_id:user.id}); }catch(e){}
+
+    // Browser notification reminder
+    if(job.reminder&&job.date&&'Notification' in window){
+      Notification.requestPermission().then(function(p){
+        if(p==='granted'){
+          var t=new Date(job.date+'T08:00:00').getTime()-Date.now();
+          if(t>0&&t<7*24*3600*1000) setTimeout(function(){ new Notification('Job today — '+job.title,{body:(job.customer_name||'')+(job.address?'\n'+job.address:''),icon:'/favicon.svg'}); },t);
+        }
       });
     }
 
-    // ── Calendar ──
-    function renderCalendar() {
-      var year = calDate.getFullYear();
-      var month = calDate.getMonth();
-      document.getElementById('cal-month').textContent = calDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-      var firstDay = new Date(year, month, 1);
-      var startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // Mon start
-      var daysInMonth = new Date(year, month + 1, 0).getDate();
-      var today = new Date();
-      var html = '';
-      for (var i = 0; i < startDay; i++) {
-        var d = new Date(year, month, -startDay + i + 1);
-        html += '<div class="cal-cell other-month" onclick="openModalOnDate(\'' + fmtDate(d) + '\')">'
-          + '<div class="cal-date">' + d.getDate() + '</div></div>';
-      }
-      for (var day = 1; day <= daysInMonth; day++) {
-        var isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-        var dateStr = fmtDate(new Date(year, month, day));
-        var dayJobs = jobs.filter(function(j) { return j.date === dateStr; });
-        var eventsHtml = dayJobs.slice(0, 3).map(function(j) {
-          var cls = j.status === 'inprogress' ? 'ev-inprogress' : j.priority === 'urgent' ? 'ev-urgent' : 'ev-scheduled';
-          return '<div class="cal-event ' + cls + '" onclick="event.stopPropagation();openEditModal(\'' + j.id + '\')">' + j.title + '</div>';
-        }).join('');
-        if (dayJobs.length > 3) eventsHtml += '<div style="font-size:10px;color:#8B8A84;padding:1px 5px">+' + (dayJobs.length - 3) + ' more</div>';
-        html += '<div class="cal-cell' + (isToday ? ' today' : '') + '" onclick="openModalOnDate(\'' + dateStr + '\')">'
-          + '<div class="cal-date">' + day + '</div>'
-          + eventsHtml + '</div>';
-      }
-      var remaining = 42 - startDay - daysInMonth;
-      for (var i = 1; i <= remaining; i++) {
-        var d = new Date(year, month + 1, i);
-        html += '<div class="cal-cell other-month" onclick="openModalOnDate(\'' + fmtDate(d) + '\')">'
-          + '<div class="cal-date">' + d.getDate() + '</div></div>';
-      }
-      document.getElementById('cal-grid').innerHTML = html;
+    btn.textContent=editingJobId?'Update job':'Save job'; btn.disabled=false;
+    closeJobModal();
+    updateStats();
+    if(currentView==='calendar') renderCalendar(); else renderList();
+    showToast(editingJobId?'Job updated':'Job saved');
+  }
+
+  function saveJobsLocal(){ localStorage.setItem('tb_jobs',JSON.stringify(jobs)); }
+
+  function showToast(msg){
+    var t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
+    t.textContent=msg; document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
+  }
+
+  // Reminder toggle
+  document.getElementById('jm-reminder').addEventListener('change',function(){
+    document.getElementById('jm-knob').style.transform=this.checked?'translateX(20px)':'translateX(0)';
+    document.getElementById('jm-toggle-bg').style.background=this.checked?'#5DCAA5':'#D3D1C7';
+  });
+
+  // Close modals on overlay click
+  document.getElementById('job-modal').addEventListener('click',function(e){if(e.target===this)closeJobModal();});
+  document.getElementById('detail-overlay').addEventListener('click',function(e){if(e.target===this)closeDetail();});
+
+  // ── Init ──
+  async function init(){
+    try{
+      var {data}=await supabase.auth.getUser();
+      if(!data||!data.user){window.location.href='login.html';return;}
+      var m=data.user.user_metadata||{};
+      var first=m.first_name||''; var last=m.last_name||'';
+      var nm=(first+' '+last).trim()||data.user.email.split('@')[0];
+      var ini=((first[0]||'')+(last[0]||'')).toUpperCase()||data.user.email[0].toUpperCase();
+      var av=document.getElementById('sb-av'); if(av)av.textContent=ini;
+      var un=document.getElementById('sb-uname'); if(un)un.textContent=nm;
+      var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan+' plan':'Free plan';
+      var ma=document.getElementById('mob-av'); if(ma)ma.textContent=ini;
+      var mn=document.getElementById('mob-name'); if(mn)mn.textContent=first||nm;
+      var mp=document.getElementById('mob-plan'); if(mp)mp.textContent=m.plan?m.plan+' plan':'Free plan';
+      var h=new Date().getHours();
+      var gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+      var gt=document.getElementById('mob-greet-time'); if(gt)gt.textContent=gr;
+      var gn=document.getElementById('mob-greet-name'); if(gn)gn.textContent=first||nm;
+    }catch(e){}
+
+    // Load jobs
+    try{ var {data:jd}=await supabase.from('jobs').select('*').order('date',{ascending:true}); jobs=jd||[]; }catch(e){ jobs=[]; }
+    var local=JSON.parse(localStorage.getItem('tb_jobs')||'[]');
+    if(!jobs.length) jobs=local;
+    else {
+      // Merge localStorage jobs not in Supabase
+      var ids=new Set(jobs.map(function(j){return j.id;}));
+      local.forEach(function(lj){ if(!ids.has(lj.id)) jobs.push(lj); });
     }
 
-    function openModalOnDate(date) {
-      openModal('scheduled');
-      document.getElementById('f-date').value = date;
-      document.getElementById('f-status').value = 'scheduled';
-    }
+    updateStats();
+    // Check if opened with ?new=true
+    var p=new URLSearchParams(window.location.search);
+    if(p.get('new')==='true') setTimeout(function(){ openJobModal(null); },300);
 
-    function changeMonth(dir) {
-      calDate = new Date(calDate.getFullYear(), calDate.getMonth() + dir, 1);
-      renderCalendar();
-    }
-
-    // ── View switch ──
-    function switchView(view) {
-      currentView = view;
-      document.getElementById('view-board').style.display = view === 'board' ? 'block' : 'none';
-      document.getElementById('view-calendar').style.display = view === 'calendar' ? 'block' : 'none';
-      document.getElementById('btn-board').classList.toggle('active', view === 'board');
-      document.getElementById('btn-calendar').classList.toggle('active', view === 'calendar');
-      if (view === 'calendar') renderCalendar();
-    }
-
-    // ── Helpers ──
-    function fmtDate(d) {
-      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    }
-    function formatDate(str) {
-      if (!str) return '';
-      var d = new Date(str + 'T00:00:00');
-      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    }
-
-    // Close modal on overlay click
-    document.getElementById('modal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) {
-        var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open');
-      }
-    });
-
-    // ── Init ──
-    if (jobs.length > 0) {
-      var intro = document.getElementById('jobs-intro'); if (intro) intro.style.display = 'none';
-      var cont = document.getElementById('jobs-content'); if (cont) cont.style.display = 'block';
-    }
-    renderBoard();
-
-    var _payTargetId = null;
-    var _payStatuses = {};
-    var _badgeCls = { paid:'job-pay-paid', partial:'job-pay-partial', unpaid:'job-pay-unpaid', overdue:'job-pay-overdue' };
-    var _badgeLbl = { paid:'Paid', partial:'Partial', unpaid:'Unpaid', overdue:'Overdue' };
-
-    function openPayModal(id, currentStatus) {
-      _payTargetId = id;
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      var cur = document.querySelector('.pay-status-opt[data-status="' + (currentStatus || 'unpaid') + '"]');
-      if (cur) cur.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = currentStatus === 'partial' ? 'block' : 'none';
-      document.getElementById('pay-partial-amt').value = _payStatuses[id] ? (_payStatuses[id].partialAmt || '') : '';
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      var saved = _payStatuses[id] ? _payStatuses[id].method : 'card';
-      var mb = document.querySelector('.pay-method-btn[data-method="' + saved + '"]');
-      if (mb) mb.classList.add('active');
-      document.getElementById('pay-modal').classList.add('open');
-    }
-    function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
-    function selectPayStatus(el) {
-      document.querySelectorAll('.pay-status-opt').forEach(function(o) { o.classList.remove('selected'); });
-      el.classList.add('selected');
-      document.getElementById('pay-partial-row').style.display = el.dataset.status === 'partial' ? 'block' : 'none';
-    }
-    function selectPayMethod(el) {
-      document.querySelectorAll('.pay-method-btn').forEach(function(b) { b.classList.remove('active'); });
-      el.classList.add('active');
-    }
-    function savePayStatus() {
-      var sel = document.querySelector('.pay-status-opt.selected');
-      if (!sel) return;
-      var status = sel.dataset.status;
-      var mb = document.querySelector('.pay-method-btn.active');
-      _payStatuses[_payTargetId] = { status: status, method: mb ? mb.dataset.method : 'card', partialAmt: status === 'partial' ? document.getElementById('pay-partial-amt').value : null };
-      await DB.updateJobPayment(_payTargetId, status, _payStatuses[_payTargetId].method, _payStatuses[_payTargetId].partialAmt);
-      jobs = await DB.getJobs();
-      renderBoard();
-      var badge = document.getElementById('pay-badge-' + _payTargetId);
-      if (badge) { badge.className = 'job-pay-badge ' + (_badgeCls[status] || 'job-pay-unpaid'); badge.textContent = _badgeLbl[status] || status; }
-      closePayModal();
-    }
-    function getPayBadge(id) {
-      var s = _payStatuses[id];
-      var status = s ? s.status : 'unpaid';
-      var cls = _badgeCls[status] || 'job-pay-unpaid';
-      var lbl = _badgeLbl[status] || status;
-      return '<span class="job-pay-badge ' + cls + '" id="pay-badge-' + id + '">' + lbl + '</span>';
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      var overlay = document.getElementById('pay-modal');
-      if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
-    });
-  </script>
-
-  <div class="pay-modal-overlay" id="pay-modal">
-    <div class="pay-modal">
-      <div class="pay-modal-header">
-        <div class="pay-modal-title">Mark payment status</div>
-        <button class="pay-modal-close" onclick="closePayModal()"><i class="ti ti-x"></i></button>
-      </div>
-      <div style="padding:20px">
-        <div class="pay-status-opts">
-          <div class="pay-status-opt" data-status="paid" style="--opt-color:#1D9E75;--opt-bg:#F0FAF6" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#1D9E75"></div>
-            <div><div class="pay-status-label">Paid in full</div><div class="pay-status-desc">Full amount received</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="partial" style="--opt-color:#C28A1E;--opt-bg:#FBF9F0" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#C28A1E"></div>
-            <div><div class="pay-status-label">Partially paid</div><div class="pay-status-desc">Deposit or part payment received</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="unpaid" style="--opt-color:#6B6A65;--opt-bg:#F8F7F3" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#6B6A65"></div>
-            <div><div class="pay-status-label">Unpaid</div><div class="pay-status-desc">No payment received yet</div></div>
-          </div>
-          <div class="pay-status-opt" data-status="overdue" style="--opt-color:#D14343;--opt-bg:#FEF0F0" onclick="selectPayStatus(this)">
-            <div class="pay-status-dot" style="background:#D14343"></div>
-            <div><div class="pay-status-label">Overdue</div><div class="pay-status-desc">Payment is past due</div></div>
-          </div>
-        </div>
-        <div class="pay-partial-row" id="pay-partial-row">
-          <label>Amount received so far (£)</label>
-          <input type="number" id="pay-partial-amt" placeholder="e.g. 500" min="0" />
-        </div>
-        <div class="pay-method-row">
-          <label>Payment method</label>
-          <div class="pay-method-btns">
-            <button class="pay-method-btn active" data-method="card" onclick="selectPayMethod(this)"><i class="ti ti-credit-card"></i> Card</button>
-            <button class="pay-method-btn" data-method="cash" onclick="selectPayMethod(this)"><i class="ti ti-cash"></i> Cash</button>
-            <button class="pay-method-btn" data-method="bank" onclick="selectPayMethod(this)"><i class="ti ti-building-bank"></i> Bank transfer</button>
-            <button class="pay-method-btn" data-method="mixed" onclick="selectPayMethod(this)"><i class="ti ti-arrows-exchange"></i> Mixed</button>
-          </div>
-        </div>
-      </div>
-      <div class="pay-modal-footer">
-        <button class="pay-btn-cancel" onclick="closePayModal()">Cancel</button>
-        <button class="pay-btn-save" onclick="savePayStatus()">Save status</button>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- HAMBURGER OVERLAY + DRAWER -->
-  <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
-  <div class="mob-drawer" id="mob-drawer">
-    <div class="mob-drawer-head">
-      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
-      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="mob-drawer-section">Main</div>
-    <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
-    <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-    <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
-    <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
-    <a href="jobs.html" class="mob-drawer-item active"><i class="ti ti-briefcase"></i> Jobs</a>
-    <div class="mob-drawer-section">Reports</div>
-    <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
-    <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
-    <div class="mob-drawer-section">Account</div>
-    <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
-    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
-    <div class="mob-drawer-bottom">
-      <div class="mob-drawer-user">
-        <div class="mob-drawer-av" id="mob-drawer-av"></div>
-        <div>
-          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
-          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
-    // Swipe to close
-    var _swipeStartX = 0;
-    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
-    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
-  </script>
+    if(window.innerWidth<=768) setView('list'); else setView('calendar');
+  }
+  init();
+</script>
 </body>
 </html>
