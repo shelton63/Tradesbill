@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -363,16 +363,27 @@
         return c[status] || '#A3A29C';
       }
 
-      // ── Recent invoices rows ──
+      // ── Recent invoices rows — customer name links to profile, badge opens payment modal ──
       var invRows = invoices.slice(0,5).map(function(inv, i) {
         var invId = inv.id || '';
         var status = inv.status || 'unpaid';
-        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F0EFEA;cursor:pointer" onclick="openPayModal(\'' + invId + '\',\'' + status + '\')" id="inv-row-' + invId + '">'
-          + '<div style="width:30px;height:30px;border-radius:50%;background:' + (['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'][i%5]) + ';color:' + (['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'][i%5]) + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(inv.customer_name) + '</div>'
-          + '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (inv.customer_name||'—') + '</div>'
-          + '<div style="font-size:11px;color:#8B8A84">' + (inv.job||'—') + ' · ' + (inv.number||('#'+inv.id.slice(0,6))) + '</div></div>'
-          + '<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">' + fmtGbp(inv.amount) + '</div>'
-          + badge(status) + '</div>';
+        var custName = inv.customer_name || '—';
+        var custParam = encodeURIComponent(custName);
+        var bg = ['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'][i%5];
+        var fg = ['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'][i%5];
+        return '<div id="inv-row-' + invId + '" style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #F0EFEA">'
+          // Avatar + name → links to customer profile
+          + '<a href="customers.html?name=' + custParam + '" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none">'
+          + '<div style="width:32px;height:32px;border-radius:50%;background:' + bg + ';color:' + fg + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(custName) + '</div>'
+          + '<div style="min-width:0"><div style="font-size:12px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + custName + '</div>'
+          + '<div style="font-size:11px;color:#8B8A84">' + (inv.job||'—') + ' · ' + (inv.number||('#'+invId.slice(0,6))) + '</div></div>'
+          + '</a>'
+          // Amount + badge → opens payment modal
+          + '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer" onclick="openPayModal(\'' + invId + '\',\'' + status + '\')" title="Update payment status">'
+          + '<div style="font-size:13px;font-weight:600;color:#061A30">' + fmtGbp(inv.amount) + '</div>'
+          + badge(status)
+          + '</div>'
+          + '</div>';
       }).join('');
 
       // ── Jobs rows ──
@@ -391,11 +402,14 @@
         ? '<div style="padding:14px 16px;font-size:12px;color:#1D9E75;display:flex;align-items:center;gap:6px"><i class="ti ti-circle-check" style="font-size:16px"></i> All invoices paid — great work!</div>'
         : overdueList.slice(0,3).map(function(inv) {
             var isOv = inv.status === 'overdue';
-            return '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA">'
+            var custParam = encodeURIComponent(inv.customer_name||'');
+            return '<a href="customers.html?name=' + custParam + '" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F0EFEA;text-decoration:none">'
               + '<div style="width:28px;height:28px;border-radius:50%;background:#FBF3E3;color:#C28A1E;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">' + ini2(inv.customer_name) + '</div>'
               + '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:#061A30">' + (inv.customer_name||'Unknown') + '</div>'
-              + '<div style="font-size:11px;color:' + (isOv?'#D14343':'#C28A1E') + '">' + (isOv?'Overdue':'Unpaid') + '</div></div>'
-              + '<div style="font-size:13px;font-weight:600;color:#061A30">' + fmtGbp(inv.amount) + '</div></div>';
+              + '<div style="font-size:11px;color:' + (isOv?'#D14343':'#C28A1E') + '">' + (isOv?'Overdue':'Unpaid') + ' · tap to view profile</div></div>'
+              + '<div style="font-size:13px;font-weight:600;color:#061A30">' + fmtGbp(inv.amount) + '</div>'
+              + '<i class="ti ti-chevron-right" style="font-size:14px;color:#A3A29C;flex-shrink:0"></i>'
+              + '</a>';
           }).join('');
 
       document.getElementById('main-content').innerHTML =
