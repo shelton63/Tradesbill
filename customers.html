@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -432,13 +432,44 @@
 
         // Notes
         + '<div class="detail-card">'
-        + '<div class="detail-card-header"><div class="detail-card-title">Internal notes</div></div>'
-        + '<div class="detail-card-body">'
-        + '<textarea class="note-area" id="note-' + c.id + '" placeholder="Add notes about this customer — preferences, site access, parking, key contacts...">' + (c.notes||'') + '</textarea>'
-        + '<button class="btn-save-note" onclick="saveNote(\'' + c.id + '\')">Save note</button>'
+        + '<div class="detail-card-header"><div class="detail-card-title">Internal notes</div>'
+        + '<button onclick="toggleNoteEdit(\'' + c.id + '\')" id="note-edit-btn-' + c.id + '" style="font-size:12px;color:#0A2540;font-weight:600;background:none;border:none;cursor:pointer">'
+        + (c.notes ? 'Edit' : 'Add note') + '</button>'
+        + '</div>'
+        + '<div class="detail-card-body" id="note-display-' + c.id + '">'
+        + (c.notes
+          ? '<div style="font-size:13px;color:#1A1A18;line-height:1.7;white-space:pre-wrap;background:#FAFAF8;border-radius:9px;padding:12px 14px;border:1px solid #F0EFEA">' + c.notes.replace(/</g,'&lt;') + '</div>'
+            + '<div style="font-size:11px;color:#A3A29C;margin-top:8px;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:12px"></i> Only visible to you</div>'
+          : '<div style="font-size:13px;color:#A3A29C;font-style:italic">No notes yet — click Add note to record access details, preferences, site info etc.</div>'
+        )
+        + '</div>'
+        + '<div id="note-edit-' + c.id + '" style="display:none;padding:0 16px 16px">'
+        + '<textarea id="note-' + c.id + '" placeholder="e.g. Brown door at front, speak to Dave on site, prefers WhatsApp..." style="width:100%;padding:11px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:13px;font-family:inherit;min-height:90px;resize:vertical;outline:none;margin-bottom:10px">' + (c.notes||'') + '</textarea>'
+        + '<div style="display:flex;gap:8px">'
+        + '<button onclick="saveNote(\'' + c.id + '\')" style="flex:2;padding:9px;background:#0A2540;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Save note</button>'
+        + '<button onclick="toggleNoteEdit(\'' + c.id + '\')" style="flex:1;padding:9px;background:#F0EFEA;color:#6B6A65;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>'
         + '</div></div>'
+        + '</div>'
 
         + '</div>'; // end detail-body
+    }
+
+    function toggleNoteEdit(custId) {
+      var display = document.getElementById('note-display-' + custId);
+      var edit    = document.getElementById('note-edit-' + custId);
+      var btn     = document.getElementById('note-edit-btn-' + custId);
+      var isEditing = edit.style.display !== 'none';
+      if (isEditing) {
+        edit.style.display = 'none';
+        display.style.display = 'block';
+        btn.textContent = 'Edit';
+      } else {
+        display.style.display = 'none';
+        edit.style.display = 'block';
+        btn.textContent = 'Cancel';
+        var ta = document.getElementById('note-' + custId);
+        if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+      }
     }
 
     async function saveNote(custId) {
@@ -447,16 +478,32 @@
       var text = note.value.trim();
       var c = customers.find(function(x){ return x.id === custId; });
       if (c) c.notes = text;
-      try {
-        await supabase.from('customers').update({ notes: text }).eq('id', custId);
-      } catch(e) {}
-      // localStorage
+
+      // Update display immediately
+      var display = document.getElementById('note-display-' + custId);
+      if (display) {
+        display.innerHTML = text
+          ? '<div style="font-size:13px;color:#1A1A18;line-height:1.7;white-space:pre-wrap;background:#FAFAF8;border-radius:9px;padding:12px 14px;border:1px solid #F0EFEA">' + text.replace(/</g,'&lt;') + '</div>'
+            + '<div style="font-size:11px;color:#A3A29C;margin-top:8px;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:12px"></i> Only visible to you</div>'
+          : '<div style="font-size:13px;color:#A3A29C;font-style:italic">No notes yet — click Add note to record access details, preferences, site info etc.</div>';
+      }
+
+      // Update button label
+      var btn = document.getElementById('note-edit-btn-' + custId);
+      if (btn) btn.textContent = text ? 'Edit' : 'Add note';
+
+      // Hide editor, show display
+      var edit = document.getElementById('note-edit-' + custId);
+      if (edit) edit.style.display = 'none';
+      if (display) display.style.display = 'block';
+
+      // Save to Supabase + localStorage
+      try { await supabase.from('customers').update({ notes: text }).eq('id', custId); } catch(e) {}
       var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
       var lc = custs.find(function(x){ return x.id === custId; });
       if (lc) { lc.notes = text; localStorage.setItem('tb_customers', JSON.stringify(custs)); }
-      var btn = note.nextElementSibling;
-      btn.textContent = '✓ Saved!'; btn.style.background = '#1D9E75';
-      setTimeout(function(){ btn.textContent = 'Save note'; btn.style.background = '#0A2540'; }, 2000);
+
+      showToast('Note saved');
     }
 
     function newInvoiceFor(name, email, phone) {
@@ -905,7 +952,16 @@
         + '<select id="refund-inv-select" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none">'
         + paidInvoices.map(function(inv){ return '<option value="' + inv.id + '">' + (inv.number||'Invoice') + ' — £' + Number(inv.amount||0).toFixed(2) + ' — ' + (inv.job||'') + '</option>'; }).join('')
         + '</select></div>'
-        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Refund reason</label>'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Refund type</label>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+        + '<button id="refund-type-full" onclick="setRefundType(\'full\')" style="padding:10px;border-radius:9px;border:2px solid #0A2540;background:#0A2540;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Full refund</button>'
+        + '<button id="refund-type-partial" onclick="setRefundType(\'partial\')" style="padding:10px;border-radius:9px;border:2px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Partial refund</button>'
+        + '</div>'
+        + '<div id="partial-amount-wrap" style="display:none">'
+        + '<label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em">Refund amount</label>'
+        + '<div style="position:relative"><span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:#6B6A65;font-weight:600">£</span>'
+        + '<input id="partial-amount-input" type="number" min="0.01" step="0.01" placeholder="0.00" style="width:100%;padding:10px 13px 10px 28px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:16px;font-weight:600;font-family:inherit;outline:none" /></div>'
+        + '</div></div>'
         + '<select id="refund-reason" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none">'
         + '<option>Job cancelled by customer</option><option>Work not completed</option><option>Customer dissatisfied</option><option>Duplicate payment</option><option>Other</option>'
         + '</select></div>'
@@ -917,19 +973,51 @@
       document.body.appendChild(overlay);
     }
 
+    function setRefundType(type) {
+      var full = document.getElementById('refund-type-full');
+      var partial = document.getElementById('refund-type-partial');
+      var wrap = document.getElementById('partial-amount-wrap');
+      if (type === 'full') {
+        full.style.cssText = 'padding:10px;border-radius:9px;border:2px solid #0A2540;background:#0A2540;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+        partial.style.cssText = 'padding:10px;border-radius:9px;border:2px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+        wrap.style.display = 'none';
+      } else {
+        partial.style.cssText = 'padding:10px;border-radius:9px;border:2px solid #0A2540;background:#0A2540;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+        full.style.cssText = 'padding:10px;border-radius:9px;border:2px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+        wrap.style.display = 'block';
+        document.getElementById('partial-amount-input').focus();
+      }
+    }
+
     async function confirmRefund(custId) {
-      var invId = document.getElementById('refund-inv-select').value;
+      var invId  = document.getElementById('refund-inv-select').value;
       var reason = document.getElementById('refund-reason').value;
+      var isPartial = document.getElementById('refund-type-partial').style.background === 'rgb(10, 37, 64)';
+      var partialAmt = isPartial ? parseFloat(document.getElementById('partial-amount-input').value) : null;
+
+      if (isPartial && (!partialAmt || partialAmt <= 0)) {
+        alert('Please enter a valid refund amount.');
+        return;
+      }
+
+      var status = isPartial ? 'partial-refund' : 'refunded';
+      var updateData = { status: status, refund_reason: reason, refunded_at: new Date().toISOString() };
+      if (isPartial) updateData.refund_amount = partialAmt;
+
       try {
         var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
         var inv = invs.find(function(i){ return i.id == invId; });
-        if (inv) { inv.status = 'refunded'; inv.refund_reason = reason; inv.refunded_at = new Date().toISOString(); }
+        if (inv) Object.assign(inv, updateData);
         localStorage.setItem('tb_invoices', JSON.stringify(invs));
-        await supabase.from('invoices').update({ status: 'refunded', refund_reason: reason, refunded_at: new Date().toISOString() }).eq('id', invId);
+        await supabase.from('invoices').update(updateData).eq('id', invId);
       } catch(e) {}
+
       document.getElementById('refund-overlay').remove();
-      showToast('Refund recorded. Process via Stripe dashboard to return funds.');
-      setTimeout(function(){ location.reload(); }, 2000);
+      var msg = isPartial
+        ? 'Partial refund of £' + partialAmt.toFixed(2) + ' recorded. Process via Stripe dashboard.'
+        : 'Full refund recorded. Process via Stripe dashboard to return funds.';
+      showToast(msg);
+      setTimeout(function(){ location.reload(); }, 2500);
     }
 
     function openCancelModal(custId, custName) {
