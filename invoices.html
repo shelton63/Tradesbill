@@ -9,9 +9,37 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try {
+      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+      // Stub so page works even without real keys
+      var supabase = {
+        auth: {
+          getUser: async function() { return { data: { user: null }, error: null }; },
+          updateUser: async function() { return {}; },
+          onAuthStateChange: function() { return { data: { subscription: { unsubscribe: function(){} } } }; }
+        },
+        from: function() {
+          var self = { data: null, error: 'no-keys' };
+          var chain = {
+            select: function() { return chain; },
+            insert: function() { return chain; },
+            update: function() { return chain; },
+            delete: function() { return chain; },
+            upsert: function() { return chain; },
+            eq: function() { return chain; },
+            ilike: function() { return chain; },
+            order: function() { return chain; },
+            limit: function() { return chain; },
+            single: function() { return Promise.resolve(self); },
+            then: function(cb) { cb(self); return chain; }
+          };
+          return chain;
+        }
+      };
+    }
   </script>
   <script src="db.js"></script>
   <script>
@@ -374,6 +402,7 @@
   <script>
     var _stored = [];
     var _payTarget = null;
+    var _ps = {}; // stores per-invoice payment status cache
 
     var BADGE = {
       paid:    { cls:'badge-paid',    lbl:'Paid',         icon:'ti-circle-check' },
