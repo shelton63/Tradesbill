@@ -8,9 +8,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try {
+      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+      var supabase = { auth: { getUser: async function(){return{data:{user:null},error:null};}, updateUser: async function(){return{};}, onAuthStateChange: function(){return{data:{subscription:{unsubscribe:function(){}}}};} }, from: function(){ var c={data:null,error:'no-keys'}; var q={select:function(){return q;},insert:function(){return q;},update:function(){return q;},delete:function(){return q;},upsert:function(){return q;},eq:function(){return q;},ilike:function(){return q;},order:function(){return q;},limit:function(){return q;},single:function(){return Promise.resolve(c);},then:function(cb){cb(c);return q;}}; return q; } };
+    }
   </script>
   <script src="db.js"></script>
   <script>
@@ -70,6 +74,10 @@
     .cust-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; flex-shrink: 0; }
     .badge-new { background: #E1F5EE; color: #0F6E56; }
     .badge-repeat { background: #EEF3F8; color: #0A2540; }
+    .badge-paid-cust { background: #E1F5EE; color: #0F6E56; }
+    .badge-unpaid { background: #FBF3E3; color: #C28A1E; }
+    .badge-overdue { background: #FDEDED; color: #D14343; }
+    .badge-sent { background: #EEF3F8; color: #0A2540; }
     .empty-list { padding: 40px 20px; text-align: center; color: #A3A29C; font-size: 13px; }
     .empty-list i { font-size: 32px; display: block; margin-bottom: 12px; color: #D3D1C7; }
 
@@ -304,13 +312,34 @@
         var bg = AV_BG[i % AV_BG.length]; var fg = AV_FG[i % AV_FG.length];
         var isRepeat = (c.invoiceCount||0) > 1;
         var selected = c.id === selectedId ? ' selected' : '';
+
+        // Smart badge — shows payment status over repeat/new
+        var badge, badgeCls;
+        if (c.hasOutstanding) {
+          var hasOverdue = (c.invoices||[]).some(function(inv){ return inv.status==='overdue'; });
+          badge = hasOverdue ? 'Overdue' : 'Unpaid';
+          badgeCls = hasOverdue ? 'badge-overdue' : 'badge-unpaid';
+        } else if ((c.invoices||[]).some(function(inv){ return inv.status==='paid'; }) && !c.hasOutstanding) {
+          badge = 'Paid';
+          badgeCls = 'badge-paid-cust';
+        } else if ((c.invoiceCount||0) > 0) {
+          badge = 'Sent';
+          badgeCls = 'badge-sent';
+        } else if (isRepeat) {
+          badge = 'Repeat';
+          badgeCls = 'badge-repeat';
+        } else {
+          badge = 'New';
+          badgeCls = 'badge-new';
+        }
+
         return '<div class="cust-item' + selected + '" onclick="selectCustomer(\'' + c.id + '\')">'
           + '<div class="cust-av" style="background:' + bg + ';color:' + fg + '">' + ini(c.name) + '</div>'
           + '<div class="cust-info">'
           + '<div class="cust-name">' + (c.name||'Unknown') + '</div>'
           + '<div class="cust-meta">' + (c.invoiceCount||0) + ' invoice' + ((c.invoiceCount||0)!==1?'s':'') + ' · ' + fmt(c.totalSpent||0) + ' spent</div>'
           + '</div>'
-          + '<span class="cust-badge ' + (isRepeat ? 'badge-repeat' : 'badge-new') + '">' + (isRepeat ? 'Repeat' : 'New') + '</span>'
+          + '<span class="cust-badge ' + badgeCls + '">' + badge + '</span>'
           + '</div>';
       }).join('');
     }
@@ -352,7 +381,8 @@
         + '</div>'
         + '<div class="detail-actions">'
         + '<button class="btn-detail btn-detail-primary" onclick="newInvoiceFor(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-file-plus"></i> New invoice</button>'
-        + '<button class="btn-detail btn-detail-outline" onclick="bookJob(\'' + encodeURIComponent(c.name) + '\')"><i class="ti ti-calendar-plus"></i> Book job</button>'
+        + '<button class="btn-detail btn-detail-outline" onclick="openBookJobModal(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-calendar-plus"></i> Book job</button>'
+        + '<button class="btn-detail btn-detail-outline" onclick="openActionsModal(\'' + c.id + '\',\'' + encodeURIComponent(c.name) + '\')"><i class="ti ti-dots"></i></button>'
         + '</div>'
         + '</div>'
 
@@ -368,6 +398,7 @@
 
         // Contact details
         + '<div class="detail-card" id="contact-card-' + c.id + '">'
+        + '<div class="detail-card-header"><div class="detail-card-title">Contact details</div>'
         + '<button onclick="editContact(\'' + c.id + '\')" style="font-size:12px;color:#0A2540;font-weight:600;background:none;border:none;cursor:pointer">Edit</button>'
         + '</div>'
         + '<div class="detail-card-body">'
@@ -641,5 +672,328 @@
     document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
     document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
   </script>
+  <!-- BOOK JOB MODAL -->
+  <div id="book-job-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="background:#0A2540;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:15px;font-weight:700;color:#fff" id="bjm-title">Book a job</div>
+        <button onclick="closeBookJob()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em">Job title *</label>
+          <input id="bjm-title-input" type="text" placeholder="e.g. Bathroom refit, boiler service..." style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em">Date *</label>
+            <input id="bjm-date" type="date" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" /></div>
+          <div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em">Time</label>
+            <input id="bjm-time" type="time" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none" value="09:00" /></div>
+        </div>
+        <div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em">Notes</label>
+          <textarea id="bjm-notes" placeholder="Site details, access info, materials needed..." style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;min-height:70px;resize:vertical;outline:none"></textarea></div>
+
+        <!-- Reminder toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#F8F7F3;border-radius:10px;padding:12px 14px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#061A30">Daily reminder</div>
+            <div style="font-size:11px;color:#8B8A84">Get notified the morning of the job</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+            <input type="checkbox" id="bjm-reminder" checked style="opacity:0;width:0;height:0">
+            <span id="bjm-toggle" style="position:absolute;inset:0;background:#5DCAA5;border-radius:24px;transition:0.2s" onclick="toggleReminder()"></span>
+            <span id="bjm-knob" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:0.2s;transform:translateX(20px)"></span>
+          </label>
+        </div>
+
+        <!-- Add to calendar button -->
+        <div style="background:#EEF3F8;border-radius:10px;padding:12px 14px;font-size:12px;color:#0A2540">
+          <i class="ti ti-calendar-event" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>
+          After saving, you can <strong>add to Google/Apple Calendar</strong> — we'll generate the link automatically.
+        </div>
+
+        <div id="bjm-error" style="display:none;background:#FDEDED;border:1px solid #F09595;color:#D14343;border-radius:9px;padding:10px 13px;font-size:13px"></div>
+
+        <div style="display:flex;gap:10px">
+          <button onclick="closeBookJob()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+          <button onclick="saveBookedJob()" style="flex:2;padding:11px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" id="bjm-save-btn">Save &amp; schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER ACTIONS MODAL -->
+  <div id="cust-actions-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="background:#0A2540;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:#fff" id="cam-title">Customer actions</div>
+        <button onclick="document.getElementById('cust-actions-modal').style.display='none'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div id="cam-body" style="padding:8px 0"></div>
+    </div>
+  </div>
+
+  <script>
+    var _bookJobCust = {};
+
+    function toggleReminder() {
+      var cb = document.getElementById('bjm-reminder');
+      var knob = document.getElementById('bjm-knob');
+      var toggle = document.getElementById('bjm-toggle');
+      cb.checked = !cb.checked;
+      knob.style.transform = cb.checked ? 'translateX(20px)' : 'translateX(0)';
+      toggle.style.background = cb.checked ? '#5DCAA5' : '#D3D1C7';
+    }
+
+    function openBookJobModal(name, email, phone) {
+      _bookJobCust = { name: decodeURIComponent(name), email: decodeURIComponent(email), phone: decodeURIComponent(phone) };
+      document.getElementById('bjm-title').textContent = 'Book job — ' + _bookJobCust.name.split(' ')[0];
+      document.getElementById('bjm-title-input').value = '';
+      document.getElementById('bjm-notes').value = '';
+      document.getElementById('bjm-error').style.display = 'none';
+      // Default date to tomorrow
+      var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('bjm-date').value = tomorrow.toISOString().split('T')[0];
+      document.getElementById('bjm-time').value = '09:00';
+      document.getElementById('book-job-modal').style.display = 'flex';
+      setTimeout(function(){ document.getElementById('bjm-title-input').focus(); }, 100);
+    }
+
+    function closeBookJob() { document.getElementById('book-job-modal').style.display = 'none'; }
+
+    async function saveBookedJob() {
+      var title   = document.getElementById('bjm-title-input').value.trim();
+      var date    = document.getElementById('bjm-date').value;
+      var time    = document.getElementById('bjm-time').value;
+      var notes   = document.getElementById('bjm-notes').value.trim();
+      var remind  = document.getElementById('bjm-reminder').checked;
+      var errEl   = document.getElementById('bjm-error');
+      var btn     = document.getElementById('bjm-save-btn');
+
+      if (!title) { errEl.textContent = 'Please enter a job title.'; errEl.style.display = 'block'; return; }
+      if (!date)  { errEl.textContent = 'Please select a date.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      btn.textContent = 'Saving...'; btn.disabled = true;
+
+      var job = {
+        id: 'job_' + Date.now(),
+        title: title,
+        customer_name: _bookJobCust.name,
+        date: date,
+        time: time,
+        notes: notes,
+        reminder: remind,
+        status: 'scheduled',
+        created_at: new Date().toISOString()
+      };
+
+      // Save to localStorage
+      var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+      jobs.unshift(job);
+      localStorage.setItem('tb_jobs', JSON.stringify(jobs));
+
+      // Save to Supabase
+      try {
+        var { data } = await supabase.auth.getUser();
+        if (data && data.user) {
+          await supabase.from('jobs').insert({ ...job, user_id: data.user.id });
+        }
+      } catch(e) {}
+
+      // Schedule browser notification reminder
+      if (remind && 'Notification' in window) {
+        Notification.requestPermission().then(function(perm) {
+          if (perm === 'granted') {
+            // Calculate time until 8am on job day
+            var jobDay = new Date(date + 'T08:00:00');
+            var delay = jobDay.getTime() - Date.now();
+            if (delay > 0 && delay < 604800000) { // only if within 7 days
+              setTimeout(function() {
+                new Notification('Job today — ' + title, {
+                  body: 'You have a job with ' + _bookJobCust.name + ' today' + (time ? ' at ' + time : '') + '.',
+                  icon: '/favicon.svg'
+                });
+              }, delay);
+            }
+          }
+        });
+      }
+
+      // Generate calendar links
+      var start = date.replace(/-/g,'') + 'T' + (time||'090000').replace(':','') + '00';
+      var end   = date.replace(/-/g,'') + 'T' + (time ? String(parseInt(time.split(':')[0])+2).padStart(2,'0') + time.split(':')[1] + '00' : '110000');
+      var details = encodeURIComponent('Job for ' + _bookJobCust.name + (notes ? '\n\n' + notes : ''));
+      var gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(title) + '&dates=' + start + '/' + end + '&details=' + details;
+      var ical = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(
+        'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n' +
+        'DTSTART:' + start + '\nDTEND:' + end + '\n' +
+        'SUMMARY:' + title + '\nDESCRIPTION:Job for ' + _bookJobCust.name + (notes ? ' - ' + notes : '') + '\n' +
+        'BEGIN:VALARM\nTRIGGER:-PT8H\nACTION:DISPLAY\nDESCRIPTION:Job reminder\nEND:VALARM\n' +
+        'END:VEVENT\nEND:VCALENDAR'
+      );
+
+      closeBookJob();
+      btn.textContent = 'Save & schedule'; btn.disabled = false;
+
+      // Show success with calendar options
+      showCalendarSuccess(title, _bookJobCust.name, date, time, gcal, ical);
+    }
+
+    function showCalendarSuccess(title, custName, date, time, gcal, ical) {
+      var d = new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+      // Show as overlay
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML =
+        '<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">'
+        + '<div style="background:#1D9E75;padding:20px;text-align:center">'
+        + '<div style="font-size:28px;margin-bottom:8px">✅</div>'
+        + '<div style="font-size:16px;font-weight:700;color:#fff">Job scheduled!</div>'
+        + '<div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px">' + title + ' · ' + d + (time ? ' at ' + time : '') + '</div>'
+        + '</div>'
+        + '<div style="padding:20px;display:flex;flex-direction:column;gap:10px">'
+        + '<div style="font-size:13px;color:#6B6A65;text-align:center;margin-bottom:4px">Add to your calendar so you never miss it:</div>'
+        + '<a href="' + gcal + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#4285F4;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-brand-google" style="font-size:16px"></i> Add to Google Calendar</a>'
+        + '<a href="' + ical + '" download="job-' + date + '.ics" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-calendar" style="font-size:16px"></i> Add to Apple / Outlook Calendar</a>'
+        + '<a href="jobs.html" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#F0EFEA;color:#0A2540;text-decoration:none;border-radius:10px;font-size:13px;font-weight:600">View jobs calendar</a>'
+        + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:9px;background:transparent;border:none;color:#A3A29C;font-size:12px;cursor:pointer;font-family:inherit">Dismiss</button>'
+        + '</div></div>';
+      document.body.appendChild(overlay);
+    }
+
+    function openActionsModal(custId, custName) {
+      var name = decodeURIComponent(custName);
+      var c = customers.find(function(x){ return x.id === custId; });
+      var invoiceList = c ? (c.invoices || []) : [];
+      document.getElementById('cam-title').textContent = name + ' — Actions';
+      document.getElementById('cam-body').innerHTML =
+        '<button onclick="openRefundModal(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-receipt-refund" style="font-size:16px;color:#D14343"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Issue refund</div><div style="font-size:11px;color:#8B8A84">Refund a paid invoice</div></div></button>'
+
+        + '<button onclick="openCancelModal(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#FBF3E3;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:16px;color:#C28A1E"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Cancel invoice</div><div style="font-size:11px;color:#8B8A84">Mark an invoice as cancelled</div></div></button>'
+
+        + '<button onclick="sendChaseMessage(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-send" style="font-size:16px;color:#0A2540"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Chase payment</div><div style="font-size:11px;color:#8B8A84">Send a payment reminder</div></div></button>'
+
+        + '<button onclick="archiveCustomer(\'' + custId + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#F0EFEA;display:flex;align-items:center;justify-content:center"><i class="ti ti-archive" style="font-size:16px;color:#6B6A65"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#6B6A65">Archive customer</div><div style="font-size:11px;color:#A3A29C">Hide from active list</div></div></button>';
+
+      document.getElementById('cust-actions-modal').style.display = 'flex';
+    }
+
+    function openRefundModal(custId, custName) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var name = decodeURIComponent(custName);
+      var c = customers.find(function(x){ return x.id === custId; });
+      var paidInvoices = (c ? c.invoices || [] : []).filter(function(i){ return i.status === 'paid'; });
+      if (!paidInvoices.length) { showToast('No paid invoices to refund for this customer'); return; }
+
+      var overlay = document.createElement('div');
+      overlay.id = 'refund-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML =
+        '<div style="background:#fff;border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">'
+        + '<div style="background:#0A2540;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">'
+        + '<div style="font-size:14px;font-weight:700;color:#fff">Issue refund — ' + name + '</div>'
+        + '<button onclick="document.getElementById(\'refund-overlay\').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:7px;cursor:pointer">✕</button>'
+        + '</div>'
+        + '<div style="padding:20px;display:flex;flex-direction:column;gap:14px">'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Select invoice to refund</label>'
+        + '<select id="refund-inv-select" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none">'
+        + paidInvoices.map(function(inv){ return '<option value="' + inv.id + '">' + (inv.number||'Invoice') + ' — £' + Number(inv.amount||0).toFixed(2) + ' — ' + (inv.job||'') + '</option>'; }).join('')
+        + '</select></div>'
+        + '<div><label style="font-size:11px;font-weight:700;color:#8B8A84;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">Refund reason</label>'
+        + '<select id="refund-reason" style="width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;font-family:inherit;outline:none">'
+        + '<option>Job cancelled by customer</option><option>Work not completed</option><option>Customer dissatisfied</option><option>Duplicate payment</option><option>Other</option>'
+        + '</select></div>'
+        + '<div style="background:#FBF3E3;border:1px solid #F5D9A0;border-radius:9px;padding:11px 13px;font-size:12px;color:#854F0B"><i class="ti ti-alert-circle" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i>Stripe refunds are processed via your Stripe dashboard. This marks the invoice as refunded in Primo Invoice.</div>'
+        + '<div style="display:flex;gap:10px">'
+        + '<button onclick="document.getElementById(\'refund-overlay\').remove()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>'
+        + '<button onclick="confirmRefund(\'' + custId + '\')" style="flex:2;padding:11px;border-radius:9px;border:none;background:#D14343;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Confirm refund</button>'
+        + '</div></div></div>';
+      document.body.appendChild(overlay);
+    }
+
+    async function confirmRefund(custId) {
+      var invId = document.getElementById('refund-inv-select').value;
+      var reason = document.getElementById('refund-reason').value;
+      try {
+        var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        var inv = invs.find(function(i){ return i.id == invId; });
+        if (inv) { inv.status = 'refunded'; inv.refund_reason = reason; inv.refunded_at = new Date().toISOString(); }
+        localStorage.setItem('tb_invoices', JSON.stringify(invs));
+        await supabase.from('invoices').update({ status: 'refunded', refund_reason: reason, refunded_at: new Date().toISOString() }).eq('id', invId);
+      } catch(e) {}
+      document.getElementById('refund-overlay').remove();
+      showToast('Refund recorded. Process via Stripe dashboard to return funds.');
+      setTimeout(function(){ location.reload(); }, 2000);
+    }
+
+    function openCancelModal(custId, custName) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var name = decodeURIComponent(custName);
+      var c = customers.find(function(x){ return x.id === custId; });
+      var activeInvoices = (c ? c.invoices || [] : []).filter(function(i){ return i.status === 'unpaid' || i.status === 'overdue' || i.status === 'draft'; });
+      if (!activeInvoices.length) { showToast('No active invoices to cancel'); return; }
+
+      if (confirm('Cancel the most recent unpaid invoice for ' + name + '?\n\nThis will mark it as cancelled and cannot be undone.')) {
+        var inv = activeInvoices[0];
+        var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        var li = invs.find(function(i){ return i.id == inv.id; });
+        if (li) { li.status = 'cancelled'; }
+        localStorage.setItem('tb_invoices', JSON.stringify(invs));
+        supabase.from('invoices').update({ status: 'cancelled' }).eq('id', inv.id).catch(function(){});
+        showToast('Invoice ' + (inv.number||'') + ' cancelled');
+        setTimeout(function(){ location.reload(); }, 1500);
+      }
+    }
+
+    function sendChaseMessage(custId, custName) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var name = decodeURIComponent(custName);
+      var c = customers.find(function(x){ return x.id === custId; });
+      var unpaid = (c ? c.invoices || [] : []).find(function(i){ return i.status === 'unpaid' || i.status === 'overdue'; });
+      var amount = unpaid ? '£' + Number(unpaid.amount||0).toFixed(2) : 'the outstanding amount';
+      var link = unpaid && unpaid.stripe_payment_link ? unpaid.stripe_payment_link : '';
+      var msg = 'Hi ' + name.split(' ')[0] + ', just a friendly reminder that your invoice for ' + amount + ' is outstanding.' + (link ? ' You can pay here: ' + link : '') + ' Please let me know if you have any questions. Thank you!';
+
+      if (c && c.phone) {
+        var waNum = c.phone.replace(/\s+/g,'').replace(/^0/,'44');
+        window.open('https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg), '_blank');
+      } else if (c && c.email) {
+        window.location.href = 'mailto:' + c.email + '?subject=Payment reminder&body=' + encodeURIComponent(msg);
+      } else {
+        navigator.clipboard.writeText(msg).then(function(){ showToast('Chase message copied — send via WhatsApp or email'); });
+      }
+    }
+
+    function archiveCustomer(custId) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      if (!confirm('Archive this customer? They will be hidden from the active list.')) return;
+      var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+      var c = custs.find(function(x){ return x.id === custId; });
+      if (c) { c.archived = true; }
+      localStorage.setItem('tb_customers', JSON.stringify(custs));
+      supabase.from('customers').update({ archived: true }).eq('id', custId).catch(function(){});
+      customers = customers.filter(function(x){ return x.id !== custId; });
+      document.getElementById('detail-panel').innerHTML = '<div class="detail-empty"><i class="ti ti-user-search"></i><span>Select a customer to view their profile</span></div>';
+      renderList();
+      showToast('Customer archived');
+    }
+
+    function showToast(msg) {
+      var t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
+      t.textContent = msg; document.body.appendChild(t);
+      setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); }, 3000);
+    }
+
+    document.getElementById('book-job-modal').addEventListener('click', function(e){ if(e.target===this) closeBookJob(); });
+    document.getElementById('cust-actions-modal').addEventListener('click', function(e){ if(e.target===this) document.getElementById('cust-actions-modal').style.display='none'; });
+  </script>
+
 </body>
 </html>
