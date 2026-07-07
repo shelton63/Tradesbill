@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -952,25 +952,99 @@
       var name = decodeURIComponent(custName);
       var c = customers.find(function(x){ return x.id === custId; });
       var invoiceList = c ? (c.invoices || []) : [];
-      document.getElementById('cam-title').textContent = name + ' — Actions';
+      var unpaidInv = invoiceList.find(function(i){ return i.status==='unpaid'||i.status==='overdue'||i.status==='partial'; });
+      var paidInv   = invoiceList.find(function(i){ return i.status==='paid'; });
+      var payLink   = unpaidInv && unpaidInv.stripe_payment_link ? unpaidInv.stripe_payment_link : '';
+      var allPaid   = invoiceList.length > 0 && invoiceList.every(function(i){ return i.status==='paid'||i.status==='cancelled'||i.status==='refunded'; });
+      var hasDoneJob = c && c.jobs && c.jobs.some(function(j){ return j.status==='done'; });
+
+      document.getElementById('cam-title').textContent = name;
       document.getElementById('cam-body').innerHTML =
-        '<button onclick="openRefundModal(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:32px;height:32px;border-radius:9px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-receipt-refund" style="font-size:16px;color:#D14343"></i></div>'
-        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Issue refund</div><div style="font-size:11px;color:#8B8A84">Refund a paid invoice</div></div></button>'
 
-        + '<button onclick="openCancelModal(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:32px;height:32px;border-radius:9px;background:#FBF3E3;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:16px;color:#C28A1E"></i></div>'
-        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Cancel invoice</div><div style="font-size:11px;color:#8B8A84">Mark an invoice as cancelled</div></div></button>'
+        // Mark as paid
+        (unpaidInv
+          ? '<button onclick="markCustInvoicePaid(\''+custId+'\',\''+unpaidInv.id+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+            + '<div style="width:32px;height:32px;border-radius:9px;background:#E1F5EE;display:flex;align-items:center;justify-content:center"><i class="ti ti-credit-card" style="font-size:16px;color:#1D9E75"></i></div>'
+            + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Mark invoice as paid</div><div style="font-size:11px;color:#8B8A84">'+(unpaidInv.number||'Invoice')+' · £'+Number(unpaidInv.amount||0).toFixed(2)+'</div></div></button>'
+          : '')
 
-        + '<button onclick="sendChaseMessage(\'' + custId + '\',\'' + encodeURIComponent(name) + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:32px;height:32px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-send" style="font-size:16px;color:#0A2540"></i></div>'
-        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Chase payment</div><div style="font-size:11px;color:#8B8A84">Send a payment reminder</div></div></button>'
+        // Copy payment link
+        + (payLink
+          ? '<button onclick="copyCustPayLink(\''+encodeURIComponent(payLink)+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+            + '<div style="width:32px;height:32px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:16px;color:#0A2540"></i></div>'
+            + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Copy payment link</div><div style="font-size:11px;color:#8B8A84">Share with customer to collect payment</div></div></button>'
+          : '')
 
-        + '<button onclick="archiveCustomer(\'' + custId + '\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;background:none;border:none;cursor:pointer;font-family:inherit">'
-        + '<div style="width:32px;height:32px;border-radius:9px;background:#F0EFEA;display:flex;align-items:center;justify-content:center"><i class="ti ti-archive" style="font-size:16px;color:#6B6A65"></i></div>'
-        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#6B6A65">Archive customer</div><div style="font-size:11px;color:#A3A29C">Hide from active list</div></div></button>';
+        // New invoice
+        + '<button onclick="newInvoiceForCust(\''+custId+'\',\''+encodeURIComponent(name)+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-file-plus" style="font-size:16px;color:#0A2540"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">New invoice</div><div style="font-size:11px;color:#8B8A84">Create a new invoice for '+name.split(' ')[0]+'</div></div></button>'
+
+        // Send quote
+        + '<button onclick="newQuoteForCust(\''+custId+'\',\''+encodeURIComponent(name)+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:#F3F1FE;display:flex;align-items:center;justify-content:center"><i class="ti ti-file-text" style="font-size:16px;color:#635BFF"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Send a quote</div><div style="font-size:11px;color:#8B8A84">Create a quote for '+name.split(' ')[0]+'</div></div></button>'
+
+        // Chase payment
+        + (unpaidInv
+          ? '<button onclick="sendChaseMessage(\''+custId+'\',\''+encodeURIComponent(name)+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+            + '<div style="width:32px;height:32px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center"><i class="ti ti-send" style="font-size:16px;color:#0A2540"></i></div>'
+            + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Chase payment</div><div style="font-size:11px;color:#8B8A84">Send a reminder via WhatsApp or email</div></div></button>'
+          : '')
+
+        // Issue refund
+        + (paidInv
+          ? '<button onclick="openRefundModal(\''+custId+'\',\''+encodeURIComponent(name)+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA;background:none;border:none;cursor:pointer;font-family:inherit">'
+            + '<div style="width:32px;height:32px;border-radius:9px;background:#FDEDED;display:flex;align-items:center;justify-content:center"><i class="ti ti-receipt-refund" style="font-size:16px;color:#D14343"></i></div>'
+            + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:#061A30">Issue refund</div><div style="font-size:11px;color:#8B8A84">Refund a paid invoice</div></div></button>'
+          : '')
+
+        // Archive — shown prominently if all paid or job done
+        + '<button onclick="archiveCustomer(\''+custId+'\')" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;background:none;border:none;cursor:pointer;font-family:inherit">'
+        + '<div style="width:32px;height:32px;border-radius:9px;background:'+(allPaid||hasDoneJob?'#E1F5EE':'#F0EFEA')+';display:flex;align-items:center;justify-content:center"><i class="ti ti-archive" style="font-size:16px;color:'+(allPaid||hasDoneJob?'#1D9E75':'#6B6A65')+'"></i></div>'
+        + '<div style="text-align:left"><div style="font-size:13px;font-weight:600;color:'+(allPaid||hasDoneJob?'#1D9E75':'#6B6A65')+'">Archive customer</div><div style="font-size:11px;color:#A3A29C">'+(allPaid?'All paid — ready to archive':hasDoneJob?'Job complete — ready to archive':'Hide from active list')+'</div></div></button>';
 
       document.getElementById('cust-actions-modal').style.display = 'flex';
+    }
+
+    async function markCustInvoicePaid(custId, invId) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      // Update localStorage
+      var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+      var inv = invs.find(function(i){ return i.id == invId; });
+      if(inv){ inv.status='paid'; inv.paid_at=new Date().toISOString(); inv.payment_method='cash'; }
+      localStorage.setItem('tb_invoices', JSON.stringify(invs));
+      // Update Supabase
+      try{ await supabase.from('invoices').update({status:'paid',paid_at:new Date().toISOString(),payment_method:'cash'}).eq('id',invId); }catch(e){}
+      // Update local customer invoices
+      var c = customers.find(function(x){ return x.id===custId; });
+      if(c){ var ci = (c.invoices||[]).find(function(i){ return i.id==invId; }); if(ci){ ci.status='paid'; ci.paid_at=new Date().toISOString(); } c.hasOutstanding=false; }
+      showToast('✓ Invoice marked as paid');
+      renderList();
+      if(selectedId) renderDetail(customers.find(function(x){ return x.id===selectedId; }));
+    }
+
+    function copyCustPayLink(encodedLink) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var link = decodeURIComponent(encodedLink);
+      navigator.clipboard.writeText(link).then(function(){ showToast('Payment link copied!'); }).catch(function(){
+        var el=document.createElement('textarea'); el.value=link; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        showToast('Payment link copied!');
+      });
+    }
+
+    function newInvoiceForCust(custId, custName) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var c = customers.find(function(x){ return x.id===custId; });
+      sessionStorage.setItem('prefill_invoice', JSON.stringify({ name:decodeURIComponent(custName), email:c?c.email||'':'', phone:c?c.phone||'':'', address:c?c.address||'':'' }));
+      window.location.href = 'create-invoice.html';
+    }
+
+    function newQuoteForCust(custId, custName) {
+      document.getElementById('cust-actions-modal').style.display = 'none';
+      var c = customers.find(function(x){ return x.id===custId; });
+      sessionStorage.setItem('prefill_quote', JSON.stringify({ name:decodeURIComponent(custName), email:c?c.email||'':'', phone:c?c.phone||'':''}));
+      window.location.href = 'quotes.html';
     }
 
     function openRefundModal(custId, custName) {
