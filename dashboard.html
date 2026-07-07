@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -287,11 +287,11 @@
       <div class="sb-nav">
         <div class="sb-section-label">Main</div>
         <a href="dashboard.html" class="sb-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <div class="sb-item" onclick="toggleCalc()" style="cursor:pointer"><i class="ti ti-calculator"></i> Calculator</div>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
         <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
         <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="jobs.html" class="sb-item"><i class="ti ti-calendar"></i> Calendar</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <div class="sb-item" onclick="toggleCalc()" style="cursor:pointer"><i class="ti ti-calculator"></i> Calculator</div>
         <div class="sb-section-label">Reports</div>
         <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
         <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
@@ -345,8 +345,12 @@
 
       <!-- MOBILE BOTTOM NAV -->
       <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item active"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+        <a href="dashboard.html" class="sb-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <div class="sb-item" onclick="toggleCalc()" style="cursor:pointer"><i class="ti ti-calculator"></i> Calculator</div>
         <div class="nav-plus-wrap">
           <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
           <div class="plus-menu" id="plus-menu">
