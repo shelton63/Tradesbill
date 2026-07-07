@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) {
       var supabase = {
@@ -330,13 +330,13 @@
       <button class="modal-close" onclick="closeJobModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>Job title *</label><input id="jm-title" type="text" placeholder="e.g. Boiler service, bathroom refit..." /></div>
       <div class="field"><label>Customer name</label>
         <div style="position:relative">
           <input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="custAutocomplete(this.value)" onblur="setTimeout(function(){ autoFillCust(document.getElementById('jm-customer').value); },200)" />
           <div id="cust-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E3DC;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:160px;overflow-y:auto;margin-top:4px"></div>
         </div>
       </div>
+      <div class="field"><label>Job title *</label><input id="jm-title" type="text" placeholder="e.g. Boiler service, bathroom refit..." /></div>
       <div class="field-row">
         <div class="field"><label>Phone</label><input id="jm-phone" type="tel" placeholder="07700 900123" /></div>
         <div class="field"><label>Email</label><input id="jm-email" type="email" placeholder="customer@email.com" /></div>
@@ -378,6 +378,9 @@
       <div style="display:flex;gap:10px">
         <button onclick="closeJobModal()" style="flex:1;padding:12px;border-radius:9px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
         <button onclick="saveJob()" id="jm-save-btn" style="flex:2;padding:12px;border-radius:9px;border:none;background:#0A2540;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Save job</button>
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <button onclick="sendQuoteFromJob()" style="background:none;border:none;font-size:12px;color:#8B8A84;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-file-text" style="font-size:14px"></i> Send a quote to this customer instead</button>
       </div>
     </div>
   </div>
@@ -505,9 +508,12 @@
       // Jobs for this day
       var dayJobs=jobs.filter(function(j){return j.date===iso && (activeFilter==='all'||j.status===activeFilter);});
       dayJobs.slice(0,3).forEach(function(j){
+        var isDone = j.status === 'done' || j.status === 'cancelled';
         var chip=document.createElement('div'); chip.className='cal-job-chip';
-        chip.style.cssText='background:'+STATUS_BG[j.status||'scheduled']+';color:'+STATUS_COLORS[j.status||'scheduled']+';font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer';
-        chip.textContent=(j.time?j.time.slice(0,5)+' ':'')+j.title;
+        chip.style.cssText = isDone
+          ? 'background:#F0EFEA;color:#A3A29C;font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:line-through;opacity:0.6'
+          : 'background:'+STATUS_BG[j.status||'scheduled']+';color:'+STATUS_COLORS[j.status||'scheduled']+';font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer';
+        chip.textContent=(isDone ? '✓ ' : (j.time?j.time.slice(0,5)+' ':''))+j.title;
         chip.onclick=function(e){ e.stopPropagation(); openDetail(j.id); };
         cell.appendChild(chip);
       });
@@ -568,11 +574,12 @@
     }
     panel.innerHTML='<div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:10px;padding:0 2px">'+label+'</div>'
       +dayJobs.map(function(j){
-        return '<div onclick="openDetail(\''+j.id+'\')" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px">'
-          +'<div style="width:8px;height:8px;border-radius:50%;background:'+STATUS_COLORS[j.status||'scheduled']+';flex-shrink:0"></div>'
-          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+j.title+'</div>'
+        var isDoneJ = j.status === 'done' || j.status === 'cancelled';
+        return '<div onclick="openDetail(\''+j.id+'\')" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;opacity:'+(isDoneJ?'0.55':'1')+'">'
+          +'<div style="width:8px;height:8px;border-radius:50%;background:'+(isDoneJ?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+';flex-shrink:0"></div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30;'+(isDoneJ?'text-decoration:line-through;color:#8B8A84;':'')+'">'+j.title+'</div>'
           +'<div style="font-size:11px;color:#8B8A84;margin-top:2px">'+(j.time||'')+(j.customer_name?' · '+j.customer_name:'')+'</div></div>'
-          +'<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:'+STATUS_BG[j.status||'scheduled']+';color:'+STATUS_COLORS[j.status||'scheduled']+'">'+STATUS_LABEL[j.status||'scheduled']+'</span>'
+          +'<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:'+(isDoneJ?'#F0EFEA':STATUS_BG[j.status||'scheduled'])+';color:'+(isDoneJ?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+'">'+(isDoneJ?'✓ Done':STATUS_LABEL[j.status||'scheduled'])+'</span>'
           +'</div>';
       }).join('');
   }
@@ -615,19 +622,20 @@
         +groups[date].map(function(j){
           var mapUrl=j.address?'https://maps.google.com/?q='+encodeURIComponent(j.address):'';
           var appleUrl=j.address?'https://maps.apple.com/?q='+encodeURIComponent(j.address):'';
-          return '<div class="job-card" onclick="openDetail(\''+j.id+'\')">'
-            +'<div class="job-status-dot" style="background:'+STATUS_COLORS[j.status||'scheduled']+'"></div>'
+          var isDoneL = j.status === 'done' || j.status === 'cancelled';
+          return '<div class="job-card" onclick="openDetail(\''+j.id+'\')" style="opacity:'+(isDoneL?'0.55':'1')+';border-left:'+(isDoneL?'3px solid #D3D1C7':'none')+'">'
+            +'<div class="job-status-dot" style="background:'+(isDoneL?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+'"></div>'
             +'<div class="job-info">'
-            +'<div class="job-title">'+j.title+'</div>'
+            +'<div class="job-title" style="'+(isDoneL?'text-decoration:line-through;color:#8B8A84;':'')+'">'+j.title+'</div>'
             +'<div class="job-meta">'
             +(j.time?'<span><i class="ti ti-clock"></i> '+j.time+'</span>':'')
             +(j.customer_name?'<span><i class="ti ti-user"></i> '+j.customer_name+'</span>':'')
             +(j.address?'<span><i class="ti ti-map-pin"></i> '+j.address.split(',')[0]+'</span>':'')
             +'</div></div>'
-            +'<span class="status-chip chip-'+j.status+'">'+STATUS_LABEL[j.status||'scheduled']+'</span>'
+            +'<span class="status-chip chip-'+(j.status||'scheduled')+'">'+(isDoneL?'✓ Done':STATUS_LABEL[j.status||'scheduled'])+'</span>'
             +'<div class="job-actions">'
             +(j.phone?'<a href="tel:'+j.phone+'" class="job-action-btn green" onclick="event.stopPropagation()" title="Call"><i class="ti ti-phone"></i></a>':'')
-            +(j.address?'<a href="'+mapUrl+'" target="_blank" class="job-action-btn blue" onclick="event.stopPropagation()" title="Directions"><i class="ti ti-map-2"></i></a>':'')
+            +(j.address?'<a href="#" onclick="event.stopPropagation();openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')" class="job-action-btn blue" title="Directions"><i class="ti ti-map-2"></i></a>':'')
             +'<button class="job-action-btn" onclick="event.stopPropagation();openJobModal(\''+j.id+'\')" title="Edit"><i class="ti ti-pencil"></i></button>'
             +'</div></div>';
         }).join('')
@@ -925,6 +933,16 @@
     t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
     t.textContent=msg; document.body.appendChild(t);
     setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
+  }
+
+  function sendQuoteFromJob(){
+    var name  = document.getElementById('jm-customer').value.trim();
+    var phone = document.getElementById('jm-phone').value.trim();
+    var email = document.getElementById('jm-email').value.trim();
+    var job   = document.getElementById('jm-title').value.trim();
+    sessionStorage.setItem('prefill_quote', JSON.stringify({ name:name, phone:phone, email:email, job:job }));
+    closeJobModal();
+    window.location.href = 'quotes.html';
   }
 
   function autoFillCust(name){
