@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -621,43 +621,85 @@
     }).join('');
   }
 
-  // ── Detail panel ──
   function openDetail(id){
     var j=jobs.find(function(x){return x.id===id;});
     if(!j)return;
     detailJobId=id;
-    document.getElementById('dp-title').textContent=j.title||'Job';
-    document.getElementById('dp-status-sel').value=j.status||'scheduled';
 
-    // Action pills
-    var actions='';
-    if(j.phone) actions+='<a href="tel:'+j.phone+'" class="action-pill pill-call"><i class="ti ti-phone" style="font-size:16px"></i> Call</a>';
-    if(j.phone){ var wnum=j.phone.replace(/\s+/g,'').replace(/^0/,'44'); actions+='<a href="https://wa.me/'+wnum+'" target="_blank" class="action-pill pill-wa"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i> WhatsApp</a>'; }
-    if(j.address){
-      var gmaps='https://maps.google.com/?q='+encodeURIComponent(j.address);
-      var amaps='https://maps.apple.com/?q='+encodeURIComponent(j.address);
-      actions+='<a href="'+gmaps+'" target="_blank" class="action-pill pill-map" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')"><i class="ti ti-map-2" style="font-size:16px"></i> Directions</a>';
+    // Enrich job with customer data from localStorage sources
+    var custName=(j.customer_name||'').toLowerCase();
+    if(custName){
+      var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+      var invs=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+      var qts=JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+      var match=custs.find(function(c){return(c.name||'').toLowerCase()===custName;})
+        ||invs.find(function(i){return(i.customer_name||i.customer||'').toLowerCase()===custName;})
+        ||qts.find(function(q){return(q.customer_name||'').toLowerCase()===custName;});
+      if(match){
+        if(!j.phone&&match.phone) j.phone=match.phone;
+        if(!j.email&&match.email) j.email=match.email;
+        if(!j.address&&(match.address||match.postcode)) j.address=(match.address||'')+(match.postcode?' '+match.postcode:'');
+      }
     }
-    document.getElementById('dp-actions').innerHTML=actions||'<div style="font-size:12px;color:#A3A29C;padding:4px">Add phone/address to enable quick actions</div>';
 
-    // Info rows
-    var rows='';
-    if(j.date||j.time) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-calendar"></i></div><div><div class="detail-label">Date & time</div><div class="detail-value">'+(j.date?new Date(j.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'')+' '+(j.time?'at '+j.time:'')+'</div></div></div>';
-    if(j.customer_name) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-user"></i></div><div><div class="detail-label">Customer</div><div class="detail-value">'+j.customer_name+'</div></div></div>';
-    if(j.phone) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-phone"></i></div><div><div class="detail-label">Phone</div><a href="tel:'+j.phone+'" class="detail-value" style="color:#0A2540;text-decoration:none">'+j.phone+'</a></div></div>';
-    if(j.email) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-mail"></i></div><div><div class="detail-label">Email</div><div class="detail-value">'+j.email+'</div></div></div>';
-    if(j.address) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-map-pin"></i></div><div><div class="detail-label">Address</div><div class="detail-value">'+j.address+'</div></div></div>';
-    if(j.duration) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-clock"></i></div><div><div class="detail-label">Duration</div><div class="detail-value">'+(j.duration>=480?'Full day':j.duration>=60?Math.floor(j.duration/60)+'h '+(j.duration%60?j.duration%60+'m':''):j.duration+'m')+'</div></div></div>';
-    document.getElementById('dp-info').innerHTML=rows||'<div style="font-size:13px;color:#A3A29C">No details</div>';
+    renderDetail(j);
 
-    if(j.notes){ document.getElementById('dp-notes-section').style.display='block'; document.getElementById('dp-notes-text').textContent=j.notes; }
-    else { document.getElementById('dp-notes-section').style.display='none'; }
+    // Also enrich from Supabase in background then re-render if new data found
+    if(custName){
+      supabase.from('customers').select('phone,email,address,postcode').ilike('name','%'+j.customer_name+'%').limit(1).then(function(r){
+        if(r.data&&r.data[0]){
+          var c=r.data[0]; var changed=false;
+          if(!j.phone&&c.phone){j.phone=c.phone;changed=true;}
+          if(!j.email&&c.email){j.email=c.email;changed=true;}
+          if(!j.address&&c.address){j.address=c.address+(c.postcode?' '+c.postcode:'');changed=true;}
+          if(changed) renderDetail(j);
+        }
+      }).catch(function(){});
+    }
 
     document.getElementById('detail-overlay').classList.add('open');
   }
-  function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); detailJobId=null; }
 
-  function openMapsChoice(e,addr){
+  function renderDetail(j){
+    document.getElementById('dp-title').textContent=j.title||'Job';
+    document.getElementById('dp-status-sel').value=j.status||'scheduled';
+
+    // Action pills — always show call/maps if we have data
+    var actions='';
+    if(j.phone){
+      var wnum=j.phone.replace(/\s+/g,'').replace(/^0/,'44');
+      actions+='<a href="tel:'+j.phone+'" class="action-pill pill-call"><i class="ti ti-phone" style="font-size:16px"></i> Call</a>';
+      actions+='<a href="https://wa.me/'+wnum+'" target="_blank" class="action-pill pill-wa"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i> WhatsApp</a>';
+    }
+    if(j.address){
+      actions+='<a href="#" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')" class="action-pill pill-map"><i class="ti ti-map-2" style="font-size:16px"></i> Directions</a>';
+    }
+    if(j.email){
+      actions+='<a href="mailto:'+j.email+'" class="action-pill" style="background:#F0EFEA;color:#6B6A65"><i class="ti ti-mail" style="font-size:16px"></i> Email</a>';
+    }
+    document.getElementById('dp-actions').innerHTML=actions||
+      '<div style="font-size:12px;color:#A3A29C;padding:4px 0">Edit this job to add contact details — then call, WhatsApp and directions appear here.</div>';
+
+    // Info rows
+    var rows='';
+    if(j.date||j.time){
+      var dateLabel=j.date?new Date(j.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+      rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-calendar"></i></div>'
+        +'<div><div class="detail-label">Date & time</div><div class="detail-value">'+dateLabel+(j.time?' at '+j.time:'')+'</div></div></div>';
+    }
+    if(j.customer_name) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-user"></i></div><div><div class="detail-label">Customer</div><div class="detail-value">'+j.customer_name+'</div></div></div>';
+    if(j.phone) rows+='<div class="detail-row"><div class="detail-icon" style="background:#E1F5EE"><i class="ti ti-phone" style="color:#0F6E56"></i></div><div><div class="detail-label">Phone</div><a href="tel:'+j.phone+'" class="detail-value" style="color:#0F6E56;text-decoration:none;display:flex;align-items:center;gap:6px">'+j.phone+' <span style="font-size:11px;background:#E1F5EE;padding:2px 6px;border-radius:4px">Tap to call</span></a></div></div>';
+    if(j.email) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-mail"></i></div><div><div class="detail-label">Email</div><a href="mailto:'+j.email+'" class="detail-value" style="color:#0A2540;text-decoration:none">'+j.email+'</a></div></div>';
+    if(j.address) rows+='<div class="detail-row"><div class="detail-icon" style="background:#EEF3FB"><i class="ti ti-map-pin" style="color:#1565C0"></i></div><div><div class="detail-label">Address</div><a href="#" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')" class="detail-value" style="color:#1565C0;text-decoration:none;display:flex;align-items:center;gap:6px">'+j.address+' <span style="font-size:11px;background:#EEF3FB;padding:2px 6px;border-radius:4px">Get directions</span></a></div></div>';
+    if(j.duration) rows+='<div class="detail-row"><div class="detail-icon"><i class="ti ti-clock"></i></div><div><div class="detail-label">Duration</div><div class="detail-value">'+(j.duration>=480?'Full day':j.duration>=60?(Math.floor(j.duration/60)+'h '+(j.duration%60?j.duration%60+'m':'')):j.duration+'m')+'</div></div></div>';
+    if(!rows) rows='<div style="font-size:13px;color:#A3A29C;padding:8px 0">Edit this job to add customer details.</div>';
+    document.getElementById('dp-info').innerHTML=rows;
+
+    if(j.notes){document.getElementById('dp-notes-section').style.display='block';document.getElementById('dp-notes-text').textContent=j.notes;}
+    else{document.getElementById('dp-notes-section').style.display='none';}
+  }
+
+  function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); detailJobId=null; }
     e.preventDefault();
     var decoded=decodeURIComponent(addr);
     var overlay=document.createElement('div');
