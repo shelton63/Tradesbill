@@ -2,606 +2,598 @@
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Earnings — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
     var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
-  </script>
-  <script src="db.js"></script>
-  <script>
-    if (typeof DB === 'undefined') {
-      window.DB = {
-        getNextNumber: async function(type) {
-          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
-          var last = parseInt(localStorage.getItem(key) || '1000');
-          var next = last + 1; localStorage.setItem(key, next.toString());
-          return (type === 'quote' ? '#Q' : '#') + next;
-        },
-        saveInvoice: async function(inv) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
-          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
-        },
-        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
-        updateInvoiceStatus: async function(id, status, method) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var inv = invs.find(function(i){ return i.id == id; });
-          if (inv) { inv.status = status; if (method) inv.payment_method = method; }
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
-        },
-        saveCustomer: async function(c) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          var idx = custs.findIndex(function(x){ return x.id === c.id; });
-          if (idx > -1) custs[idx] = c; else custs.unshift(c);
-          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
-        },
-        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
-        deleteCustomer: async function(id) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
-        },
-        saveQuote: async function(q) {
-          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
-          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
-        },
-        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
-        saveJob: async function(j) {
-          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
-          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
-          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
-          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
-        },
-        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
-        getEarningsSummary: async function() {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var paid = invs.filter(function(i){ return i.status==='paid'; });
-          return { totalEarned: paid.reduce(function(a,i){ return a+Number(i.amount||0); },0), invoiceCount: invs.length, paidCount: paid.length };
-        }
-      };
-    }
+    try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch(e) { var supabase = { auth:{getUser:function(){return Promise.resolve({data:{user:null}});}}, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { overflow-x: hidden; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
-    .db { display: flex; min-height: 100vh; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#FAFAF8;color:#1A1A18;}
+    .db{display:flex;min-height:100vh;}
+    .sidebar{width:210px;flex-shrink:0;background:#0A2540;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+    .sb-logo{display:flex;align-items:center;gap:8px;padding:20px 16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.1);text-decoration:none;}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;}
+    .sb-logo-icon i{color:#fff;font-size:18px;}
+    .sb-logo-text{font-size:16px;font-weight:600;color:#fff;}
+    .sb-nav{padding:16px 10px;flex:1;overflow-y:auto;}
+    .sb-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px;text-decoration:none;}
+    .sb-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+    .sb-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+    .sb-item i{font-size:18px;}
+    .sb-bottom{padding:12px 10px;border-top:0.5px solid rgba(255,255,255,0.1);}
+    .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;text-decoration:none;}
+    .sb-user:hover{background:rgba(255,255,255,0.08);}
+    .sb-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+    .main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{background:#fff;border-bottom:1px solid #E5E3DC;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar h1{font-size:16px;font-weight:600;color:#061A30;}
+    .content{padding:24px;}
 
-    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
-    .sb-logo-icon i { color: #fff; font-size: 18px; }
-    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
-    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
-    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
-    .sb-item i { font-size: 18px; }
-    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
-    .sb-user:hover { background: rgba(255,255,255,0.08); }
-    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
-    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
-    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
+    /* Period pills */
+    .period-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+    .pill{padding:7px 16px;border-radius:20px;border:1.5px solid #E5E3DC;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B6A65;transition:all 0.15s;}
+    .pill:hover{border-color:#0A2540;color:#0A2540;}
+    .pill.active{background:#0A2540;color:#fff;border-color:#0A2540;}
 
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; min-height: 100vh; }
-    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .content { padding: 24px 28px; flex: 1; }
+    /* Hero card */
+    .hero-card{background:linear-gradient(160deg,#061A30 0%,#0A2540 55%,#0D3060 100%);border-radius:16px;padding:28px 32px;margin-bottom:16px;position:relative;overflow:hidden;}
+    .hero-card::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(93,202,165,0.08);}
+    .hero-label{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+    .hero-amount{font-size:48px;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;}
+    .hero-change{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+    .hero-change.up{background:rgba(93,202,165,0.2);color:#5DCAA5;}
+    .hero-change.down{background:rgba(209,67,67,0.2);color:#F87171;}
+    .hero-change.flat{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);}
 
-    /* Range pills */
-    .range-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; -webkit-overflow-scrolling: touch; }
-    .range-pill { flex-shrink: 0; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; background: #fff; border: 1px solid #E5E3DC; color: #6B6A65; cursor: pointer; white-space: nowrap; }
-    .range-pill.active { background: #0A2540; color: #fff; border-color: #0A2540; }
-    .range-pill:hover:not(.active) { background: #F0EFEA; }
-
-    /* Hero stat */
-    .stat-hero { background: #0A2540; border-radius: 16px; padding: 26px; margin-bottom: 16px; }
-    .stat-hero-label { font-size: 13px; color: #8FA8C2; margin-bottom: 8px; font-weight: 600; }
-    .stat-hero-value { font-size: 38px; font-weight: 600; color: #fff; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .compare-pill { display: inline-flex; align-items: center; gap: 3px; background: rgba(93,202,165,0.15); color: #6FDDB5; padding: 4px 9px; border-radius: 7px; font-weight: 700; font-size: 13px; }
-    .compare-pill.down { background: rgba(240,153,123,0.15); color: #F0997B; }
-    .compare-vs { color: #6B85A1; font-size: 13px; margin-left: 6px; }
-
-    /* Stat grid */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    .stat-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
-    .stat-card-label { font-size: 12px; color: #8B8A84; margin-bottom: 7px; display: flex; align-items: center; gap: 5px; font-weight: 600; }
-    .stat-card-label i { font-size: 15px; color: #A3A29C; }
-    .stat-card-value { font-size: 21px; font-weight: 600; color: #1A1A18; letter-spacing: -0.01em; }
-
-    /* Bottom grid */
-    .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 20px; }
-    .card-title { font-size: 14px; font-weight: 600; color: #061A30; margin-bottom: 16px; }
+    /* Stats grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .stat-card{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:16px;cursor:pointer;transition:box-shadow 0.15s;}
+    .stat-card:hover{box-shadow:0 2px 12px rgba(10,37,64,0.08);border-color:#C5C3BB;}
+    .stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+    .stat-label{font-size:12px;color:#8B8A84;margin-bottom:5px;}
+    .stat-value{font-size:22px;font-weight:700;color:#061A30;letter-spacing:-0.01em;}
+    .stat-sub{font-size:11px;color:#A3A29C;margin-top:3px;}
 
     /* Chart */
-    .chart-wrap { height: 180px; display: flex; align-items: flex-end; gap: 5px; }
-    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .chart-bar { width: 100%; background: #EEF3F8; border-radius: 5px 5px 0 0; min-height: 4px; cursor: pointer; transition: background 0.1s; }
-    .chart-bar:hover, .chart-bar.active { background: #0A2540; }
-    .chart-lbl { font-size: 10px; color: #A3A29C; font-weight: 600; }
+    .chart-card{background:#fff;border:1px solid #E5E3DC;border-radius:16px;padding:20px 24px;margin-bottom:16px;}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .chart-title{font-size:14px;font-weight:700;color:#061A30;}
+    .chart-legend{display:flex;align-items:center;gap:16px;}
+    .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#6B6A65;}
+    .legend-dot{width:10px;height:10px;border-radius:50%;}
+    .chart-wrap{height:200px;position:relative;}
 
-    /* Owing list */
-    .owing-item { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid #F0EFEA; }
-    .owing-item:last-child { border-bottom: none; }
-    .owing-avatar { width: 34px; height: 34px; border-radius: 50%; background: #FBF3E3; color: #C28A1E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
-    .owing-info { flex: 1; min-width: 0; }
-    .owing-name { font-size: 13.5px; font-weight: 600; color: #1A1A18; margin-bottom: 2px; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 4px; }
-    .status-dot.overdue { background: #D14343; }
-    .status-dot.upcoming { background: #C28A1E; }
-    .owing-days { font-size: 12px; font-weight: 600; }
-    .owing-days.overdue { color: #D14343; }
-    .owing-days.upcoming { color: #C28A1E; }
-    .owing-amount { font-size: 14px; font-weight: 600; color: #1A1A18; flex-shrink: 0; }
+    /* Bottom two col */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .panel-card{background:#fff;border:1px solid #E5E3DC;border-radius:16px;overflow:hidden;}
+    .panel-header{padding:14px 16px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between;}
+    .panel-title{font-size:13px;font-weight:700;color:#061A30;}
+    .panel-view-all{font-size:12px;color:#0A2540;font-weight:600;text-decoration:none;cursor:pointer;border:none;background:none;font-family:inherit;}
+    .panel-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F8F7F3;cursor:pointer;}
+    .panel-row:hover{background:#F8F7F3;}
+    .panel-row:last-child{border-bottom:none;}
+    .panel-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+    .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;}
+    .badge-paid{background:#E1F5EE;color:#0F6E56;}
+    .badge-unpaid{background:#FBF3E3;color:#C28A1E;}
+    .badge-overdue{background:#FDEDED;color:#D14343;}
 
-    /* Custom range popup */
-    .custom-popup { display: none; background: #fff; border: 1px solid #E5E3DC; border-radius: 12px; padding: 16px; margin-bottom: 16px; align-items: flex-end; gap: 12px; }
-    .custom-popup.open { display: flex; }
-    .cr-field label { display: block; font-size: 11px; font-weight: 700; color: #6B6A65; margin-bottom: 5px; }
-    .cr-field input { padding: 8px 10px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; }
-    .cr-apply { background: #0A2540; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    /* Popup overlay */
+    .popup-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,0.45);z-index:500;align-items:center;justify-content:center;padding:20px;}
+    .popup-overlay.open{display:flex;}
+    .popup{background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.3);}
+    .popup-header{background:#0A2540;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .popup-title{font-size:15px;font-weight:700;color:#fff;}
+    .popup-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+    .popup-body{overflow-y:auto;flex:1;}
+    .popup-footer{padding:12px 16px;border-top:1px solid #F0EFEA;flex-shrink:0;}
 
-    .mobile-topbar { display: none; }
-    .bottom-nav { display: none; }
+    /* Mobile */
+    .mobile-topbar{display:none;}
+    .bottom-nav{display:none;}
+    .mob-drawer{position:fixed;top:0;left:-280px;width:280px;height:100vh;background:#0A2540;z-index:600;transition:left 0.28s ease;display:flex;flex-direction:column;overflow-y:auto;}
+    .mob-drawer.open{left:0;}
+    .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:599;}
+    .mob-overlay.open{display:block;}
+    .mob-drawer-head{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;}
+    .mob-drawer-logo{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+    .mob-drawer-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mob-drawer-section{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.07em;text-transform:uppercase;padding:14px 18px 6px;}
+    .mob-drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,0.75);text-decoration:none;}
+    .mob-drawer-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left:3px solid #5DCAA5;padding-left:15px;}
+    .mob-drawer-item i{font-size:20px;width:24px;}
+    .mob-burger{background:none;border:none;cursor:pointer;padding:2px;display:flex;flex-direction:column;gap:5px;}
+    .mob-burger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
 
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
-      .mob-logo i { color: #5DCAA5; font-size: 22px; }
-      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .content { padding: 14px 16px; }
-      .stat-hero { padding: 18px; }
-      .stat-hero-value { font-size: 30px; }
-      .bottom-grid { grid-template-columns: 1fr; }
-      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
-      .nav-item i { font-size: 22px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
-      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
-      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
-      .nav-plus i { font-size: 23px; color: #fff; }
-      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
-      .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
-      .plus-menu-item:last-child { border-bottom: none; }
-      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
-      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    @media(max-width:768px){
+      .sidebar{display:none;}.main{margin-left:0;}.topbar{display:none;}
+      .mobile-topbar{display:flex;align-items:center;justify-content:space-between;background:#0A2540;padding:14px 16px;position:sticky;top:0;z-index:200;}
+      .content{padding:14px 16px 100px;}
+      .stats-grid{grid-template-columns:1fr 1fr;gap:8px;}
+      .hero-amount{font-size:36px;}
+      .hero-card{padding:20px;}
+      .two-col{grid-template-columns:1fr;}
+      .period-pills{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+      .period-pills::-webkit-scrollbar{display:none;}
+      .bottom-nav{display:flex;align-items:center;background:#fff;border-top:1px solid #E5E3DC;padding:8px 0 20px;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+      .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:4px 0;}
+      .nav-item i{font-size:22px;color:#A3A29C;}
+      .nav-item span{font-size:10px;color:#A3A29C;font-weight:500;}
+      .nav-item.active i,.nav-item.active span{color:#0A2540;font-weight:600;}
+      .nav-plus-wrap{flex:1;display:flex;justify-content:center;}
+      .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
+      .nav-plus i{font-size:24px;color:#fff;}
     }
-  
-    
-      /* Make mobile topbar sticky if not already */
-      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
-    }
-  
-    /* Hamburger menu */
-    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
-    .mob-menu-overlay.open { display: block; }
-    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
-    .mob-drawer.open { left: 0; }
-    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
-    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
-    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
-    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
-    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
-    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
-    .mob-drawer-item i { font-size: 20px; width: 24px; }
-    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
-    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
-    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
-    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
-    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
-
-  <!-- MOBILE TOP BAR -->
   <div class="mobile-topbar">
-    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
-      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
-    </div>
-    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
-  </div>
+    <button class="mob-burger" onclick="openDrawer()"><span></span><span></span><span></span></button>
+    <div style="font-size:16px;font-weight:700;color:#fff">Earnings</div>
+    <div style="width:44px"></div>
   </div>
 
-  <div class="db">
-    <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
-      <div class="sb-nav">
-        <div class="sb-section-label">Main</div>
-        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
-        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="jobs.html" class="sb-item"><i class="ti ti-calendar"></i> Calendar</a>
-        <div class="sb-section-label">Reports</div>
-        <a href="earnings.html" class="sb-item active"><i class="ti ti-chart-bar"></i> Earnings</a>
-        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
-        <div class="sb-section-label">Account</div>
-        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
-      </div>
-      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-avatar" id="sb-avatar"></div><div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan">Free plan</div></div></a></div>
-    </nav>
-
-    <div class="main">
-      <div class="topbar"><h1>Earnings</h1></div>
-
-      <div class="content" id="main-content">
-
-        <!-- EMPTY STATE -->
-        <div id="empty-view">
-          <div style="max-width:480px;margin:0 auto;padding:20px 0 40px;text-align:center">
-            <div style="width:64px;height:64px;background:#EEF3F8;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-chart-bar" style="font-size:28px;color:#0A2540"></i></div>
-            <div style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Track every penny you earn</div>
-            <div style="font-size:13px;color:#6B6A65;line-height:1.6;max-width:360px;margin:0 auto 24px">Your earnings dashboard updates automatically as invoices get paid. Compare performance across any time period — today, this week, last month, or a custom date range.</div>
-            <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:18px;text-align:left">
-              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
-                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-trending-up" style="font-size:17px;color:#0A2540"></i></div>
-                <div><div style="font-size:13px;font-weight:600;color:#061A30">Revenue trends</div><div style="font-size:12px;color:#8B8A84">See if you're earning more than last period</div></div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F0EFEA">
-                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-receipt" style="font-size:17px;color:#0A2540"></i></div>
-                <div><div style="font-size:13px;font-weight:600;color:#061A30">Average order value</div><div style="font-size:12px;color:#8B8A84">Understand your typical job size</div></div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;padding:13px 16px">
-                <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-clock" style="font-size:17px;color:#0A2540"></i></div>
-                <div><div style="font-size:13px;font-weight:600;color:#061A30">Outstanding invoices</div><div style="font-size:12px;color:#8B8A84">See exactly who still owes you money</div></div>
-              </div>
-            </div>
-            <a href="create-invoice.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A2540;color:#fff;text-decoration:none;padding:14px;border-radius:11px;font-size:14px;font-weight:700"><i class="ti ti-plus" style="font-size:17px"></i> Create an invoice to get started</a>
-          </div>
-        </div>
-
-        <!-- DATA VIEW -->
-        <div id="data-view" style="display:none">
-          <div class="range-scroll" id="range-pills">
-            <div class="range-pill active" data-range="7d">7 days</div>
-            <div class="range-pill" data-range="today">Today</div>
-            <div class="range-pill" data-range="30d">30 days</div>
-            <div class="range-pill" data-range="90d">3 months</div>
-            <div class="range-pill" data-range="365d">1 year</div>
-            <div class="range-pill" data-range="all">All time</div>
-            <div class="range-pill" data-range="custom"><i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Custom</div>
-          </div>
-
-          <div class="custom-popup" id="custom-popup">
-            <div class="cr-field"><label>From</label><input type="date" id="cr-from" /></div>
-            <div class="cr-field"><label>To</label><input type="date" id="cr-to" /></div>
-            <button class="cr-apply" onclick="applyCustom()">Apply</button>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:20px;align-items:start">
-            <div class="stat-hero">
-              <div class="stat-hero-label" id="hero-label">Total earned · last 7 days</div>
-              <div class="stat-hero-value" id="hero-value">£0</div>
-              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
-                <span class="compare-pill" id="compare-pill">—</span>
-                <span class="compare-vs" id="compare-vs"></span>
-              </div>
-            </div>
-            <div class="stats-grid">
-              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-clock"></i> Outstanding</div><div class="stat-card-value" id="stat-outstanding">£0</div></div>
-              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-file-invoice"></i> Invoices</div><div class="stat-card-value" id="stat-invoices">0</div></div>
-              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-receipt"></i> Avg. value</div><div class="stat-card-value" id="stat-aov">£0</div></div>
-              <div class="stat-card"><div class="stat-card-label"><i class="ti ti-users"></i> Customers</div><div class="stat-card-value" id="stat-customers">0</div></div>
-            </div>
-          </div>
-
-          <div class="bottom-grid">
-            <div class="card">
-              <div class="card-title">Earnings over time</div>
-              <div class="chart-wrap" id="chart-wrap">
-                <div style="width:100%;display:flex;align-items:center;justify-content:center;color:#A3A29C;font-size:13px">No data for this period</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-title">Who owes you</div>
-              <div id="owing-list">
-                <div style="text-align:center;padding:20px;font-size:13px;color:#A3A29C">No outstanding invoices</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="earnings.html" class="nav-item active"><i class="ti ti-chart-bar"></i><span>Earnings</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
-    </div>
-  </div>
-
-  <script>
-    var invoices  = [];
-    var activeRange = '7d';
-    var customFrom = null, customTo = null;
-
-    function fmt(n) { return '£' + Number(n || 0).toLocaleString('en-GB', {maximumFractionDigits:0}); }
-
-    // ── Auth ──
-    async function loadUser() {
-      try {
-        var r = await supabase.auth.getUser();
-        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
-        var m = r.data.user.user_metadata || {};
-        var first = m.first_name || m.given_name || '';
-        var last  = m.last_name  || m.family_name || '';
-        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
-        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first||last) ? (first+' '+last).trim() : r.data.user.email.split('@')[0];
-      } catch(e) {}
-    }
-    loadUser();
-
-    // ── Date helpers ──
-    function startOf(range) {
-      var d = new Date(); d.setHours(0,0,0,0);
-      if (range === 'today')  return d;
-      if (range === '7d')   { d.setDate(d.getDate()-7); return d; }
-      if (range === '30d')  { d.setDate(d.getDate()-30); return d; }
-      if (range === '90d')  { d.setDate(d.getDate()-90); return d; }
-      if (range === '365d') { d.setFullYear(d.getFullYear()-1); return d; }
-      if (range === 'all')  return new Date(2000,0,1);
-      return d;
-    }
-    function prevStart(range) {
-      var d = new Date(); d.setHours(0,0,0,0);
-      if (range === 'today')  { d.setDate(d.getDate()-1); return d; }
-      if (range === '7d')   { d.setDate(d.getDate()-14); return d; }
-      if (range === '30d')  { d.setDate(d.getDate()-60); return d; }
-      if (range === '90d')  { d.setDate(d.getDate()-180); return d; }
-      if (range === '365d') { d.setFullYear(d.getFullYear()-2); return d; }
-      return new Date(2000,0,1);
-    }
-    function prevEnd(range) {
-      var d = startOf(range);
-      d.setDate(d.getDate()-1);
-      return d;
-    }
-
-    // ── Filter invoices by date range ──
-    function filterByRange(invs, from, to) {
-      return invs.filter(function(inv) {
-        if (!inv.date) return false;
-        var d = new Date(inv.date);
-        return d >= from && d <= (to || new Date());
-      });
-    }
-
-    function isPaid(inv) {
-      var s = inv.status || 'unpaid';
-      return s === 'paid' || s === 'partial';
-    }
-    function isOutstanding(inv) {
-      var s = inv.status || 'unpaid';
-      return s === 'unpaid' || s === 'overdue';
-    }
-
-    // ── Render dashboard ──
-    function render(range, customF, customT) {
-      if (invoices.length === 0) {
-        document.getElementById('empty-view').style.display = 'block';
-        document.getElementById('data-view').style.display = 'none';
-        return;
-      }
-      document.getElementById('empty-view').style.display = 'none';
-      document.getElementById('data-view').style.display = 'block';
-
-      var from = customF || startOf(range);
-      var to   = customT || new Date();
-      var pFrom = prevStart(range);
-      var pTo   = prevEnd(range);
-
-      var current = filterByRange(invoices, from, to);
-      var previous = filterByRange(invoices, pFrom, pTo);
-
-      var earned = current.filter(isPaid).reduce(function(a,i){ return a+(i.amount||0); }, 0);
-      var prevEarned = previous.filter(isPaid).reduce(function(a,i){ return a+(i.amount||0); }, 0);
-      var outstanding = invoices.filter(isOutstanding).reduce(function(a,i){ return a+(i.amount||0); }, 0);
-      var aov = current.length > 0 ? Math.round(current.reduce(function(a,i){return a+(i.amount||0);},0)/current.length) : 0;
-      var uniqueCustomers = [...new Set(current.map(function(i){return i.customer;}))].length;
-
-      // Hero
-      var rangeLabels = { today:'today', '7d':'last 7 days', '30d':'last 30 days', '90d':'last 3 months', '365d':'last year', all:'all time' };
-      document.getElementById('hero-label').textContent = 'Total earned · ' + (rangeLabels[range] || 'selected period');
-      document.getElementById('hero-value').textContent = fmt(earned);
-
-      var pill = document.getElementById('compare-pill');
-      var vs   = document.getElementById('compare-vs');
-      if (prevEarned > 0 && range !== 'all') {
-        var pct = Math.round(((earned - prevEarned) / prevEarned) * 100);
-        var up = pct >= 0;
-        pill.className = 'compare-pill' + (up ? '' : ' down');
-        pill.innerHTML = '<i class="ti ti-arrow-' + (up?'up':'down') + '-right"></i>' + Math.abs(pct) + '%';
-        vs.textContent = 'vs previous period';
-      } else {
-        pill.textContent = '—';
-        vs.textContent = 'no comparison data yet';
-      }
-
-      document.getElementById('stat-outstanding').textContent = fmt(outstanding);
-      document.getElementById('stat-invoices').textContent = current.length;
-      document.getElementById('stat-aov').textContent = aov ? fmt(aov) : '—';
-      document.getElementById('stat-customers').textContent = uniqueCustomers;
-
-      renderChart(current, from, to, range);
-      renderOwing();
-    }
-
-    function renderChart(invs, from, to, range) {
-      var wrap = document.getElementById('chart-wrap');
-      if (invs.length === 0) {
-        wrap.innerHTML = '<div style="width:100%;display:flex;align-items:center;justify-content:center;color:#A3A29C;font-size:13px">No data for this period</div>';
-        return;
-      }
-
-      // Group by day/week/month depending on range
-      var groups = {};
-      invs.forEach(function(inv) {
-        if (!inv.date) return;
-        var d = new Date(inv.date);
-        var key;
-        if (range === 'today' || range === '7d') {
-          key = d.toLocaleDateString('en-GB', {weekday:'short'});
-        } else if (range === '30d' || range === '90d') {
-          key = d.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
-        } else {
-          key = d.toLocaleDateString('en-GB', {month:'short',year:'2-digit'});
-        }
-        groups[key] = (groups[key] || 0) + (inv.amount || 0);
-      });
-
-      var keys = Object.keys(groups);
-      var vals = keys.map(function(k){ return groups[k]; });
-      var max = Math.max.apply(null, vals) || 1;
-
-      wrap.innerHTML = keys.map(function(k, i) {
-        var h = Math.max(4, Math.round((vals[i]/max)*160));
-        return '<div class="chart-col"><div class="chart-bar" style="height:'+h+'px" title="'+k+': '+fmt(vals[i])+'"></div><div class="chart-lbl">'+k+'</div></div>';
-      }).join('');
-    }
-
-    function renderOwing() {
-      var owing = invoices.filter(isOutstanding).sort(function(a,b){ return (b.amount||0)-(a.amount||0); }).slice(0,5);
-      var el = document.getElementById('owing-list');
-      if (owing.length === 0) {
-        el.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:#A3A29C">No outstanding invoices 🎉</div>';
-        return;
-      }
-      el.innerHTML = owing.map(function(inv) {
-        var status = (payStatus[inv.id]||{}).status || inv.status || 'unpaid';
-        var isOv = status === 'overdue';
-        var ini = (inv.customer||'?').split(' ').map(function(w){return w.charAt(0);}).join('').toUpperCase().slice(0,2);
-        return '<div class="owing-item">'
-          + '<div class="owing-avatar">' + ini + '</div>'
-          + '<div class="owing-info">'
-          + '<div class="owing-name">' + (inv.customer||'Unknown') + '</div>'
-          + '<span class="status-dot ' + (isOv?'overdue':'upcoming') + '"></span>'
-          + '<span class="owing-days ' + (isOv?'overdue':'upcoming') + '">' + (isOv?'Overdue':'Unpaid') + '</span>'
-          + '</div>'
-          + '<div class="owing-amount">' + fmt(inv.amount) + '</div>'
-          + '</div>';
-      }).join('');
-    }
-
-    // ── Range pill clicks ──
-    document.getElementById('range-pills').addEventListener('click', function(e) {
-      var pill = e.target.closest('.range-pill');
-      if (!pill) return;
-      var range = pill.dataset.range;
-      if (range === 'custom') {
-        document.getElementById('custom-popup').classList.toggle('open');
-        document.querySelectorAll('.range-pill').forEach(function(p){p.classList.remove('active');});
-        pill.classList.add('active');
-        return;
-      }
-      document.getElementById('custom-popup').classList.remove('open');
-      document.querySelectorAll('.range-pill').forEach(function(p){p.classList.remove('active');});
-      pill.classList.add('active');
-      activeRange = range;
-      render(range);
-    });
-
-    function applyCustom() {
-      var f = document.getElementById('cr-from').value;
-      var t = document.getElementById('cr-to').value;
-      if (!f || !t) return;
-      customFrom = new Date(f);
-      customTo = new Date(t);
-      customTo.setHours(23,59,59);
-      render('custom', customFrom, customTo);
-      document.getElementById('custom-popup').classList.remove('open');
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) { var m=document.getElementById('plus-menu'); if(m) m.classList.remove('open'); }
-    });
-
-    // ── Init ──
-    async function init() {
-      try {
-        invoices = await DB.getInvoices();
-      } catch(e) { invoices = []; }
-      if (invoices.length === 0) {
-        invoices = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-      }
-      render('7d');
-    }
-    init();
-  </script>
-
-
-  <!-- HAMBURGER OVERLAY + DRAWER -->
-  <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
+  <div class="mob-overlay" id="mob-overlay" onclick="closeDrawer()"></div>
   <div class="mob-drawer" id="mob-drawer">
-    <div class="mob-drawer-head">
-      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
-      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
-    </div>
+    <div class="mob-drawer-head"><div class="mob-drawer-logo"><i class="ti ti-file-invoice" style="color:#5DCAA5"></i> Primo Invoice</div><button class="mob-drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
     <div class="mob-drawer-section">Main</div>
     <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
     <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
     <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
     <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
-    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-calendar"></i> Calendar</a>
+    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-briefcase"></i> Calendar</a>
     <div class="mob-drawer-section">Reports</div>
     <a href="earnings.html" class="mob-drawer-item active"><i class="ti ti-chart-bar"></i> Earnings</a>
     <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
     <div class="mob-drawer-section">Account</div>
     <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
-    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
-    <div class="mob-drawer-bottom">
-      <div class="mob-drawer-user">
-        <div class="mob-drawer-av" id="mob-drawer-av"></div>
-        <div>
-          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
-          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
+    <div style="padding:16px 18px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto"><div style="display:flex;align-items:center;gap:10px"><div class="sb-av" id="mob-av"></div><div><div style="font-size:13px;font-weight:600;color:#fff" id="mob-name"></div><div style="font-size:11px;color:#5DCAA5" id="mob-plan">Free plan</div></div></div></div>
+  </div>
+
+  <div class="db">
+    <nav class="sidebar">
+      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+      <div class="sb-nav">
+        <div class="sb-lbl">Main</div>
+        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
+        <div class="sb-lbl">Reports</div>
+        <a href="earnings.html" class="sb-item active"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-lbl">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-av" id="sb-av"></div><div><div style="font-size:12px;font-weight:600;color:#fff" id="sb-uname"></div><div style="font-size:11px;color:rgba(255,255,255,0.5)" id="sb-uplan">Free plan</div></div></a></div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar"><h1>Earnings</h1></div>
+      <div class="content">
+
+        <!-- Period pills -->
+        <div class="period-pills">
+          <button class="pill active" onclick="setPeriod('today',this)">Today</button>
+          <button class="pill" onclick="setPeriod('7d',this)">7 days</button>
+          <button class="pill" onclick="setPeriod('30d',this)">30 days</button>
+          <button class="pill" onclick="setPeriod('3m',this)">3 months</button>
+          <button class="pill" onclick="setPeriod('6m',this)">6 months</button>
+          <button class="pill" onclick="setPeriod('1y',this)">1 year</button>
+          <button class="pill" onclick="setPeriod('all',this)">All time</button>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero-card">
+          <div class="hero-label" id="hero-label">Total earned · today</div>
+          <div class="hero-amount" id="hero-amount">£0</div>
+          <span class="hero-change flat" id="hero-change"><i class="ti ti-minus" style="font-size:12px"></i> No comparison yet</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card" onclick="openPopup('invoices')">
+            <div class="stat-icon" style="background:#EEF3F8"><i class="ti ti-file-invoice" style="font-size:16px;color:#0A2540"></i></div>
+            <div class="stat-label">Invoices</div>
+            <div class="stat-value" id="stat-invoices">0</div>
+            <div class="stat-sub">Tap to view</div>
+          </div>
+          <div class="stat-card" onclick="openPopup('customers')">
+            <div class="stat-icon" style="background:#E1F5EE"><i class="ti ti-users" style="font-size:16px;color:#1D9E75"></i></div>
+            <div class="stat-label">Customers</div>
+            <div class="stat-value" id="stat-customers">0</div>
+            <div class="stat-sub">Tap to view</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#FBF3E3"><i class="ti ti-clock" style="font-size:16px;color:#C28A1E"></i></div>
+            <div class="stat-label">Outstanding</div>
+            <div class="stat-value" id="stat-outstanding" style="color:#C28A1E">£0</div>
+            <div class="stat-sub" id="stat-outstanding-count">0 invoices</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#F3F1FE"><i class="ti ti-trending-up" style="font-size:16px;color:#635BFF"></i></div>
+            <div class="stat-label">Avg. invoice</div>
+            <div class="stat-value" id="stat-avg">£0</div>
+            <div class="stat-sub">per invoice</div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Earnings over time</div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#5DCAA5"></div> Earned</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#E5E3DC"></div> Outstanding</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="earnings-chart"></canvas></div>
+        </div>
+
+        <!-- Invoices + Customers panels -->
+        <div class="two-col">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Recent invoices</div>
+              <button class="panel-view-all" onclick="openPopup('invoices')">View all →</button>
+            </div>
+            <div id="inv-panel"></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Top customers</div>
+              <button class="panel-view-all" onclick="openPopup('customers')">View all →</button>
+            </div>
+            <div id="cust-panel"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+    <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+    <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+    <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+  </nav>
+
+  <!-- POPUP MODAL -->
+  <div class="popup-overlay" id="popup-overlay">
+    <div class="popup">
+      <div class="popup-header">
+        <div class="popup-title" id="popup-title">Invoices</div>
+        <button class="popup-close" onclick="closePopup()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="popup-body" id="popup-body"></div>
+      <div class="popup-footer">
+        <a id="popup-view-all-link" href="invoices.html" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700">
+          <i class="ti ti-external-link"></i> <span id="popup-view-all-text">View all invoices</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
-    // Swipe to close
-    var _swipeStartX = 0;
-    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
-    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
+    var allInvoices = [];
+    var currentPeriod = 'today';
+    var chartInstance = null;
+    var AV_COLORS = ['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'];
+    var AV_FG = ['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'];
+
+    function openDrawer(){ document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); }
+    function closeDrawer(){ document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); }
+
+    function fmt(n){ return '£'+Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtDate(d){ try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d||'';} }
+    function ini(n){ return (n||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2); }
+
+    function getRange(period) {
+      var now = new Date(); var from = new Date(); var to = new Date(now);
+      to.setHours(23,59,59,999);
+      if(period==='today'){ from.setHours(0,0,0,0); }
+      else if(period==='7d'){ from.setDate(from.getDate()-7); from.setHours(0,0,0,0); }
+      else if(period==='30d'){ from.setDate(from.getDate()-30); from.setHours(0,0,0,0); }
+      else if(period==='3m'){ from.setMonth(from.getMonth()-3); from.setHours(0,0,0,0); }
+      else if(period==='6m'){ from.setMonth(from.getMonth()-6); from.setHours(0,0,0,0); }
+      else if(period==='1y'){ from.setFullYear(from.getFullYear()-1); from.setHours(0,0,0,0); }
+      else { from = new Date('2020-01-01'); }
+      return {from:from, to:to};
+    }
+
+    function getPrevRange(period) {
+      var r = getRange(period); var diff = r.to - r.from;
+      return { from: new Date(r.from - diff), to: new Date(r.from) };
+    }
+
+    function setPeriod(p, btn) {
+      currentPeriod = p;
+      document.querySelectorAll('.pill').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      render();
+    }
+
+    function render() {
+      var r = getRange(currentPeriod);
+      var LABELS = { today:'today', '7d':'last 7 days', '30d':'last 30 days', '3m':'last 3 months', '6m':'last 6 months', '1y':'last year', all:'all time' };
+      document.getElementById('hero-label').textContent = 'Total earned · ' + LABELS[currentPeriod];
+
+      var filtered = allInvoices.filter(function(inv){
+        var d = new Date(inv.paid_at || inv.date || inv.created_at);
+        return inv.status==='paid' && d >= r.from && d <= r.to;
+      });
+      var outstanding = allInvoices.filter(function(inv){
+        return inv.status==='unpaid'||inv.status==='overdue'||inv.status==='partial';
+      });
+
+      var total = filtered.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      var outTotal = outstanding.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      var avg = filtered.length ? total/filtered.length : 0;
+      var custSet = new Set(filtered.map(function(i){ return i.customer_name||i.customer; }));
+
+      document.getElementById('hero-amount').textContent = fmt(total);
+      document.getElementById('stat-invoices').textContent = filtered.length;
+      document.getElementById('stat-customers').textContent = custSet.size;
+      document.getElementById('stat-outstanding').textContent = fmt(outTotal);
+      document.getElementById('stat-outstanding-count').textContent = outstanding.length + ' invoice' + (outstanding.length!==1?'s':'');
+      document.getElementById('stat-avg').textContent = fmt(avg);
+
+      // Comparison
+      if(currentPeriod !== 'all') {
+        var pr = getPrevRange(currentPeriod);
+        var prevFiltered = allInvoices.filter(function(inv){
+          var d = new Date(inv.paid_at || inv.date || inv.created_at);
+          return inv.status==='paid' && d >= pr.from && d <= pr.to;
+        });
+        var prevTotal = prevFiltered.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+        var changeEl = document.getElementById('hero-change');
+        if(prevTotal === 0 && total === 0){
+          changeEl.className='hero-change flat'; changeEl.innerHTML='<i class="ti ti-minus" style="font-size:12px"></i> No data yet';
+        } else if(prevTotal === 0){
+          changeEl.className='hero-change up'; changeEl.innerHTML='<i class="ti ti-trending-up" style="font-size:12px"></i> New earnings this period';
+        } else {
+          var pct = Math.round(((total-prevTotal)/prevTotal)*100);
+          if(pct >= 0){
+            changeEl.className='hero-change up'; changeEl.innerHTML='<i class="ti ti-trending-up" style="font-size:12px"></i> +'+pct+'% vs previous period';
+          } else {
+            changeEl.className='hero-change down'; changeEl.innerHTML='<i class="ti ti-trending-down" style="font-size:12px"></i> '+pct+'% vs previous period';
+          }
+        }
+      }
+
+      renderChart(filtered, outstanding, r);
+      renderPanels(filtered, outstanding);
+    }
+
+    function renderChart(paid, outstanding, r) {
+      var canvas = document.getElementById('earnings-chart');
+      var ctx = canvas.getContext('2d');
+      if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+
+      // Build time buckets
+      var diff = r.to - r.from;
+      var days = Math.ceil(diff/(1000*60*60*24));
+      var buckets = [];
+      if(currentPeriod==='today'){
+        // Hourly buckets
+        for(var h=0;h<24;h++){
+          var label = h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+          buckets.push({label:label, from:h, to:h+1, paid:0, outstanding:0});
+        }
+        paid.forEach(function(inv){
+          var d = new Date(inv.paid_at||inv.date||inv.created_at);
+          var h = d.getHours();
+          if(buckets[h]) buckets[h].paid += Number(inv.amount||0);
+        });
+      } else if(days<=31){
+        // Daily buckets
+        for(var i=0;i<days;i++){
+          var dt = new Date(r.from); dt.setDate(dt.getDate()+i);
+          buckets.push({label:dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'}), date:dt.toISOString().split('T')[0], paid:0, outstanding:0});
+        }
+        paid.forEach(function(inv){
+          var ds = new Date(inv.paid_at||inv.date||inv.created_at).toISOString().split('T')[0];
+          var b = buckets.find(function(x){return x.date===ds;});
+          if(b) b.paid += Number(inv.amount||0);
+        });
+      } else {
+        // Monthly buckets
+        var start = new Date(r.from); start.setDate(1);
+        var end = new Date(r.to);
+        while(start <= end){
+          var key = start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0');
+          buckets.push({label:start.toLocaleDateString('en-GB',{month:'short',year:'numeric'}), key:key, paid:0, outstanding:0});
+          start.setMonth(start.getMonth()+1);
+        }
+        paid.forEach(function(inv){
+          var dt = new Date(inv.paid_at||inv.date||inv.created_at);
+          var key = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
+          var b = buckets.find(function(x){return x.key===key;});
+          if(b) b.paid += Number(inv.amount||0);
+        });
+        // Add outstanding to last bucket
+        if(buckets.length) buckets[buckets.length-1].outstanding = outstanding.reduce(function(a,i){return a+Number(i.amount||0);},0);
+      }
+
+      chartInstance = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels: buckets.map(function(b){return b.label;}),
+          datasets:[
+            {
+              label:'Earned',
+              data: buckets.map(function(b){return b.paid;}),
+              backgroundColor:'rgba(93,202,165,0.85)',
+              borderRadius:5,
+              borderSkipped:false
+            },
+            {
+              label:'Outstanding',
+              data: buckets.map(function(b){return b.outstanding||0;}),
+              backgroundColor:'rgba(229,227,220,0.7)',
+              borderRadius:5,
+              borderSkipped:false
+            }
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              callbacks:{
+                label:function(ctx){ return ' '+fmt(ctx.raw); }
+              },
+              backgroundColor:'#0A2540',
+              titleColor:'#fff',
+              bodyColor:'rgba(255,255,255,0.8)',
+              padding:10,
+              cornerRadius:8
+            }
+          },
+          scales:{
+            x:{ grid:{display:false}, ticks:{color:'#A3A29C',font:{size:11}}, border:{display:false} },
+            y:{ grid:{color:'#F0EFEA'}, ticks:{color:'#A3A29C',font:{size:11},callback:function(v){return v>=1000?'£'+(v/1000).toFixed(1)+'k':'£'+v;}}, border:{display:false} }
+          }
+        }
+      });
+    }
+
+    function renderPanels(paid, outstanding) {
+      // Recent invoices panel
+      var recentAll = allInvoices.slice().sort(function(a,b){ return new Date(b.created_at||b.date) - new Date(a.created_at||a.date); });
+      var invPanel = document.getElementById('inv-panel');
+      if(!recentAll.length){
+        invPanel.innerHTML = '<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No invoices yet</div>';
+      } else {
+        invPanel.innerHTML = recentAll.slice(0,5).map(function(inv,i){
+          var st=inv.status||'unpaid';
+          var cls=st==='paid'?'badge-paid':st==='overdue'?'badge-overdue':'badge-unpaid';
+          var lbl=st==='paid'?'Paid':st==='overdue'?'Overdue':st==='partial'?'Partial':'Unpaid';
+          return '<div class="panel-row" onclick="openInvPopup(\''+inv.id+'\')">'
+            +'<div class="panel-av" style="background:'+AV_COLORS[i%5]+';color:'+AV_FG[i%5]+'">'+ini(inv.customer_name||inv.customer)+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(inv.customer_name||inv.customer||'—')+'</div>'
+            +'<div style="font-size:11px;color:#8B8A84">'+(inv.number||'—')+' · '+(inv.job||'Invoice')+'</div></div>'
+            +'<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">'+fmt(inv.amount)+'</div>'
+            +'<span class="badge '+cls+'">'+lbl+'</span>'
+            +'</div>';
+        }).join('');
+      }
+
+      // Top customers panel
+      var custMap = {};
+      allInvoices.filter(function(i){return i.status==='paid';}).forEach(function(inv){
+        var n=inv.customer_name||inv.customer||'Unknown';
+        if(!custMap[n]) custMap[n]={name:n,total:0,count:0};
+        custMap[n].total+=Number(inv.amount||0);
+        custMap[n].count++;
+      });
+      var topCusts=Object.values(custMap).sort(function(a,b){return b.total-a.total;});
+      var custPanel=document.getElementById('cust-panel');
+      if(!topCusts.length){
+        custPanel.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No customer data yet</div>';
+      } else {
+        var maxTotal=topCusts[0].total||1;
+        custPanel.innerHTML=topCusts.slice(0,5).map(function(c,i){
+          var pct=Math.round((c.total/maxTotal)*100);
+          return '<div class="panel-row" onclick="openCustPopup(\''+encodeURIComponent(c.name)+'\')">'
+            +'<div class="panel-av" style="background:'+AV_COLORS[i%5]+';color:'+AV_FG[i%5]+'">'+ini(c.name)+'</div>'
+            +'<div style="flex:1;min-width:0;padding-right:8px">'
+            +'<div style="font-size:13px;font-weight:600;color:#061A30">'+c.name+'</div>'
+            +'<div style="height:4px;background:#F0EFEA;border-radius:2px;margin-top:4px"><div style="height:4px;background:#5DCAA5;border-radius:2px;width:'+pct+'%"></div></div>'
+            +'</div>'
+            +'<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:600;color:#061A30">'+fmt(c.total)+'</div>'
+            +'<div style="font-size:11px;color:#8B8A84">'+c.count+' invoice'+(c.count!==1?'s':'')+'</div></div>'
+            +'</div>';
+        }).join('');
+      }
+    }
+
+    function openPopup(type) {
+      var overlay=document.getElementById('popup-overlay');
+      var title=document.getElementById('popup-title');
+      var body=document.getElementById('popup-body');
+      var link=document.getElementById('popup-view-all-link');
+      var linkText=document.getElementById('popup-view-all-text');
+
+      if(type==='invoices'){
+        title.textContent='All invoices';
+        link.href='invoices.html'; linkText.textContent='View all invoices';
+        var sorted=allInvoices.slice().sort(function(a,b){return new Date(b.created_at||b.date)-new Date(a.created_at||a.date);});
+        body.innerHTML=sorted.map(function(inv,i){
+          var st=inv.status||'unpaid';
+          var cls=st==='paid'?'badge-paid':st==='overdue'?'badge-overdue':'badge-unpaid';
+          var lbl=st==='paid'?'Paid':st==='overdue'?'Overdue':st==='partial'?'Partial':'Unpaid';
+          return '<div class="panel-row">'
+            +'<div class="panel-av" style="background:'+AV_COLORS[i%5]+';color:'+AV_FG[i%5]+'">'+ini(inv.customer_name||inv.customer)+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#061A30">'+(inv.customer_name||inv.customer||'—')+'</div>'
+            +'<div style="font-size:11px;color:#8B8A84">'+(inv.number||'—')+' · '+(inv.job||'Invoice')+' · '+fmtDate(inv.date||inv.created_at)+'</div></div>'
+            +'<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">'+fmt(inv.amount)+'</div>'
+            +'<span class="badge '+cls+'">'+lbl+'</span>'
+            +'</div>';
+        }).join('') || '<div style="padding:32px;text-align:center;color:#A3A29C">No invoices yet</div>';
+      } else {
+        title.textContent='All customers';
+        link.href='customers.html'; linkText.textContent='View all customers';
+        var custMap={};
+        allInvoices.forEach(function(inv){
+          var n=inv.customer_name||inv.customer||'Unknown';
+          if(!custMap[n]) custMap[n]={name:n,paid:0,outstanding:0,count:0};
+          if(inv.status==='paid') custMap[n].paid+=Number(inv.amount||0);
+          else if(inv.status==='unpaid'||inv.status==='overdue') custMap[n].outstanding+=Number(inv.amount||0);
+          custMap[n].count++;
+        });
+        var custs=Object.values(custMap).sort(function(a,b){return (b.paid+b.outstanding)-(a.paid+a.outstanding);});
+        body.innerHTML=custs.map(function(c,i){
+          return '<div class="panel-row" onclick="window.location.href=\'customers.html?name='+encodeURIComponent(c.name)+'\'">'
+            +'<div class="panel-av" style="background:'+AV_COLORS[i%5]+';color:'+AV_FG[i%5]+'">'+ini(c.name)+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#061A30">'+c.name+'</div>'
+            +'<div style="font-size:11px;color:#8B8A84">'+c.count+' invoice'+(c.count!==1?'s':'')+(c.outstanding>0?' · <span style="color:#C28A1E">'+fmt(c.outstanding)+' outstanding</span>':'')+'</div></div>'
+            +'<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:600;color:#1D9E75">'+fmt(c.paid)+'</div>'
+            +'<div style="font-size:11px;color:#8B8A84">paid</div></div>'
+            +'</div>';
+        }).join('') || '<div style="padding:32px;text-align:center;color:#A3A29C">No customers yet</div>';
+      }
+      overlay.classList.add('open');
+    }
+
+    function closePopup(){ document.getElementById('popup-overlay').classList.remove('open'); }
+    document.getElementById('popup-overlay').addEventListener('click',function(e){if(e.target===this)closePopup();});
+
+    async function init(){
+      try{
+        var {data}=await supabase.auth.getUser();
+        if(data&&data.user){
+          var m=data.user.user_metadata||{};
+          var first=m.first_name||''; var last=m.last_name||'';
+          var nm=(first+' '+last).trim()||data.user.email.split('@')[0];
+          var ini2=((first[0]||'')+(last[0]||'')).toUpperCase()||data.user.email[0].toUpperCase();
+          var av=document.getElementById('sb-av'); if(av)av.textContent=ini2;
+          var un=document.getElementById('sb-uname'); if(un)un.textContent=nm;
+          var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan+' plan':'Free plan';
+          var ma=document.getElementById('mob-av'); if(ma)ma.textContent=ini2;
+          var mn=document.getElementById('mob-name'); if(mn)mn.textContent=first||nm;
+        }
+      }catch(e){}
+
+      // Load invoices
+      try{ var {data:invData}=await supabase.from('invoices').select('*').order('created_at',{ascending:false}); allInvoices=invData||[]; }catch(e){ allInvoices=[]; }
+      if(!allInvoices.length) allInvoices=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+
+      render();
+    }
+    init();
   </script>
 </body>
 </html>
