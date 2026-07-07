@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -446,11 +446,12 @@
               var st = inv.status || 'unpaid';
               var cls = st === 'paid' ? 'inv-paid' : st === 'overdue' ? 'inv-overdue' : 'inv-unpaid';
               var lbl = st === 'paid' ? 'Paid' : st === 'overdue' ? 'Overdue' : st === 'partial' ? 'Partial' : 'Unpaid';
-              return '<div class="inv-row">'
+              return '<div class="inv-row" onclick="openInvDetail('+JSON.stringify(inv).replace(/'/g,"&#39;")+',\''+encodeURIComponent(c.name)+'\')" style="cursor:pointer" onmouseenter="this.style.background=\'#F8F7F3\'" onmouseleave="this.style.background=\'#fff\'">'
                 + '<span class="inv-num">' + (inv.number||'—') + '</span>'
                 + '<div style="flex:1;font-size:12px;color:#6B6A65;padding:0 8px">' + (inv.job||'Invoice') + '</div>'
                 + '<div style="font-size:13px;font-weight:600;color:#061A30;margin-right:8px">' + fmt(inv.amount) + '</div>'
                 + '<span class="inv-badge ' + cls + '">' + lbl + '</span>'
+                + '<i class="ti ti-chevron-right" style="font-size:13px;color:#D3D1C7;margin-left:6px"></i>'
                 + '</div>';
             }).join('')
           )
@@ -779,7 +780,105 @@
     document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
     document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
   </script>
-  <!-- BOOK JOB MODAL -->
+  <!-- INVOICE DETAIL MODAL -->
+  <div id="inv-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,0.5);z-index:600;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div id="inv-detail-inner"></div>
+    </div>
+  </div>
+
+  <script>
+    function openInvDetail(inv, custNameEnc) {
+      var custName = decodeURIComponent(custNameEnc);
+      var overlay = document.getElementById('inv-detail-overlay');
+      var inner = document.getElementById('inv-detail-inner');
+      var st = inv.status || 'unpaid';
+      var STATUS_COLORS = { paid:'#1D9E75', unpaid:'#C28A1E', overdue:'#D14343', partial:'#C28A1E', cancelled:'#8B8A84', refunded:'#635BFF' };
+      var STATUS_BG = { paid:'#E1F5EE', unpaid:'#FBF3E3', overdue:'#FDEDED', partial:'#FBF3E3', cancelled:'#F0EFEA', refunded:'#F3F1FE' };
+      var STATUS_LABEL = { paid:'Paid', unpaid:'Unpaid', overdue:'Overdue', partial:'Partial', cancelled:'Cancelled', refunded:'Refunded' };
+      var payMethod = inv.payment_method ? inv.payment_method.charAt(0).toUpperCase()+inv.payment_method.slice(1).replace('_',' ') : '';
+
+      inner.innerHTML =
+        // Header
+        '<div style="background:#0A2540;padding:18px 20px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between">'
+        + '<div><div style="font-size:16px;font-weight:700;color:#fff">'+(inv.number||'Invoice')+'</div>'
+        + '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">'+custName+'</div></div>'
+        + '<div style="display:flex;align-items:center;gap:8px">'
+        + '<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:'+STATUS_BG[st]+';color:'+STATUS_COLORS[st]+'">'+STATUS_LABEL[st]+'</span>'
+        + '<button onclick="document.getElementById(\'inv-detail-overlay\').style.display=\'none\'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>'
+        + '</div></div>'
+
+        // Amount hero
+        + '<div style="padding:20px;text-align:center;border-bottom:1px solid #F0EFEA">'
+        + '<div style="font-size:12px;color:#8B8A84;margin-bottom:4px">Total amount</div>'
+        + '<div style="font-size:36px;font-weight:700;color:#061A30;letter-spacing:-0.02em">'+fmt(inv.amount)+'</div>'
+        + (inv.paid_at?'<div style="font-size:12px;color:#1D9E75;margin-top:4px">Paid '+new Date(inv.paid_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+(payMethod?' via '+payMethod:'')+'</div>':'')
+        + '</div>'
+
+        // Details
+        + '<div style="padding:16px 20px">'
+
+        // Job & date row
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
+        + '<div style="background:#F8F7F3;border-radius:10px;padding:12px">'
+        + '<div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Job</div>'
+        + '<div style="font-size:14px;font-weight:600;color:#061A30">'+(inv.job||'—')+'</div></div>'
+        + '<div style="background:#F8F7F3;border-radius:10px;padding:12px">'
+        + '<div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Date</div>'
+        + '<div style="font-size:14px;font-weight:600;color:#061A30">'+(inv.date||inv.created_at?new Date((inv.date||inv.created_at)+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—')+'</div></div>'
+        + '</div>'
+
+        // Breakdown
+        + (inv.subtotal||inv.vat_amount
+          ? '<div style="background:#F8F7F3;border-radius:10px;padding:14px;margin-bottom:16px">'
+            + '<div style="font-size:10px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Breakdown</div>'
+            + '<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B6A65;padding:4px 0"><span>Subtotal</span><span>'+fmt(inv.subtotal||inv.amount)+'</span></div>'
+            + (inv.vat_amount&&inv.vat_amount>0?'<div style="display:flex;justify-content:space-between;font-size:13px;color:#6B6A65;padding:4px 0"><span>VAT ('+(inv.vat_rate||20)+'%)</span><span>'+fmt(inv.vat_amount)+'</span></div>':'')
+            + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#061A30;border-top:1px solid #E5E3DC;padding-top:8px;margin-top:6px"><span>Total</span><span>'+fmt(inv.amount)+'</span></div>'
+            + '</div>'
+          : '')
+
+        // Payment link
+        + (inv.stripe_payment_link&&st!=='paid'
+          ? '<div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">'
+            + '<i class="ti ti-link" style="font-size:16px;color:#1D9E75;flex-shrink:0"></i>'
+            + '<div style="flex:1;font-size:12px;color:#0F6E56;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+inv.stripe_payment_link+'</div>'
+            + '<button onclick="navigator.clipboard.writeText(\''+inv.stripe_payment_link+'\').then(function(){showToast(\'Link copied!\');})" style="background:#1D9E75;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Copy</button>'
+            + '</div>'
+          : '')
+
+        // Notes
+        + (inv.notes?'<div style="background:#FBF3E3;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#854F0B">'+inv.notes+'</div>':'')
+
+        // Actions
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+        + (st!=='paid'
+          ? '<button onclick="markInvPaidFromModal(\''+inv.id+'\');document.getElementById(\'inv-detail-overlay\').style.display=\'none\'" style="padding:11px;border-radius:9px;background:#1D9E75;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;grid-column:span 2"><i class="ti ti-check"></i> Mark as paid</button>'
+          : '')
+        + '<a href="invoices.html" style="padding:11px;border-radius:9px;background:#EEF3F8;color:#0A2540;text-decoration:none;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px"><i class="ti ti-file-invoice"></i> All invoices</a>'
+        + '<button onclick="document.getElementById(\'inv-detail-overlay\').style.display=\'none\'" style="padding:11px;border-radius:9px;background:#F0EFEA;color:#6B6A65;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Close</button>'
+        + '</div>'
+        + '</div>';
+
+      overlay.style.display = 'flex';
+    }
+
+    async function markInvPaidFromModal(invId) {
+      var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+      var inv = invs.find(function(i){ return i.id==invId; });
+      if(inv){ inv.status='paid'; inv.paid_at=new Date().toISOString(); }
+      localStorage.setItem('tb_invoices', JSON.stringify(invs));
+      try{ await supabase.from('invoices').update({status:'paid',paid_at:new Date().toISOString()}).eq('id',invId); }catch(e){}
+      showToast('✓ Invoice marked as paid');
+      setTimeout(function(){ location.reload(); }, 1200);
+    }
+
+    document.getElementById('inv-detail-overlay').addEventListener('click', function(e){
+      if(e.target===this) this.style.display='none';
+    });
+  </script>
+
+</body>
   <div id="book-job-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:20px">
     <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
       <div style="background:#0A2540;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
