@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tools — Primo Invoice</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
+    try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch(e) { var supabase = { auth:{getUser:function(){return Promise.resolve({data:{user:null}});}}, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return c;},update:function(){return c;},delete:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#FAFAF8;color:#1A1A18;}
+    .db{display:flex;min-height:100vh;}
+    .sidebar{width:210px;flex-shrink:0;background:#0A2540;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+    .sb-logo{display:flex;align-items:center;gap:8px;padding:20px 16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.1);text-decoration:none;}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;}
+    .sb-logo-icon i{color:#fff;font-size:18px;}
+    .sb-logo-text{font-size:16px;font-weight:600;color:#fff;}
+    .sb-nav{padding:16px 10px;flex:1;overflow-y:auto;}
+    .sb-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px;text-decoration:none;}
+    .sb-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+    .sb-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+    .sb-item i{font-size:18px;}
+    .sb-bottom{padding:12px 10px;border-top:0.5px solid rgba(255,255,255,0.1);}
+    .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;text-decoration:none;}
+    .sb-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+    .main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{background:#fff;border-bottom:1px solid #E5E3DC;padding:14px 24px;position:sticky;top:0;z-index:50;}
+    .topbar h1{font-size:16px;font-weight:600;color:#061A30;}
+    .content{padding:24px;max-width:1100px;}
+
+    /* Tool grid */
+    .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+    .tool-card{background:#fff;border:1px solid #E5E3DC;border-radius:16px;padding:20px;cursor:pointer;transition:all 0.15s;}
+    .tool-card:hover{box-shadow:0 4px 20px rgba(10,37,64,0.1);border-color:#C5C3BB;transform:translateY(-1px);}
+    .tool-card.active{border-color:#0A2540;box-shadow:0 4px 20px rgba(10,37,64,0.15);}
+    .tool-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+    .tool-icon i{font-size:22px;}
+    .tool-name{font-size:14px;font-weight:700;color:#061A30;margin-bottom:4px;}
+    .tool-desc{font-size:12px;color:#8B8A84;line-height:1.5;}
+
+    /* Tool panels */
+    .tool-panel{display:none;background:#fff;border:1px solid #E5E3DC;border-radius:16px;padding:24px;margin-bottom:16px;}
+    .tool-panel.active{display:block;}
+    .panel-title{font-size:17px;font-weight:700;color:#061A30;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+    .panel-desc{font-size:13px;color:#8B8A84;margin-bottom:24px;}
+
+    /* Forms */
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:11px;font-weight:700;color:#8B8A84;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;}
+    .field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid #E5E3DC;border-radius:9px;font-size:14px;color:#1A1A18;font-family:inherit;outline:none;background:#fff;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#0A2540;box-shadow:0 0 0 3px rgba(10,37,64,0.07);}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .field-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+    .btn{padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border:none;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:#0A2540;color:#fff;}
+    .btn-primary:hover{background:#061A30;}
+    .btn-secondary{background:#F0EFEA;color:#061A30;border:1px solid #E5E3DC;}
+    .btn-green{background:#1D9E75;color:#fff;}
+    .btn-teal{background:#5DCAA5;color:#061A30;}
+
+    /* Results cards */
+    .result-card{background:linear-gradient(160deg,#061A30,#0A2540 55%,#0D3060);border-radius:14px;padding:20px;color:#fff;margin-bottom:16px;}
+    .result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+    .result-item{background:rgba(255,255,255,0.1);border-radius:10px;padding:13px;}
+    .result-label{font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;}
+    .result-val{font-size:20px;font-weight:700;color:#fff;}
+    .result-val.teal{color:#5DCAA5;}
+    .result-val.red{color:#F87171;}
+
+    /* Log rows */
+    .log-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F8F7F3;}
+    .log-row:last-child{border-bottom:none;}
+    .log-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .log-icon i{font-size:18px;}
+
+    /* Review request */
+    .review-platform{border:1.5px solid #E5E3DC;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.15s;margin-bottom:8px;}
+    .review-platform:hover{border-color:#0A2540;background:#F8F7F3;}
+    .review-platform.selected{border-color:#0A2540;background:#EEF3F8;}
+    .review-platform-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+    /* Tax card */
+    .tax-ring{width:140px;height:140px;position:relative;margin:0 auto 16px;}
+    .tax-ring svg{transform:rotate(-90deg);}
+    .tax-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+    /* Recurring */
+    .rec-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F8F7F3;cursor:pointer;}
+    .rec-row:hover{background:#F8F7F3;}
+
+    /* Subcontractor */
+    .sub-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F8F7F3;}
+    .sub-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+
+    /* Mobile */
+    .mobile-topbar{display:none;}
+    .bottom-nav{display:none;}
+    .mob-drawer{position:fixed;top:0;left:-280px;width:280px;height:100vh;background:#0A2540;z-index:600;transition:left 0.28s ease;display:flex;flex-direction:column;overflow-y:auto;}
+    .mob-drawer.open{left:0;}
+    .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:599;}
+    .mob-overlay.open{display:block;}
+    .mob-drawer-head{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;}
+    .mob-drawer-logo{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+    .mob-drawer-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mob-drawer-section{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.07em;text-transform:uppercase;padding:14px 18px 6px;}
+    .mob-drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,0.75);text-decoration:none;}
+    .mob-drawer-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left:3px solid #5DCAA5;padding-left:15px;}
+    .mob-drawer-item i{font-size:20px;width:24px;}
+    .mob-burger{background:none;border:none;cursor:pointer;padding:2px;display:flex;flex-direction:column;gap:5px;}
+    .mob-burger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
+    @media(max-width:768px){
+      .sidebar{display:none;}.main{margin-left:0;}.topbar{display:none;}
+      .mobile-topbar{display:flex;align-items:center;justify-content:space-between;background:#0A2540;padding:14px 16px;position:sticky;top:0;z-index:200;}
+      .content{padding:14px 16px 100px;}
+      .tools-grid{grid-template-columns:1fr 1fr;gap:10px;}
+      .result-grid{grid-template-columns:1fr 1fr;}
+      .field-row,.field-3{grid-template-columns:1fr;}
+      input,select,textarea{font-size:16px!important;}
+      .bottom-nav{display:flex;align-items:center;background:#fff;border-top:1px solid #E5E3DC;padding:8px 0 20px;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+      .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:4px 0;}
+      .nav-item i{font-size:22px;color:#A3A29C;}
+      .nav-item span{font-size:10px;color:#A3A29C;font-weight:500;}
+      .nav-item.active i,.nav-item.active span{color:#0A2540;font-weight:600;}
+      .nav-plus-wrap{flex:1;display:flex;justify-content:center;}
+      .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
+      .nav-plus i{font-size:24px;color:#fff;}
+    }
+  </style>
+</head>
+<body>
+<div class="mobile-topbar">
+  <button class="mob-burger" onclick="openDrawer()"><span></span><span></span><span></span></button>
+  <div style="font-size:16px;font-weight:700;color:#fff">Tools</div>
+  <div style="width:44px"></div>
+</div>
+<div class="mob-overlay" id="mob-overlay" onclick="closeDrawer()"></div>
+<div class="mob-drawer" id="mob-drawer">
+  <div class="mob-drawer-head"><div class="mob-drawer-logo"><i class="ti ti-file-invoice" style="color:#5DCAA5"></i> Primo Invoice</div><button class="mob-drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
+  <div class="mob-drawer-section">Main</div>
+  <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
+  <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
+  <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-briefcase"></i> Calendar</a>
+  <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
+  <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+  <div class="mob-drawer-section">Reports</div>
+  <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+  <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
+  <div class="mob-drawer-section">Tools</div>
+  <a href="tools.html" class="mob-drawer-item active"><i class="ti ti-tools"></i> Tools</a>
+  <div class="mob-drawer-section">Account</div>
+  <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
+  <div style="padding:16px 18px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto"><div style="display:flex;align-items:center;gap:10px"><div class="sb-av" id="mob-av"></div><div><div style="font-size:13px;font-weight:600;color:#fff" id="mob-name"></div><div style="font-size:11px;color:#5DCAA5" id="mob-plan">Free plan</div></div></div></div>
+</div>
+
+<div class="db">
+  <nav class="sidebar">
+    <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+    <div class="sb-nav">
+      <div class="sb-lbl">Main</div>
+      <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+      <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
+      <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+      <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+      <div class="sb-lbl">Reports</div>
+      <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+      <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
+      <div class="sb-lbl">Tools</div>
+      <a href="tools.html" class="sb-item active"><i class="ti ti-tools"></i> Tools</a>
+      <div class="sb-lbl">Account</div>
+      <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+    </div>
+    <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-av" id="sb-av"></div><div><div style="font-size:12px;font-weight:600;color:#fff" id="sb-uname"></div><div style="font-size:11px;color:rgba(255,255,255,0.5)" id="sb-uplan">Free plan</div></div></a></div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar"><h1>Tools</h1></div>
+    <div class="content">
+
+      <!-- Tool cards grid -->
+      <div class="tools-grid">
+        <div class="tool-card" onclick="openTool('mileage')">
+          <div class="tool-icon" style="background:#EEF3F8"><i class="ti ti-car" style="color:#0A2540"></i></div>
+          <div class="tool-name">Mileage tracker</div>
+          <div class="tool-desc">Log trips to jobs. Calculate claim at HMRC rate (45p/mile).</div>
+        </div>
+        <div class="tool-card" onclick="openTool('materials')">
+          <div class="tool-icon" style="background:#E1F5EE"><i class="ti ti-package" style="color:#1D9E75"></i></div>
+          <div class="tool-name">Materials & costs</div>
+          <div class="tool-desc">Track job materials and see your actual profit per job.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('tax')">
+          <div class="tool-icon" style="background:#FBF3E3"><i class="ti ti-receipt-tax" style="color:#C28A1E"></i></div>
+          <div class="tool-name">Tax estimator</div>
+          <div class="tool-desc">See how much to set aside for self-assessment. Never get caught short.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('review')">
+          <div class="tool-icon" style="background:#F3F1FE"><i class="ti ti-star" style="color:#635BFF"></i></div>
+          <div class="tool-name">Review requests</div>
+          <div class="tool-desc">Auto-send Google or Trustpilot review links after a job is paid.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('recurring')">
+          <div class="tool-icon" style="background:#FBF3E3"><i class="ti ti-repeat" style="color:#C28A1E"></i></div>
+          <div class="tool-name">Recurring invoices</div>
+          <div class="tool-desc">Set up automatic invoices for maintenance contracts.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('subcontractors')">
+          <div class="tool-icon" style="background:#FDEDED"><i class="ti ti-helmet" style="color:#D14343"></i></div>
+          <div class="tool-name">Subcontractors</div>
+          <div class="tool-desc">Manage subbies, track what you pay them and their invoices.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('whatsapp')">
+          <div class="tool-icon" style="background:#E1F5EE"><i class="ti ti-brand-whatsapp" style="color:#25D366"></i></div>
+          <div class="tool-name">WhatsApp templates</div>
+          <div class="tool-desc">Pre-built messages for quotes, reminders and job confirmations.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('photos')">
+          <div class="tool-icon" style="background:#EEF3F8"><i class="ti ti-camera" style="color:#0A2540"></i></div>
+          <div class="tool-name">Job photos</div>
+          <div class="tool-desc">Attach before/after photos to jobs and invoices as proof of work.</div>
+        </div>
+      </div>
+
+      <!-- ═══ MILEAGE TRACKER ═══ -->
+      <div class="tool-panel" id="panel-mileage">
+        <div class="panel-title"><i class="ti ti-car" style="color:#0A2540"></i> Mileage tracker</div>
+        <div class="panel-desc">Log business trips. HMRC allows 45p per mile for the first 10,000 miles per tax year.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+          <!-- Log trip -->
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Log a trip</div>
+            <div class="field"><label>Job / customer</label><input type="text" id="mil-job" placeholder="e.g. Mark Taylor — boiler service" /></div>
+            <div class="field-row">
+              <div class="field"><label>Date</label><input type="date" id="mil-date" /></div>
+              <div class="field"><label>Miles driven</label><input type="number" id="mil-miles" placeholder="0" min="0" step="0.1" oninput="calcMileage()" /></div>
+            </div>
+            <div class="field"><label>Start address</label><input type="text" id="mil-from" placeholder="Your home address" /></div>
+            <div class="field"><label>End address (job site)</label><input type="text" id="mil-to" placeholder="Customer address" /></div>
+            <div style="background:#F8F7F3;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:13px;color:#6B6A65">Claimable amount (45p/mile)</span>
+              <span style="font-size:18px;font-weight:700;color:#1D9E75" id="mil-calc">£0.00</span>
+            </div>
+            <button class="btn btn-primary" onclick="logMileage()"><i class="ti ti-plus"></i> Log trip</button>
+          </div>
+
+          <!-- Summary -->
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">This tax year</div>
+            <div class="result-card">
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px">Total miles logged</div>
+              <div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:-0.02em" id="mil-total-miles">0</div>
+              <div class="result-grid" style="margin-top:14px">
+                <div class="result-item"><div class="result-label">Claimable</div><div class="result-val teal" id="mil-total-claim">£0</div></div>
+                <div class="result-item"><div class="result-label">Remaining to 10k</div><div class="result-val" id="mil-remaining">10,000</div></div>
+                <div class="result-item"><div class="result-label">Trips logged</div><div class="result-val" id="mil-trips">0</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trip log -->
+        <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:12px">Recent trips</div>
+        <div id="mil-log" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;overflow:hidden">
+          <div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No trips logged yet</div>
+        </div>
+        <div style="margin-top:12px;text-align:right">
+          <button class="btn btn-secondary" onclick="exportMileage()"><i class="ti ti-download"></i> Export for tax return</button>
+        </div>
+      </div>
+
+      <!-- ═══ MATERIALS & COSTS ═══ -->
+      <div class="tool-panel" id="panel-materials">
+        <div class="panel-title"><i class="ti ti-package" style="color:#1D9E75"></i> Materials & job costs</div>
+        <div class="panel-desc">Track what you spend on materials per job to see your real profit margin.</div>
+
+        <div class="field-row" style="margin-bottom:16px">
+          <div class="field"><label>Job / customer</label>
+            <select id="mat-job">
+              <option value="">Select a job...</option>
+            </select>
+          </div>
+          <div class="field"><label>Or enter manually</label><input type="text" id="mat-job-manual" placeholder="e.g. Bathroom refit — Mark Taylor" /></div>
+        </div>
+        <div style="background:#F8F7F3;border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:#8B8A84;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em">Add material / cost</div>
+          <div class="field-3">
+            <div class="field"><label>Item</label><input type="text" id="mat-item" placeholder="e.g. 22mm copper pipe" /></div>
+            <div class="field"><label>Supplier</label><input type="text" id="mat-supplier" placeholder="e.g. Screwfix" /></div>
+            <div class="field"><label>Cost (£)</label><input type="number" id="mat-cost" placeholder="0.00" step="0.01" min="0" /></div>
+          </div>
+          <button class="btn btn-primary" onclick="addMaterial()"><i class="ti ti-plus"></i> Add item</button>
+        </div>
+
+        <!-- Materials list -->
+        <div id="mat-list" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;overflow:hidden;margin-bottom:16px">
+          <div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No items added yet</div>
+        </div>
+
+        <!-- Profit summary -->
+        <div id="mat-summary" style="display:none" class="result-card">
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">Job profit breakdown</div>
+          <div class="result-grid">
+            <div class="result-item"><div class="result-label">Invoice value</div><div class="result-val" id="mat-revenue">£0</div></div>
+            <div class="result-item"><div class="result-label">Material costs</div><div class="result-val red" id="mat-costs">£0</div></div>
+            <div class="result-item"><div class="result-label">Profit</div><div class="result-val teal" id="mat-profit">£0</div></div>
+          </div>
+          <div style="margin-top:12px">
+            <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden">
+              <div id="mat-profit-bar" style="height:100%;background:#5DCAA5;border-radius:4px;transition:width 0.5s;width:0%"></div>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px" id="mat-margin">0% profit margin</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAX ESTIMATOR ═══ -->
+      <div class="tool-panel" id="panel-tax">
+        <div class="panel-title"><i class="ti ti-receipt-tax" style="color:#C28A1E"></i> Tax estimator</div>
+        <div class="panel-desc">Know exactly how much to set aside for self-assessment. Updates automatically as you earn.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div class="field"><label>Tax year</label>
+              <select id="tax-year" onchange="calcTax()">
+                <option value="2025">2024/25</option>
+                <option value="2026" selected>2025/26</option>
+              </select>
+            </div>
+            <div class="field"><label>Employment income this year (£)</label><input type="number" id="tax-employed" placeholder="0" value="0" oninput="calcTax()" /></div>
+            <div class="field"><label>Other allowable expenses (£)</label><input type="number" id="tax-expenses" placeholder="0" value="0" oninput="calcTax()" /></div>
+            <div style="background:#E1F5EE;border:1px solid #9FE1CB;border-radius:10px;padding:12px 14px;font-size:12px;color:#085041;margin-top:8px">
+              <i class="ti ti-info-circle" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>
+              Based on 2025/26 UK tax rates. Personal allowance: £12,570. Always verify with your accountant.
+            </div>
+          </div>
+          <div>
+            <div class="tax-ring">
+              <svg width="140" height="140" viewBox="0 0 140 140">
+                <circle cx="70" cy="70" r="58" fill="none" stroke="#F0EFEA" stroke-width="16"/>
+                <circle cx="70" cy="70" r="58" fill="none" stroke="#C28A1E" stroke-width="16" stroke-dasharray="364" stroke-dashoffset="364" id="tax-ring-stroke" style="transition:stroke-dashoffset 0.5s"/>
+              </svg>
+              <div class="tax-ring-label">
+                <div style="font-size:11px;color:#8B8A84">Set aside</div>
+                <div style="font-size:20px;font-weight:700;color:#061A30" id="tax-pct">0%</div>
+              </div>
+            </div>
+            <div class="result-card">
+              <div class="result-grid">
+                <div class="result-item"><div class="result-label">Gross income</div><div class="result-val" id="tax-gross">£0</div></div>
+                <div class="result-item"><div class="result-label">Tax due</div><div class="result-val red" id="tax-due">£0</div></div>
+                <div class="result-item"><div class="result-label">NI due</div><div class="result-val red" id="tax-ni">£0</div></div>
+              </div>
+              <div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:13px;color:rgba(255,255,255,0.7)">Total to set aside</span>
+                <span style="font-size:24px;font-weight:700;color:#5DCAA5" id="tax-total">£0</span>
+              </div>
+            </div>
+            <div style="background:#FBF3E3;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;color:#854F0B" id="tax-monthly-tip">
+              Set aside <strong id="tax-monthly">£0/month</strong> to cover your tax bill.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ REVIEW REQUESTS ═══ -->
+      <div class="tool-panel" id="panel-review">
+        <div class="panel-title"><i class="ti ti-star" style="color:#635BFF"></i> Review requests</div>
+        <div class="panel-desc">Send customers a review link after their invoice is paid. More reviews = more work.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Your review links</div>
+            <div class="field"><label>Google Business profile URL</label><input type="url" id="review-google" placeholder="https://g.page/r/YOUR_BUSINESS/review" /></div>
+            <div class="field"><label>Trustpilot URL (optional)</label><input type="url" id="review-trustpilot" placeholder="https://uk.trustpilot.com/review/yourbusiness.co.uk" /></div>
+            <div class="field"><label>Facebook page URL (optional)</label><input type="url" id="review-facebook" placeholder="https://www.facebook.com/yourbusiness/reviews" /></div>
+            <button class="btn btn-primary" onclick="saveReviewLinks()"><i class="ti ti-check"></i> Save links</button>
+
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F0EFEA">
+              <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:8px">Auto-send settings</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Send after invoice paid</div><div style="font-size:11px;color:#8B8A84">Auto-send review request via WhatsApp</div></div>
+                <div style="width:44px;height:24px;border-radius:24px;background:#5DCAA5;cursor:pointer;position:relative" id="toggle-autoreview" onclick="this.classList.toggle('off');this.style.background=this.classList.contains('off')?\'#D3D1C7\':\'#5DCAA5\'"><div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)" id="review-knob"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Send a review request now</div>
+            <div class="field"><label>Customer</label>
+              <select id="review-customer">
+                <option value="">Select customer...</option>
+              </select>
+            </div>
+            <div class="field"><label>Platform</label>
+              <div class="review-platform selected" id="rp-google" onclick="selectPlatform('google')">
+                <div class="review-platform-icon" style="background:#4285F4"><i class="ti ti-brand-google" style="font-size:18px;color:#fff"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Google</div><div style="font-size:11px;color:#8B8A84">Most impactful for local search</div></div>
+                <i class="ti ti-circle-check" style="font-size:18px;color:#4285F4;margin-left:auto" id="rp-google-check"></i>
+              </div>
+              <div class="review-platform" id="rp-trustpilot" onclick="selectPlatform('trustpilot')">
+                <div class="review-platform-icon" style="background:#00B67A"><i class="ti ti-star" style="font-size:18px;color:#fff"></i></div>
+                <div><div style="font-size:13px;font-weight:600;color:#061A30">Trustpilot</div><div style="font-size:11px;color:#8B8A84">Great for credibility</div></div>
+                <i class="ti ti-circle" style="font-size:18px;color:#D3D1C7;margin-left:auto" id="rp-trustpilot-check"></i>
+              </div>
+            </div>
+            <button class="btn" style="background:#25D366;color:#fff;width:100%;justify-content:center" onclick="sendReviewRequest()"><i class="ti ti-brand-whatsapp"></i> Send via WhatsApp</button>
+            <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:8px" onclick="sendReviewEmail()"><i class="ti ti-mail"></i> Send via Email</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RECURRING INVOICES ═══ -->
+      <div class="tool-panel" id="panel-recurring">
+        <div class="panel-title"><i class="ti ti-repeat" style="color:#C28A1E"></i> Recurring invoices</div>
+        <div class="panel-desc">Set up automatic invoices for maintenance contracts — annual boiler services, quarterly checks, monthly retainers.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Create recurring invoice</div>
+            <div class="field"><label>Customer name</label><input type="text" id="rec-customer" placeholder="e.g. Mark Taylor" /></div>
+            <div class="field"><label>Description</label><input type="text" id="rec-desc" placeholder="e.g. Annual boiler service" /></div>
+            <div class="field-row">
+              <div class="field"><label>Amount (£)</label><input type="number" id="rec-amount" placeholder="0.00" step="0.01" /></div>
+              <div class="field"><label>Frequency</label>
+                <select id="rec-freq">
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annually" selected>Annually</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Start date</label><input type="date" id="rec-start" /></div>
+              <div class="field"><label>End date (optional)</label><input type="date" id="rec-end" /></div>
+            </div>
+            <div class="field"><label>Customer email</label><input type="email" id="rec-email" placeholder="customer@email.com" /></div>
+            <button class="btn btn-primary" onclick="saveRecurring()"><i class="ti ti-check"></i> Save recurring invoice</button>
+          </div>
+
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Active recurring invoices</div>
+            <div id="rec-list" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;overflow:hidden">
+              <div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No recurring invoices set up yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SUBCONTRACTORS ═══ -->
+      <div class="tool-panel" id="panel-subcontractors">
+        <div class="panel-title"><i class="ti ti-helmet" style="color:#D14343"></i> Subcontractors</div>
+        <div class="panel-desc">Track your subbies, what you pay them, and their CIS deductions.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Add subcontractor</div>
+            <div class="field"><label>Name / company</label><input type="text" id="sub-name" placeholder="e.g. Dave Smith Roofing" /></div>
+            <div class="field-row">
+              <div class="field"><label>Phone</label><input type="tel" id="sub-phone" placeholder="07700 900123" /></div>
+              <div class="field"><label>Email</label><input type="email" id="sub-email" placeholder="dave@email.com" /></div>
+            </div>
+            <div class="field"><label>UTR number</label><input type="text" id="sub-utr" placeholder="Unique Taxpayer Reference" /></div>
+            <div class="field-row">
+              <div class="field"><label>CIS rate</label>
+                <select id="sub-cis">
+                  <option value="0">0% (Gross payment)</option>
+                  <option value="20" selected>20% (Standard)</option>
+                  <option value="30">30% (Higher rate)</option>
+                </select>
+              </div>
+              <div class="field"><label>Trade</label><input type="text" id="sub-trade" placeholder="e.g. Roofer" /></div>
+            </div>
+            <button class="btn btn-primary" onclick="addSubcontractor()"><i class="ti ti-plus"></i> Add subcontractor</button>
+
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F0EFEA">
+              <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:12px">Log a payment</div>
+              <div class="field"><label>Subcontractor</label>
+                <select id="sub-pay-who"><option value="">Select subcontractor...</option></select>
+              </div>
+              <div class="field-row">
+                <div class="field"><label>Gross amount (£)</label><input type="number" id="sub-pay-gross" placeholder="0.00" step="0.01" oninput="calcCIS()" /></div>
+                <div class="field"><label>CIS deduction</label><input type="text" id="sub-pay-cis" placeholder="£0.00" readonly style="background:#F8F7F3" /></div>
+              </div>
+              <div class="field"><label>Job reference</label><input type="text" id="sub-pay-job" placeholder="e.g. 14 Elm Street roof repair" /></div>
+              <button class="btn btn-green" onclick="logSubPayment()"><i class="ti ti-cash"></i> Log payment</button>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:14px">Your subcontractors</div>
+            <div id="sub-list" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;overflow:hidden;margin-bottom:16px">
+              <div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No subcontractors added yet</div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:12px">Payment history</div>
+            <div id="sub-payments" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;overflow:hidden">
+              <div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No payments logged yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ WHATSAPP TEMPLATES ═══ -->
+      <div class="tool-panel" id="panel-whatsapp">
+        <div class="panel-title"><i class="ti ti-brand-whatsapp" style="color:#25D366"></i> WhatsApp templates</div>
+        <div class="panel-desc">Ready-to-send messages. Tap any template to open WhatsApp with it pre-filled.</div>
+
+        <div class="field-row" style="margin-bottom:20px">
+          <div class="field"><label>Customer name</label><input type="text" id="wa-customer" placeholder="Mark Taylor" oninput="updateTemplates()" /></div>
+          <div class="field"><label>Amount (£)</label><input type="number" id="wa-amount" placeholder="0.00" oninput="updateTemplates()" /></div>
+        </div>
+        <div class="field-row" style="margin-bottom:20px">
+          <div class="field"><label>Job description</label><input type="text" id="wa-job" placeholder="bathroom refit" oninput="updateTemplates()" /></div>
+          <div class="field"><label>Date / time</label><input type="text" id="wa-date" placeholder="Tuesday 15th July at 9am" oninput="updateTemplates()" /></div>
+        </div>
+
+        <div id="wa-templates" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+      <!-- ═══ JOB PHOTOS ═══ -->
+      <div class="tool-panel" id="panel-photos">
+        <div class="panel-title"><i class="ti ti-camera" style="color:#0A2540"></i> Job photos</div>
+        <div class="panel-desc">Attach before/after photos to jobs as proof of work. Protects you in disputes.</div>
+
+        <div class="field-row" style="margin-bottom:16px">
+          <div class="field"><label>Select job</label>
+            <select id="photo-job"><option value="">Select a job...</option></select>
+          </div>
+          <div class="field"><label>Photo type</label>
+            <select id="photo-type">
+              <option value="before">Before</option>
+              <option value="after">After</option>
+              <option value="during">During</option>
+              <option value="materials">Materials receipt</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="border:2px dashed #D3D1C7;border-radius:14px;padding:32px;text-align:center;cursor:pointer;background:#F8F7F3;margin-bottom:16px" onclick="document.getElementById('photo-input').click()" id="photo-drop">
+          <i class="ti ti-cloud-upload" style="font-size:36px;color:#A3A29C;display:block;margin-bottom:10px"></i>
+          <div style="font-size:14px;font-weight:600;color:#6B6A65;margin-bottom:4px">Tap to upload photos</div>
+          <div style="font-size:12px;color:#A3A29C">JPG, PNG or HEIC · Multiple photos supported</div>
+          <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="previewPhotos(event)" />
+        </div>
+
+        <div id="photo-preview-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="savePhotos()"><i class="ti ti-check"></i> Save photos to job</button>
+          <button class="btn btn-secondary" onclick="viewAllPhotos()"><i class="ti ti-photo"></i> View all job photos</button>
+        </div>
+
+        <div style="margin-top:24px">
+          <div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:12px">Recent photos</div>
+          <div id="photo-gallery" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+  <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+  <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+  <a href="tools.html" class="nav-item active"><i class="ti ti-tools"></i><span>Tools</span></a>
+  <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+</nav>
+
+<script>
+  function openDrawer(){ document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); }
+  function closeDrawer(){ document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); }
+  function fmt(n){ return '£'+Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtShort(n){ return '£'+Math.round(n||0).toLocaleString('en-GB'); }
+
+  function openTool(id) {
+    document.querySelectorAll('.tool-card').forEach(function(c){ c.classList.remove('active'); });
+    document.querySelectorAll('.tool-panel').forEach(function(p){ p.classList.remove('active'); });
+    event.currentTarget.classList.add('active');
+    var panel = document.getElementById('panel-'+id);
+    if(panel){ panel.classList.add('active'); panel.scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+
+  function showToast(msg,color){
+    var t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:'+(color||'#0A2540')+';color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
+    t.textContent=msg; document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
+  }
+
+  // ══════════════════════════════
+  // MILEAGE TRACKER
+  // ══════════════════════════════
+  var milTrips = JSON.parse(localStorage.getItem('pi_mileage')||'[]');
+  var HMRC_RATE = 0.45;
+
+  function calcMileage(){
+    var miles = parseFloat(document.getElementById('mil-miles').value)||0;
+    document.getElementById('mil-calc').textContent = fmt(miles * HMRC_RATE);
+  }
+
+  function logMileage(){
+    var job=document.getElementById('mil-job').value.trim();
+    var miles=parseFloat(document.getElementById('mil-miles').value)||0;
+    var date=document.getElementById('mil-date').value;
+    var from=document.getElementById('mil-from').value.trim();
+    var to=document.getElementById('mil-to').value.trim();
+    if(!miles){ showToast('Please enter miles driven'); return; }
+    var trip={id:'m_'+Date.now(),job:job||'Business trip',miles:miles,date:date||new Date().toISOString().split('T')[0],from:from,to:to,claim:miles*HMRC_RATE,created_at:new Date().toISOString()};
+    milTrips.unshift(trip);
+    localStorage.setItem('pi_mileage',JSON.stringify(milTrips));
+    document.getElementById('mil-job').value=''; document.getElementById('mil-miles').value=''; document.getElementById('mil-from').value=''; document.getElementById('mil-to').value='';
+    renderMileage(); showToast('Trip logged — '+fmt(trip.claim)+' claimable','#1D9E75');
+  }
+
+  function renderMileage(){
+    var totalMiles=milTrips.reduce(function(a,t){return a+t.miles;},0);
+    var totalClaim=milTrips.reduce(function(a,t){return a+t.claim;},0);
+    document.getElementById('mil-total-miles').textContent=totalMiles.toFixed(1);
+    document.getElementById('mil-total-claim').textContent=fmt(totalClaim);
+    document.getElementById('mil-remaining').textContent=(Math.max(0,10000-totalMiles)).toLocaleString('en-GB');
+    document.getElementById('mil-trips').textContent=milTrips.length;
+    var logEl=document.getElementById('mil-log');
+    if(!milTrips.length){ logEl.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No trips logged yet</div>'; return; }
+    logEl.innerHTML=milTrips.slice(0,10).map(function(t){
+      return '<div class="log-row" style="padding:12px 16px"><div class="log-icon" style="background:#EEF3F8"><i class="ti ti-car" style="font-size:18px;color:#0A2540"></i></div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+t.job+'</div>'
+        +'<div style="font-size:11px;color:#8B8A84">'+new Date(t.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' · '+t.miles+' miles'+(t.to?' → '+t.to.split(',')[0]:'')+'</div></div>'
+        +'<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#1D9E75">'+fmt(t.claim)+'</div>'
+        +'<div style="font-size:11px;color:#8B8A84">claimable</div></div>'
+        +'<button onclick="deleteMileage(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:#D3D1C7;padding:4px;margin-left:8px"><i class="ti ti-trash" style="font-size:14px"></i></button>'
+        +'</div>';
+    }).join('');
+  }
+
+  function deleteMileage(id){ milTrips=milTrips.filter(function(t){return t.id!==id;}); localStorage.setItem('pi_mileage',JSON.stringify(milTrips)); renderMileage(); }
+
+  function exportMileage(){
+    if(!milTrips.length){ showToast('No trips to export'); return; }
+    var csv='Date,Job/Customer,From,To,Miles,Claim (45p/mile)\n';
+    milTrips.forEach(function(t){ csv+=t.date+','+t.job+','+t.from+','+t.to+','+t.miles+','+t.claim.toFixed(2)+'\n'; });
+    var blob=new Blob([csv],{type:'text/csv'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mileage-log.csv'; a.click();
+    showToast('Mileage log exported as CSV');
+  }
+
+  // ══════════════════════════════
+  // MATERIALS
+  // ══════════════════════════════
+  var matItems = [];
+
+  function addMaterial(){
+    var item=document.getElementById('mat-item').value.trim();
+    var supplier=document.getElementById('mat-supplier').value.trim();
+    var cost=parseFloat(document.getElementById('mat-cost').value)||0;
+    if(!item){ showToast('Please enter item name'); return; }
+    matItems.push({id:'mat_'+Date.now(),item:item,supplier:supplier,cost:cost});
+    document.getElementById('mat-item').value=''; document.getElementById('mat-supplier').value=''; document.getElementById('mat-cost').value='';
+    renderMaterials();
+  }
+
+  function renderMaterials(){
+    var listEl=document.getElementById('mat-list');
+    if(!matItems.length){ listEl.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No items added yet</div>'; document.getElementById('mat-summary').style.display='none'; return; }
+    var totalCost=matItems.reduce(function(a,m){return a+m.cost;},0);
+    listEl.innerHTML='<div style="padding:10px 16px;background:#F8F7F3;border-bottom:1px solid #F0EFEA;display:grid;grid-template-columns:1fr 100px 80px 32px;gap:8px;font-size:11px;font-weight:700;color:#8B8A84;text-transform:uppercase;letter-spacing:0.04em"><span>Item</span><span>Supplier</span><span style="text-align:right">Cost</span><span></span></div>'
+      +matItems.map(function(m){
+        return '<div style="padding:10px 16px;display:grid;grid-template-columns:1fr 100px 80px 32px;gap:8px;align-items:center;border-bottom:1px solid #F8F7F3">'
+          +'<span style="font-size:13px;font-weight:600;color:#061A30">'+m.item+'</span>'
+          +'<span style="font-size:12px;color:#8B8A84">'+m.supplier+'</span>'
+          +'<span style="font-size:13px;font-weight:600;color:#D14343;text-align:right">'+fmt(m.cost)+'</span>'
+          +'<button onclick="deleteMat(\''+m.id+'\')" style="background:none;border:none;cursor:pointer;color:#D3D1C7"><i class="ti ti-x" style="font-size:14px"></i></button>'
+          +'</div>';
+      }).join('')
+      +'<div style="padding:12px 16px;display:flex;justify-content:space-between;background:#FDEDED;font-size:13px;font-weight:700"><span style="color:#D14343">Total costs</span><span style="color:#D14343">'+fmt(totalCost)+'</span></div>';
+
+    // Profit summary
+    var jobSel = document.getElementById('mat-job');
+    var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+    var jobName = jobSel.value || document.getElementById('mat-job-manual').value;
+    var matchInv = invs.find(function(i){ return (i.job||'').toLowerCase().includes(jobName.toLowerCase()) || (i.customer_name||'').toLowerCase().includes(jobName.toLowerCase()); });
+    var revenue = matchInv ? Number(matchInv.amount||0) : 0;
+    var profit = revenue - totalCost;
+    var margin = revenue > 0 ? Math.round((profit/revenue)*100) : 0;
+    document.getElementById('mat-summary').style.display='block';
+    document.getElementById('mat-revenue').textContent=fmt(revenue||0);
+    document.getElementById('mat-costs').textContent=fmt(totalCost);
+    document.getElementById('mat-profit').textContent=fmt(profit);
+    document.getElementById('mat-profit-bar').style.width=Math.max(0,margin)+'%';
+    document.getElementById('mat-margin').textContent=margin+'% profit margin';
+  }
+
+  function deleteMat(id){ matItems=matItems.filter(function(m){return m.id!==id;}); renderMaterials(); }
+
+  // ══════════════════════════════
+  // TAX ESTIMATOR
+  // ══════════════════════════════
+  function calcTax(){
+    var invs=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+    var selfIncome=invs.filter(function(i){return i.status==='paid';}).reduce(function(a,i){return a+Number(i.amount||0);},0);
+    var employed=parseFloat(document.getElementById('tax-employed').value)||0;
+    var expenses=parseFloat(document.getElementById('tax-expenses').value)||0;
+    var totalGross=selfIncome+employed;
+    var taxableIncome=Math.max(0,totalGross-expenses);
+    var personalAllowance=12570;
+    var taxable=Math.max(0,taxableIncome-personalAllowance);
+    // Income tax: 20% on up to £37,700 then 40%
+    var basicRate=Math.min(taxable,37700)*0.20;
+    var higherRate=Math.max(0,taxable-37700)*0.40;
+    var incomeTax=basicRate+higherRate;
+    // Class 4 NI: 9% between £12,570-£50,270, 2% above
+    var niProfit=selfIncome-expenses;
+    var ni=Math.min(Math.max(0,niProfit-12570),37700)*0.09+Math.max(0,niProfit-50270)*0.02;
+    var total=incomeTax+ni;
+    var pct=totalGross>0?Math.round((total/totalGross)*100):0;
+    var monthlySet=total/12;
+    document.getElementById('tax-gross').textContent=fmtShort(selfIncome);
+    document.getElementById('tax-due').textContent=fmtShort(incomeTax);
+    document.getElementById('tax-ni').textContent=fmtShort(ni);
+    document.getElementById('tax-total').textContent=fmtShort(total);
+    document.getElementById('tax-pct').textContent=pct+'%';
+    document.getElementById('tax-monthly').textContent=fmtShort(monthlySet)+'/month';
+    // Ring
+    var stroke=document.getElementById('tax-ring-stroke');
+    if(stroke){ var circ=364; stroke.setAttribute('stroke-dashoffset',circ-(circ*pct/100)); stroke.setAttribute('stroke',pct>30?'#D14343':pct>20?'#C28A1E':'#1D9E75'); }
+  }
+
+  // ══════════════════════════════
+  // REVIEW REQUESTS
+  // ══════════════════════════════
+  var reviewPlatform='google';
+  function selectPlatform(p){
+    reviewPlatform=p;
+    ['google','trustpilot'].forEach(function(x){
+      var el=document.getElementById('rp-'+x); var ck=document.getElementById('rp-'+x+'-check');
+      el.classList.toggle('selected',x===p);
+      ck.className='ti ti-'+(x===p?'circle-check':'circle')+' ';
+      ck.style.color=x===p?(p==='google'?'#4285F4':'#00B67A'):'#D3D1C7';
+      ck.style.marginLeft='auto'; ck.style.fontSize='18px';
+    });
+  }
+  function saveReviewLinks(){
+    var links={google:document.getElementById('review-google').value,trustpilot:document.getElementById('review-trustpilot').value,facebook:document.getElementById('review-facebook').value};
+    localStorage.setItem('pi_review_links',JSON.stringify(links));
+    showToast('Review links saved','#1D9E75');
+  }
+  function sendReviewRequest(){
+    var cust=document.getElementById('review-customer').value||'there';
+    var links=JSON.parse(localStorage.getItem('pi_review_links')||'{}');
+    var link=reviewPlatform==='google'?links.google:links.trustpilot;
+    if(!link){ showToast('Please save your '+reviewPlatform+' review link first'); return; }
+    var custName=cust.split('(')[0].trim();
+    var msg='Hi '+custName.split(' ')[0]+', thank you so much for your business! If you\'re happy with the work, I\'d really appreciate a quick review — it makes a huge difference.\n\n'+link+'\n\nThanks again! 🙏';
+    var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+    var c=custs.find(function(x){return x.name===custName;});
+    if(c&&c.phone){
+      var num=c.phone.replace(/\s+/g,'').replace(/^0/,'44');
+      window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank');
+    } else {
+      navigator.clipboard.writeText(msg).then(function(){ showToast('Review message copied — paste into WhatsApp'); });
+    }
+  }
+  function sendReviewEmail(){
+    var cust=document.getElementById('review-customer').value||'';
+    var links=JSON.parse(localStorage.getItem('pi_review_links')||'{}');
+    var link=reviewPlatform==='google'?links.google:links.trustpilot;
+    var msg='Hi,\n\nThank you for choosing us. If you\'re happy with the work, we\'d love it if you could leave us a quick review:\n\n'+link+'\n\nIt only takes a minute and means a lot to our small business.\n\nThank you!';
+    window.location.href='mailto:?subject=Would you leave us a review?&body='+encodeURIComponent(msg);
+  }
+
+  // ══════════════════════════════
+  // RECURRING INVOICES
+  // ══════════════════════════════
+  var recurringInvoices=JSON.parse(localStorage.getItem('pi_recurring')||'[]');
+  function saveRecurring(){
+    var cust=document.getElementById('rec-customer').value.trim();
+    var desc=document.getElementById('rec-desc').value.trim();
+    var amount=parseFloat(document.getElementById('rec-amount').value)||0;
+    var freq=document.getElementById('rec-freq').value;
+    var start=document.getElementById('rec-start').value;
+    var end=document.getElementById('rec-end').value;
+    var email=document.getElementById('rec-email').value.trim();
+    if(!cust||!amount){ showToast('Please fill in customer and amount'); return; }
+    recurringInvoices.push({id:'rec_'+Date.now(),customer:cust,desc:desc,amount:amount,freq:freq,start:start||new Date().toISOString().split('T')[0],end:end,email:email,active:true,created_at:new Date().toISOString()});
+    localStorage.setItem('pi_recurring',JSON.stringify(recurringInvoices));
+    document.getElementById('rec-customer').value=''; document.getElementById('rec-desc').value=''; document.getElementById('rec-amount').value=''; document.getElementById('rec-email').value='';
+    renderRecurring(); showToast('Recurring invoice saved','#1D9E75');
+  }
+  function renderRecurring(){
+    var el=document.getElementById('rec-list');
+    if(!recurringInvoices.length){ el.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No recurring invoices set up yet</div>'; return; }
+    var FREQ_LABELS={weekly:'Weekly',monthly:'Monthly',quarterly:'Quarterly',annually:'Annually'};
+    el.innerHTML=recurringInvoices.map(function(r){
+      return '<div class="rec-row"><div style="width:34px;height:34px;border-radius:9px;background:#FBF3E3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-repeat" style="font-size:16px;color:#C28A1E"></i></div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+r.customer+' · '+r.desc+'</div>'
+        +'<div style="font-size:11px;color:#8B8A84">'+FREQ_LABELS[r.freq]+' · from '+new Date(r.start+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div></div>'
+        +'<div style="font-size:15px;font-weight:700;color:#061A30;margin-right:8px">'+fmt(r.amount)+'</div>'
+        +'<div style="width:8px;height:8px;border-radius:50%;background:'+(r.active?'#1D9E75':'#D3D1C7')+'"></div>'
+        +'<button onclick="deleteRecurring(\''+r.id+'\')" style="background:none;border:none;cursor:pointer;color:#D3D1C7;padding:4px;margin-left:6px"><i class="ti ti-trash" style="font-size:14px"></i></button>'
+        +'</div>';
+    }).join('');
+  }
+  function deleteRecurring(id){ recurringInvoices=recurringInvoices.filter(function(r){return r.id!==id;}); localStorage.setItem('pi_recurring',JSON.stringify(recurringInvoices)); renderRecurring(); }
+
+  // ══════════════════════════════
+  // SUBCONTRACTORS
+  // ══════════════════════════════
+  var subs=JSON.parse(localStorage.getItem('pi_subs')||'[]');
+  var subPayments=JSON.parse(localStorage.getItem('pi_sub_payments')||'[]');
+  var AV_BG=['#EEF3F8','#E1F5EE','#FBF3E3','#FAECE7','#F3F1FE'];
+  var AV_FG=['#0A2540','#0F6E56','#C28A1E','#993C1D','#3C3489'];
+
+  function addSubcontractor(){
+    var name=document.getElementById('sub-name').value.trim();
+    if(!name){ showToast('Please enter a name'); return; }
+    subs.push({id:'sub_'+Date.now(),name:name,phone:document.getElementById('sub-phone').value.trim(),email:document.getElementById('sub-email').value.trim(),utr:document.getElementById('sub-utr').value.trim(),cis:parseInt(document.getElementById('sub-cis').value),trade:document.getElementById('sub-trade').value.trim()});
+    localStorage.setItem('pi_subs',JSON.stringify(subs));
+    ['sub-name','sub-phone','sub-email','sub-utr','sub-trade'].forEach(function(id){ document.getElementById(id).value=''; });
+    renderSubs(); showToast('Subcontractor added','#1D9E75');
+  }
+
+  function calcCIS(){
+    var gross=parseFloat(document.getElementById('sub-pay-gross').value)||0;
+    var who=document.getElementById('sub-pay-who').value;
+    var sub=subs.find(function(s){return s.id===who;});
+    var rate=sub?sub.cis:20;
+    var cis=gross*rate/100;
+    document.getElementById('sub-pay-cis').value=fmt(cis)+' ('+rate+'%)';
+  }
+
+  function logSubPayment(){
+    var who=document.getElementById('sub-pay-who').value;
+    var gross=parseFloat(document.getElementById('sub-pay-gross').value)||0;
+    var job=document.getElementById('sub-pay-job').value.trim();
+    if(!who||!gross){ showToast('Please select subcontractor and amount'); return; }
+    var sub=subs.find(function(s){return s.id===who;});
+    var cis=gross*(sub?sub.cis:20)/100;
+    var net=gross-cis;
+    subPayments.unshift({id:'sp_'+Date.now(),sub_id:who,sub_name:sub?sub.name:'',gross:gross,cis:cis,net:net,job:job,date:new Date().toISOString().split('T')[0]});
+    localStorage.setItem('pi_sub_payments',JSON.stringify(subPayments));
+    document.getElementById('sub-pay-gross').value=''; document.getElementById('sub-pay-job').value=''; document.getElementById('sub-pay-cis').value='';
+    renderSubs(); showToast('Payment logged','#1D9E75');
+  }
+
+  function renderSubs(){
+    var listEl=document.getElementById('sub-list');
+    var payEl=document.getElementById('sub-payments');
+    var sel=document.getElementById('sub-pay-who');
+    if(!subs.length){ listEl.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No subcontractors added yet</div>'; }
+    else {
+      listEl.innerHTML=subs.map(function(s,i){
+        var totalPaid=subPayments.filter(function(p){return p.sub_id===s.id;}).reduce(function(a,p){return a+p.net;},0);
+        return '<div class="sub-row"><div class="sub-av" style="background:'+AV_BG[i%5]+';color:'+AV_FG[i%5]+'">'+(s.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2))+'</div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+s.name+'</div>'
+          +'<div style="font-size:11px;color:#8B8A84">'+(s.trade||'')+(s.cis?' · CIS '+s.cis+'%':'')+(s.utr?' · UTR: '+s.utr:'')+'</div></div>'
+          +'<div style="text-align:right"><div style="font-size:13px;font-weight:600;color:#061A30">'+fmt(totalPaid)+'</div><div style="font-size:11px;color:#8B8A84">paid net</div></div>'
+          +'<button onclick="deleteSub(\''+s.id+'\')" style="background:none;border:none;cursor:pointer;color:#D3D1C7;padding:4px;margin-left:8px"><i class="ti ti-x" style="font-size:14px"></i></button>'
+          +'</div>';
+      }).join('');
+      // Update select
+      var currentVal=sel.value;
+      sel.innerHTML='<option value="">Select subcontractor...</option>'+subs.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+      sel.value=currentVal;
+    }
+    if(!subPayments.length){ payEl.innerHTML='<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px">No payments logged yet</div>'; }
+    else {
+      payEl.innerHTML=subPayments.slice(0,8).map(function(p){
+        return '<div class="log-row" style="padding:11px 16px"><div class="log-icon" style="background:#FDEDED"><i class="ti ti-cash" style="font-size:16px;color:#D14343"></i></div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30">'+p.sub_name+'</div>'
+          +'<div style="font-size:11px;color:#8B8A84">'+new Date(p.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})+(p.job?' · '+p.job:'')+'</div></div>'
+          +'<div style="text-align:right"><div style="font-size:12px;color:#D14343">-'+fmt(p.cis)+' CIS</div><div style="font-size:13px;font-weight:700;color:#061A30">Net: '+fmt(p.net)+'</div></div>'
+          +'</div>';
+      }).join('');
+    }
+  }
+  function deleteSub(id){ subs=subs.filter(function(s){return s.id!==id;}); localStorage.setItem('pi_subs',JSON.stringify(subs)); renderSubs(); }
+
+  // ══════════════════════════════
+  // WHATSAPP TEMPLATES
+  // ══════════════════════════════
+  var WA_TEMPLATES = [
+    { id:'quote', icon:'ti-file-text', color:'#635BFF', label:'Send a quote', msg:function(n,a,j,d){ return 'Hi '+n+', thanks for getting in touch!\n\nI\'ve had a look at the job and I can offer you a quote of £'+a+' for the '+j+'.\n\nThis includes all labour and materials. The job would take approximately one day.\n\nPlease let me know if you\'d like to go ahead and I\'ll get you booked in.\n\nThanks,'; } },
+    { id:'confirm', icon:'ti-calendar-check', color:'#1D9E75', label:'Confirm a booking', msg:function(n,a,j,d){ return 'Hi '+n+', just confirming your booking!\n\n📅 '+d+'\n🔧 '+j+'\n💷 £'+a+'\n\nPlease ensure access to the property. I\'ll be in touch if anything changes.\n\nSee you then!'; } },
+    { id:'reminder', icon:'ti-clock', color:'#C28A1E', label:'Job day reminder', msg:function(n,a,j,d){ return 'Hi '+n+', just a quick reminder that I\'ll be with you today for the '+j+'.\n\nI\'m aiming to arrive at '+d+'.\n\nPlease call or text if you need to reach me. Looking forward to it!'; } },
+    { id:'payment', icon:'ti-credit-card', color:'#0A2540', label:'Payment reminder', msg:function(n,a,j,d){ return 'Hi '+n+', I hope you\'re happy with the '+j+'!\n\nJust a friendly reminder that your invoice for £'+a+' is due. You can pay securely by card here: [PAYMENT LINK]\n\nPlease don\'t hesitate to get in touch if you have any questions. Thanks!'; } },
+    { id:'review', icon:'ti-star', color:'#F59E0B', label:'Review request', msg:function(n,a,j,d){ return 'Hi '+n+', thank you so much for choosing us for the '+j+'!\n\nWe\'d love to hear your feedback — could you spare 2 minutes to leave us a Google review? It really helps our small business:\n\n[YOUR GOOGLE REVIEW LINK]\n\nThank you! 🙏'; } },
+    { id:'followup', icon:'ti-phone-call', color:'#D14343', label:'Chase overdue payment', msg:function(n,a,j,d){ return 'Hi '+n+', I hope everything is well. I\'m just following up on the invoice for the '+j+' (£'+a+') which is now overdue.\n\nCould you let me know when payment will be made? You can pay here: [PAYMENT LINK]\n\nThank you for your understanding.'; } },
+  ];
+
+  function updateTemplates(){
+    var n=document.getElementById('wa-customer').value||'Customer';
+    var a=document.getElementById('wa-amount').value||'0';
+    var j=document.getElementById('wa-job').value||'job';
+    var d=document.getElementById('wa-date').value||'the agreed time';
+    var el=document.getElementById('wa-templates');
+    el.innerHTML=WA_TEMPLATES.map(function(t){
+      var msg=t.msg(n.split(' ')[0],a,j,d);
+      return '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:16px;margin-bottom:0">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+        +'<div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:8px;background:'+t.color+';display:flex;align-items:center;justify-content:center"><i class="ti '+t.icon+'" style="font-size:15px;color:#fff"></i></div>'
+        +'<div style="font-size:13px;font-weight:700;color:#061A30">'+t.label+'</div></div>'
+        +'<div style="display:flex;gap:6px">'
+        +'<button onclick="copyTemplate(\''+encodeURIComponent(msg)+'\')" style="background:#F0EFEA;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#061A30"><i class="ti ti-copy" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>Copy</button>'
+        +'<button onclick="sendWA(\''+encodeURIComponent(msg)+'\')" style="background:#25D366;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff"><i class="ti ti-brand-whatsapp" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>WhatsApp</button>'
+        +'</div></div>'
+        +'<div style="background:#F8F7F3;border-radius:8px;padding:11px 13px;font-size:12px;color:#6B6A65;line-height:1.6;white-space:pre-line;max-height:80px;overflow:hidden;cursor:pointer" onclick="this.style.maxHeight=this.style.maxHeight===\'none\'?\'80px\':\'none\'">'+msg+'</div>'
+        +'</div>';
+    }).join('');
+  }
+  function copyTemplate(encoded){ navigator.clipboard.writeText(decodeURIComponent(encoded)).then(function(){ showToast('Message copied to clipboard'); }); }
+  function sendWA(encoded){ window.open('https://wa.me/?text='+encoded,'_blank'); }
+
+  // ══════════════════════════════
+  // JOB PHOTOS
+  // ══════════════════════════════
+  var photoFiles=[];
+  var savedPhotos=JSON.parse(localStorage.getItem('pi_job_photos')||'[]');
+
+  function previewPhotos(e){
+    photoFiles=Array.from(e.target.files);
+    var grid=document.getElementById('photo-preview-grid'); grid.innerHTML='';
+    photoFiles.forEach(function(file,i){
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        var div=document.createElement('div');
+        div.style.cssText='position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden';
+        div.innerHTML='<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover" />'
+          +'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:#fff;font-size:9px;font-weight:600;padding:3px 6px;text-transform:uppercase">'+document.getElementById('photo-type').value+'</div>';
+        grid.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function savePhotos(){
+    if(!photoFiles.length){ showToast('Please select photos first'); return; }
+    var job=document.getElementById('photo-job').value||document.getElementById('photo-job').options[0]?.text||'Unknown job';
+    var type=document.getElementById('photo-type').value;
+    photoFiles.forEach(function(file){
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        savedPhotos.unshift({id:'ph_'+Date.now(),job:job,type:type,data:ev.target.result,date:new Date().toISOString()});
+        localStorage.setItem('pi_job_photos',JSON.stringify(savedPhotos.slice(0,50))); // Keep last 50
+        renderGallery();
+      };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('photo-preview-grid').innerHTML='';
+    photoFiles=[];
+    document.getElementById('photo-input').value='';
+    showToast(photoFiles.length||'Photos'+' saved to job','#1D9E75');
+  }
+
+  function renderGallery(){
+    var el=document.getElementById('photo-gallery');
+    if(!savedPhotos.length){ el.innerHTML='<div style="color:#A3A29C;font-size:13px;grid-column:span 5;padding:20px 0">No photos saved yet</div>'; return; }
+    el.innerHTML=savedPhotos.slice(0,20).map(function(p){
+      return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer" onclick="viewPhoto(\''+p.id+'\')">'
+        +'<img src="'+p.data+'" style="width:100%;height:100%;object-fit:cover" />'
+        +'<div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;text-transform:uppercase">'+p.type+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  function viewPhoto(id){
+    var p=savedPhotos.find(function(x){return x.id===id;});
+    if(!p)return;
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer';
+    overlay.innerHTML='<div style="max-width:600px;width:100%"><img src="'+p.data+'" style="width:100%;border-radius:12px;max-height:80vh;object-fit:contain" />'
+      +'<div style="text-align:center;margin-top:10px;color:rgba(255,255,255,0.7);font-size:12px">'+p.job+' · '+p.type+' · '+new Date(p.date).toLocaleDateString('en-GB')+'</div></div>';
+    overlay.onclick=function(){ overlay.remove(); };
+    document.body.appendChild(overlay);
+  }
+
+  function viewAllPhotos(){
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:700;overflow-y:auto;padding:20px';
+    var grid='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:700px;margin:0 auto">'
+      +savedPhotos.map(function(p){
+        return '<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer" onclick="viewPhoto(\''+p.id+'\')">'
+          +'<img src="'+p.data+'" style="width:100%;height:100%;object-fit:cover" /></div>';
+      }).join('')+'</div>';
+    overlay.innerHTML='<div style="text-align:right;margin-bottom:12px;max-width:700px;margin:0 auto 12px">'
+      +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px">Close ✕</button></div>'+grid;
+    document.body.appendChild(overlay);
+  }
+
+  // ══════════════════════════════
+  // INIT
+  // ══════════════════════════════
+  async function init(){
+    try{
+      var {data}=await supabase.auth.getUser();
+      if(data&&data.user){
+        var m=data.user.user_metadata||{};
+        var first=m.first_name||''; var last=m.last_name||'';
+        var nm=(first+' '+last).trim()||data.user.email.split('@')[0];
+        var ini2=((first[0]||'')+(last[0]||'')).toUpperCase()||data.user.email[0].toUpperCase();
+        var av=document.getElementById('sb-av'); if(av)av.textContent=ini2;
+        var un=document.getElementById('sb-uname'); if(un)un.textContent=nm;
+        var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan+' plan':'Free plan';
+        var ma=document.getElementById('mob-av'); if(ma)ma.textContent=ini2;
+        var mn=document.getElementById('mob-name'); if(mn)mn.textContent=first||nm;
+      }
+    }catch(e){}
+
+    // Load invoices for selects
+    var invs=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+    var jobs=JSON.parse(localStorage.getItem('tb_jobs')||'[]');
+    var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+
+    // Populate job selects
+    var jobOpts=invs.map(function(i,idx){return '<option value="'+idx+'">'+((i.customer_name||i.customer)||'')+(i.job?' — '+i.job:'')+'</option>';}).join('');
+    ['mat-job','photo-job'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML='<option value="">Select a job...</option>'+jobOpts; });
+
+    // Populate customer select for reviews
+    var custOpts=custs.map(function(c){return '<option value="'+c.name+'">'+c.name+(c.phone?' ('+c.phone+')':'')+'</option>';}).join('');
+    var rc=document.getElementById('review-customer'); if(rc) rc.innerHTML='<option value="">Select customer...</option>'+custOpts;
+
+    // Load saved review links
+    try{ var links=JSON.parse(localStorage.getItem('pi_review_links')||'{}'); if(links.google) document.getElementById('review-google').value=links.google; if(links.trustpilot) document.getElementById('review-trustpilot').value=links.trustpilot; if(links.facebook) document.getElementById('review-facebook').value=links.facebook; }catch(e){}
+
+    // Set default dates
+    var today=new Date().toISOString().split('T')[0];
+    document.getElementById('mil-date').value=today;
+    document.getElementById('rec-start').value=today;
+
+    // Render all tools
+    renderMileage();
+    renderRecurring();
+    renderSubs();
+    renderGallery();
+    calcTax();
+    updateTemplates();
+
+    // Check ?tool= URL param
+    var tp=new URLSearchParams(window.location.search).get('tool');
+    if(tp){ var card=document.querySelector('[onclick*="openTool(\''+tp+'\')"]'); if(card){ openTool(tp); card.classList.add('active'); } }
+  }
+  init();
+</script>
+</body>
+</html>
