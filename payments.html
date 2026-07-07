@@ -10,438 +10,511 @@
   <script>
     var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
     var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
-    try {
-      var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch(e) {
-      var supabase = { auth: { getUser: async function(){ return { data:{user:null}, error:null }; }, updateUser: async function(){ return {}; }, signOut: async function(){ return {}; } }, from: function(t){ var _d=[],_e=null; return { select:function(){return this;}, insert:function(r){ return { select:function(){ return { single:function(){ return Promise.resolve({data:null,error:'no-keys'}); } }; }; }; }, update:function(){return this;}, delete:function(){return this;}, eq:function(){return this;}, ilike:function(){return this;}, gte:function(){return this;}, lte:function(){return this;}, order:function(){return this;}, limit:function(){return this;}, single:function(){ return Promise.resolve({data:null,error:'no-keys'}); }, then:function(cb){ cb({data:_d,error:_e}); return this; } }; } };
-    }
-  </script>
-  <script src="db.js"></script>
-  <script>
-    if (typeof DB === 'undefined') {
-      window.DB = {
-        getNextNumber: async function(type) {
-          var key = type === 'quote' ? 'pi_last_q_num' : 'pi_last_inv_num';
-          var last = parseInt(localStorage.getItem(key) || '1000');
-          var next = last + 1; localStorage.setItem(key, next.toString());
-          return (type === 'quote' ? '#Q' : '#') + next;
-        },
-        saveInvoice: async function(inv) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var idx = invs.findIndex(function(i){ return i.id === inv.id; });
-          if (idx > -1) invs[idx] = inv; else invs.unshift(inv);
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return inv;
-        },
-        getInvoices: async function() { return JSON.parse(localStorage.getItem('tb_invoices') || '[]'); },
-        updateInvoiceStatus: async function(id, status, method) {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var inv = invs.find(function(i){ return i.id == id; });
-          if (inv) { inv.status = status; if (method) inv.payment_method = method; }
-          localStorage.setItem('tb_invoices', JSON.stringify(invs)); return true;
-        },
-        saveCustomer: async function(c) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          var idx = custs.findIndex(function(x){ return x.id === c.id; });
-          if (idx > -1) custs[idx] = c; else custs.unshift(c);
-          localStorage.setItem('tb_customers', JSON.stringify(custs)); return c;
-        },
-        getCustomers: async function() { return JSON.parse(localStorage.getItem('tb_customers') || '[]'); },
-        deleteCustomer: async function(id) {
-          var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
-          localStorage.setItem('tb_customers', JSON.stringify(custs.filter(function(c){ return c.id !== id; }))); return true;
-        },
-        saveQuote: async function(q) {
-          var qs = JSON.parse(localStorage.getItem('tb_quotes') || '[]');
-          qs.unshift(q); localStorage.setItem('tb_quotes', JSON.stringify(qs)); return q;
-        },
-        getQuotes: async function() { return JSON.parse(localStorage.getItem('tb_quotes') || '[]'); },
-        saveJob: async function(j) {
-          var jobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
-          var idx = jobs.findIndex(function(x){ return x.id === j.id; });
-          if (idx > -1) jobs[idx] = j; else jobs.unshift(j);
-          localStorage.setItem('tb_jobs', JSON.stringify(jobs)); return j;
-        },
-        getJobs: async function() { return JSON.parse(localStorage.getItem('tb_jobs') || '[]'); },
-        getEarningsSummary: async function() {
-          var invs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-          var paid = invs.filter(function(i){ return i.status==='paid'; });
-          return { totalEarned: paid.reduce(function(a,i){ return a+Number(i.amount||0); },0), invoiceCount: invs.length, paidCount: paid.length };
-        }
-      };
-    }
+    try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch(e) { var supabase = { auth:{getUser:function(){return Promise.resolve({data:{user:null}});}}, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { overflow-x: hidden; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAFAF8; min-height: 100vh; }
-    .db { display: flex; min-height: 100vh; }
-    .sidebar { width: 210px; flex-shrink: 0; background: #0A2540; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sb-logo { display: flex; align-items: center; gap: 8px; padding: 20px 16px 24px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
-    .sb-logo-icon i { color: #fff; font-size: 18px; }
-    .sb-logo-text { font-size: 16px; font-weight: 600; color: #fff; }
-    .sb-nav { padding: 16px 10px; flex: 1; overflow-y: auto; }
-    .sb-section-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; margin-top: 16px; }
-    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 2px; text-decoration: none; }
-    .sb-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .sb-item.active { background: rgba(255,255,255,0.15); color: #fff; }
-    .sb-item i { font-size: 18px; }
-    .sb-bottom { padding: 12px 10px; border-top: 0.5px solid rgba(255,255,255,0.1); }
-    .sb-user { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; text-decoration: none; }
-    .sb-user:hover { background: rgba(255,255,255,0.08); }
-    .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
-    .sb-user-name { font-size: 12px; font-weight: 600; color: #fff; }
-    .sb-user-plan { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .main { flex: 1; margin-left: 210px; display: flex; flex-direction: column; }
-    .topbar { background: #fff; border-bottom: 1px solid #E5E3DC; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h1 { font-size: 16px; font-weight: 600; color: #061A30; }
-    .content { padding: 24px 28px; }
-    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
-    .stat { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 16px; }
-    .stat-label { font-size: 12px; color: #8B8A84; margin-bottom: 6px; }
-    .stat-value { font-size: 22px; font-weight: 600; color: #061A30; letter-spacing: -0.01em; }
-    .stripe-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
-    .stripe-icon { width: 42px; height: 42px; border-radius: 11px; background: #635BFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .stripe-icon i { font-size: 22px; color: #fff; }
-    .stripe-info { flex: 1; }
-    .stripe-title { font-size: 14px; font-weight: 700; color: #061A30; margin-bottom: 2px; }
-    .stripe-sub { font-size: 12px; color: #8B8A84; }
-    .stripe-btns { display: flex; gap: 8px; flex-shrink: 0; }
-    .btn-manage { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-    .btn-primary { background: #0A2540; color: #fff; border: none; }
-    .btn-outline { background: #fff; color: #0A2540; border: 1px solid #E5E3DC; }
-    .btn-outline:hover { background: #F0EFEA; }
-    .section-card { background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
-    .section-header { padding: 12px 18px; border-bottom: 1px solid #F0EFEA; display: flex; align-items: center; justify-content: space-between; }
-    .section-title { font-size: 13px; font-weight: 700; color: #061A30; }
-    .tx-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid #F0EFEA; }
-    .tx-row:last-child { border-bottom: none; }
-    .tx-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .tx-info { flex: 1; }
-    .tx-name { font-size: 13px; font-weight: 600; color: #1A1A18; }
-    .tx-sub { font-size: 11px; color: #8B8A84; margin-top: 1px; }
-    .tx-amount { font-size: 14px; font-weight: 700; flex-shrink: 0; }
-    .tx-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; margin-left: 8px; }
-    .badge-paid { background: #E1F5EE; color: #0F6E56; }
-    .badge-pending { background: #FBF3E3; color: #C28A1E; }
-    .badge-overdue { background: #FDEDED; color: #D14343; }
-    .empty-tx { padding: 32px; text-align: center; color: #A3A29C; font-size: 13px; }
-    .empty-tx i { font-size: 28px; display: block; margin-bottom: 10px; color: #D3D1C7; }
-    .mobile-topbar { display: none; }
-    .bottom-nav { display: none; }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .topbar { display: none; }
-      .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #0A2540; padding: 16px; }
-      .mob-logo { display: flex; align-items: center; gap: 7px; }
-      .mob-logo i { color: #5DCAA5; font-size: 22px; }
-      .mob-logo span { font-size: 17px; font-weight: 600; color: #fff; }
-      .content { padding: 14px 16px; }
-      .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .stripe-card { flex-wrap: wrap; }
-      .stripe-btns { width: 100%; }
-      .bottom-nav { display: flex; align-items: center; background: #fff; border-top: 1px solid #E5E3DC; padding: 8px 0 16px; position: sticky; bottom: 0; z-index: 100; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; padding: 4px 0; }
-      .nav-item i { font-size: 22px; color: #A3A29C; }
-      .nav-item span { font-size: 10px; color: #A3A29C; font-weight: 500; }
-      .nav-item.active i, .nav-item.active span { color: #0A2540; font-weight: 600; }
-      .nav-plus-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
-      .nav-plus { width: 46px; height: 46px; border-radius: 14px; background: #0A2540; display: flex; align-items: center; justify-content: center; margin-top: -22px; cursor: pointer; text-decoration: none; }
-      .nav-plus i { font-size: 23px; color: #fff; }
-      .plus-menu { display: none; position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #E5E3DC; border-radius: 14px; box-shadow: 0 8px 24px rgba(10,37,64,0.15); width: 190px; overflow: hidden; }
-      .plus-menu.open { display: block; }
-      .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid #F0EFEA; text-decoration: none; }
-      .plus-menu-item:last-child { border-bottom: none; }
-      .plus-menu-icon { width: 32px; height: 32px; border-radius: 9px; background: #EEF3F8; display: flex; align-items: center; justify-content: center; }
-      .plus-menu-icon i { color: #0A2540; font-size: 17px; }
-      .plus-menu-text { font-size: 13px; font-weight: 600; color: #1A1A18; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#FAFAF8;color:#1A1A18;}
+    .db{display:flex;min-height:100vh;}
+    .sidebar{width:210px;flex-shrink:0;background:#0A2540;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+    .sb-logo{display:flex;align-items:center;gap:8px;padding:20px 16px 24px;border-bottom:0.5px solid rgba(255,255,255,0.1);text-decoration:none;}
+    .sb-logo-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;}
+    .sb-logo-icon i{color:#fff;font-size:18px;}
+    .sb-logo-text{font-size:16px;font-weight:600;color:#fff;}
+    .sb-nav{padding:16px 10px;flex:1;overflow-y:auto;}
+    .sb-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+    .sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px;text-decoration:none;}
+    .sb-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+    .sb-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+    .sb-item i{font-size:18px;}
+    .sb-bottom{padding:12px 10px;border-top:0.5px solid rgba(255,255,255,0.1);}
+    .sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;text-decoration:none;}
+    .sb-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+    .main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{background:#fff;border-bottom:1px solid #E5E3DC;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar h1{font-size:16px;font-weight:600;color:#061A30;}
+    .content{padding:24px;max-width:900px;}
+
+    /* Payout hero */
+    .payout-hero{background:linear-gradient(160deg,#061A30 0%,#0A2540 55%,#0D3060 100%);border-radius:18px;padding:0;overflow:hidden;margin-bottom:20px;}
+    .payout-top{padding:28px 32px 24px;}
+    .payout-label{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .payout-amount{font-size:52px;font-weight:700;color:#fff;letter-spacing:-0.03em;line-height:1;}
+    .payout-date{font-size:14px;color:#5DCAA5;margin-top:10px;display:flex;align-items:center;gap:6px;font-weight:600;}
+    .payout-meta{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.1);}
+    .payout-meta-item{flex:1;padding:16px 24px;border-right:1px solid rgba(255,255,255,0.1);}
+    .payout-meta-item:last-child{border-right:none;}
+    .payout-meta-label{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;}
+    .payout-meta-val{font-size:16px;font-weight:700;color:#fff;}
+
+    /* Stripe connected card */
+    .stripe-card{background:#fff;border:1px solid #E5E3DC;border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+    .stripe-logo{width:44px;height:44px;border-radius:10px;background:#635BFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .stripe-logo i{color:#fff;font-size:22px;}
+    .stripe-info{flex:1;}
+    .stripe-name{font-size:14px;font-weight:700;color:#061A30;}
+    .stripe-sub{font-size:12px;color:#8B8A84;margin-top:2px;}
+    .stripe-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;}
+    .stripe-status.connected{color:#1D9E75;}
+    .stripe-status.disconnected{color:#D14343;}
+    .stripe-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #E5E3DC;background:#fff;font-family:inherit;color:#0A2540;white-space:nowrap;}
+
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+    .stat{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:16px;}
+    .stat-label{font-size:12px;color:#8B8A84;margin-bottom:5px;}
+    .stat-value{font-size:22px;font-weight:700;color:#061A30;letter-spacing:-0.01em;}
+
+    /* Payout timeline */
+    .timeline-card{background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:20px;}
+    .timeline-header{padding:14px 18px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between;}
+    .timeline-title{font-size:14px;font-weight:700;color:#061A30;}
+    .timeline-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid #F8F7F3;}
+    .timeline-item:last-child{border-bottom:none;}
+    .timeline-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;width:20px;}
+    .timeline-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+    .timeline-line{width:2px;flex:1;background:#E5E3DC;min-height:20px;}
+    .timeline-content{flex:1;}
+    .timeline-date{font-size:13px;font-weight:700;color:#061A30;}
+    .timeline-desc{font-size:12px;color:#8B8A84;margin-top:2px;}
+    .timeline-amount{font-size:15px;font-weight:700;}
+    .timeline-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0;}
+
+    /* Transactions */
+    .tx-card{background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;}
+    .tx-header{padding:14px 18px;border-bottom:1px solid #F0EFEA;display:flex;align-items:center;justify-content:space-between;}
+    .tx-title{font-size:14px;font-weight:700;color:#061A30;}
+    .tx-filter{display:flex;gap:6px;}
+    .tx-filter-btn{padding:5px 12px;border-radius:6px;border:1px solid #E5E3DC;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B6A65;}
+    .tx-filter-btn.active{background:#0A2540;color:#fff;border-color:#0A2540;}
+    .tx-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #F8F7F3;}
+    .tx-row:last-child{border-bottom:none;}
+    .tx-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .tx-info{flex:1;min-width:0;}
+    .tx-name{font-size:13px;font-weight:600;color:#061A30;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .tx-meta{font-size:11px;color:#8B8A84;margin-top:1px;}
+    .tx-amount{font-size:14px;font-weight:700;flex-shrink:0;}
+    .tx-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;}
+    .badge-paid{background:#E1F5EE;color:#0F6E56;}
+    .badge-unpaid{background:#FBF3E3;color:#C28A1E;}
+    .badge-overdue{background:#FDEDED;color:#D14343;}
+    .badge-partial{background:#FBF3E3;color:#C28A1E;}
+    .empty-tx{padding:40px;text-align:center;color:#A3A29C;font-size:13px;}
+    .empty-tx i{font-size:32px;color:#D3D1C7;display:block;margin-bottom:12px;}
+
+    /* Method icons */
+    .method-apple{background:#000;} .method-google{background:#4285F4;}
+    .method-card{background:#635BFF;} .method-cash{background:#1D9E75;}
+    .method-bank{background:#0A2540;} .method-default{background:#8B8A84;}
+
+    /* Mobile */
+    .mobile-topbar{display:none;}
+    .bottom-nav{display:none;}
+    .mob-drawer{position:fixed;top:0;left:-280px;width:280px;height:100vh;background:#0A2540;z-index:600;transition:left 0.28s ease;display:flex;flex-direction:column;overflow-y:auto;}
+    .mob-drawer.open{left:0;}
+    .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:599;}
+    .mob-overlay.open{display:block;}
+    .mob-drawer-head{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;}
+    .mob-drawer-logo{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+    .mob-drawer-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .mob-drawer-section{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.07em;text-transform:uppercase;padding:14px 18px 6px;}
+    .mob-drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:14px;font-weight:600;color:rgba(255,255,255,0.75);text-decoration:none;}
+    .mob-drawer-item.active{background:rgba(255,255,255,0.1);color:#fff;border-left:3px solid #5DCAA5;padding-left:15px;}
+    .mob-drawer-item i{font-size:20px;width:24px;}
+    .mob-burger{background:none;border:none;cursor:pointer;padding:2px;display:flex;flex-direction:column;gap:5px;}
+    .mob-burger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
+
+    @media(max-width:768px){
+      .sidebar{display:none;}.main{margin-left:0;}.topbar{display:none;}
+      .mobile-topbar{display:flex;align-items:center;justify-content:space-between;background:#0A2540;padding:14px 16px;position:sticky;top:0;z-index:200;}
+      .content{padding:14px 16px 100px;max-width:100%;}
+      .stats{grid-template-columns:1fr 1fr;}
+      .payout-top{padding:20px;}
+      .payout-amount{font-size:38px;}
+      .payout-meta{flex-direction:column;}
+      .payout-meta-item{border-right:none;border-bottom:1px solid rgba(255,255,255,0.1);padding:12px 20px;}
+      .stripe-card{flex-wrap:wrap;}
+      .bottom-nav{display:flex;align-items:center;background:#fff;border-top:1px solid #E5E3DC;padding:8px 0 20px;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+      .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding:4px 0;}
+      .nav-item i{font-size:22px;color:#A3A29C;}
+      .nav-item span{font-size:10px;color:#A3A29C;font-weight:500;}
+      .nav-item.active i,.nav-item.active span{color:#0A2540;font-weight:600;}
+      .nav-plus-wrap{flex:1;display:flex;justify-content:center;}
+      .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
+      .nav-plus i{font-size:24px;color:#fff;}
     }
-  
-    
-      /* Make mobile topbar sticky if not already */
-      .mobile-topbar { position: sticky !important; top: 0 !important; z-index: 200 !important; }
-    }
-  
-    /* Hamburger menu */
-    .mob-menu-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 299; }
-    .mob-menu-overlay.open { display: block; }
-    .mob-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0A2540; z-index: 300; transition: left 0.28s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow-y: auto; }
-    .mob-drawer.open { left: 0; }
-    .mob-drawer-head { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
-    .mob-drawer-logo { font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .mob-drawer-logo i { color: #5DCAA5; font-size: 20px; }
-    .mob-drawer-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mob-drawer-section { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; padding: 14px 18px 6px; }
-    .mob-drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); text-decoration: none; }
-    .mob-drawer-item:hover, .mob-drawer-item.active { background: rgba(255,255,255,0.1); color: #fff; }
-    .mob-drawer-item.active { border-left: 3px solid #5DCAA5; padding-left: 15px; }
-    .mob-drawer-item i { font-size: 20px; width: 24px; }
-    .mob-drawer-bottom { margin-top: auto; padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .mob-drawer-user { display: flex; align-items: center; gap: 12px; }
-    .mob-drawer-av { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .mob-drawer-uname { font-size: 13px; font-weight: 600; color: #fff; }
-    .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
-    .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
-    .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
   </style>
 </head>
 <body>
-  <!-- MOBILE TOP BAR -->
   <div class="mobile-topbar">
-    <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
-      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
-    </div>
-    <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
+    <button class="mob-burger" onclick="openDrawer()"><span></span><span></span><span></span></button>
+    <div style="font-size:16px;font-weight:700;color:#fff">Payments</div>
+    <div style="width:44px"></div>
   </div>
-  </div>
-
-  <div class="db">
-    <nav class="sidebar">
-      <a href="dashboard.html" class="sb-logo" style="text-decoration:none">
-        <div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div>
-        <span class="sb-logo-text">Primo Invoice</span>
-      </a>
-      <div class="sb-nav">
-        <div class="sb-section-label">Main</div>
-        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
-        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="jobs.html" class="sb-item"><i class="ti ti-calendar"></i> Calendar</a>
-        <div class="sb-section-label">Reports</div>
-        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
-        <a href="payments.html" class="sb-item active"><i class="ti ti-credit-card"></i> Payments</a>
-        <div class="sb-section-label">Account</div>
-        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
-      </div>
-      <div class="sb-bottom">
-        <a href="settings.html" class="sb-user">
-          <div class="sb-avatar" id="sb-avatar"></div>
-          <div><div class="sb-user-name" id="sb-user-name"></div><div class="sb-user-plan" id="sb-user-plan">Free plan</div></div>
-        </a>
-      </div>
-    </nav>
-
-    <div class="main">
-      <div class="topbar"><h1>Payments</h1></div>
-
-      <div class="content">
-
-        <!-- STRIPE STATUS -->
-        <div class="stripe-card" id="stripe-card">
-          <div class="stripe-icon"><i class="ti ti-brand-stripe"></i></div>
-          <div class="stripe-info">
-            <div class="stripe-title" id="stripe-title">Connecting...</div>
-            <div class="stripe-sub" id="stripe-sub">Checking your Stripe account</div>
-          </div>
-          <div class="stripe-btns" id="stripe-btns"></div>
-        </div>
-
-        <!-- STATS -->
-        <div class="stats" id="pay-stats" style="display:none">
-          <div class="stat"><div class="stat-label">Total received</div><div class="stat-value" id="stat-received">£0</div></div>
-          <div class="stat"><div class="stat-label">Outstanding</div><div class="stat-value" id="stat-outstanding">£0</div></div>
-          <div class="stat"><div class="stat-label">Invoices paid</div><div class="stat-value" id="stat-paid-count">0</div></div>
-        </div>
-
-        <!-- TRANSACTIONS -->
-        <div class="section-card">
-          <div class="section-header">
-            <div class="section-title">Payment history</div>
-            <a href="invoices.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">View all invoices →</a>
-          </div>
-          <div id="tx-list">
-            <div class="empty-tx">
-              <i class="ti ti-credit-card"></i>
-              Payments will appear here once customers start paying their invoices
-            </div>
-          </div>
-        </div>
-
-        <!-- PAYOUT INFO -->
-        <div class="section-card">
-          <div class="section-header"><div class="section-title">How payouts work</div></div>
-          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-credit-card" style="font-size:17px;color:#0A2540"></i></div>
-              <div><div style="font-size:13px;font-weight:600;color:#061A30">Customer pays invoice</div><div style="font-size:12px;color:#8B8A84">By card, Apple Pay or Google Pay</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:34px;height:34px;border-radius:9px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-brand-stripe" style="font-size:17px;color:#635BFF"></i></div>
-              <div><div style="font-size:13px;font-weight:600;color:#061A30">Stripe processes the payment</div><div style="font-size:12px;color:#8B8A84">Secure, instant — Stripe's standard fee applies (1.5% UK cards)</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:34px;height:34px;border-radius:9px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-building-bank" style="font-size:17px;color:#0F6E56"></i></div>
-              <div><div style="font-size:13px;font-weight:600;color:#061A30">Money lands in your bank</div><div style="font-size:12px;color:#8B8A84">Usually within 24 hours of the customer paying</div></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
-        <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="payments.html" class="nav-item active"><i class="ti ti-credit-card"></i><span>Payments</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
-    </div>
-  </div>
-
-  <script>
-    function fmt(n) { return '£' + Number(n||0).toLocaleString('en-GB', {minimumFractionDigits:0, maximumFractionDigits:0}); }
-
-    async function loadUser() {
-      try {
-        var r = await supabase.auth.getUser();
-        if (!r.data || !r.data.user) { window.location.href = 'login.html'; return; }
-        var m = r.data.user.user_metadata || {};
-        var first = m.first_name || m.given_name || '';
-        var last  = m.last_name  || m.family_name || '';
-        var ini = ((first.charAt(0)) + (last.charAt(0))).toUpperCase() || (r.data.user.email ? r.data.user.email.charAt(0).toUpperCase() : '?');
-        var av = document.getElementById('sb-avatar'); if (av) av.textContent = ini;
-        var nm = document.getElementById('sb-user-name'); if (nm) nm.textContent = (first||last) ? (first+' '+last).trim() : r.data.user.email.split('@')[0];
-        var pl = document.getElementById('sb-user-plan'); if (pl) pl.textContent = m.plan === 'pro' ? 'Pro plan' : m.plan === 'business' ? 'Business plan' : 'Free plan';
-
-        // Stripe status
-        var title = document.getElementById('stripe-title');
-        var sub   = document.getElementById('stripe-sub');
-        var btns  = document.getElementById('stripe-btns');
-
-        if (m.stripe_connected) {
-          document.getElementById('stripe-card').style.background = '#F0FAF6';
-          document.getElementById('stripe-card').style.borderColor = '#9FE1CB';
-          document.getElementById('stripe-icon') && (document.getElementById('stripe-icon').style.background = '#1D9E75');
-          title.textContent = 'Stripe connected';
-          title.style.color = '#085041';
-          sub.textContent = 'Payments go directly into your bank account';
-          btns.innerHTML = '<button onclick="changeStripeAccount()" class="btn-manage btn-outline"><i class="ti ti-arrows-exchange"></i> Change account</button>'
-            + '<a href="https://dashboard.stripe.com/express" target="_blank" class="btn-manage btn-primary"><i class="ti ti-external-link"></i> Stripe dashboard</a>';
-        } else {
-          title.textContent = 'Stripe not connected';
-          sub.textContent = 'Connect Stripe to accept card & Apple Pay payments';
-          btns.innerHTML = '<a href="onboarding-payments.html" class="btn-manage btn-primary"><i class="ti ti-brand-stripe"></i> Connect Stripe</a>';
-        }
-
-        // Load invoice data for payments
-        loadPaymentData();
-
-      } catch(e) {
-        console.error(e);
-      }
-    }
-
-    async function loadPaymentData() {
-      var invoices = [];
-      try {
-        invoices = await DB.getInvoices();
-      } catch(e) {}
-      if (invoices.length === 0) {
-        invoices = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
-      }
-      if (invoices.length === 0) return;
-
-      // Stats
-      var paid       = invoices.filter(function(i){ return i.status === 'paid'; });
-      var outstanding = invoices.filter(function(i){ return i.status === 'unpaid' || i.status === 'overdue' || i.status === 'partial'; });
-      var totalReceived  = paid.reduce(function(a,i){ return a + Number(i.amount||0); }, 0);
-      var totalOutstanding = outstanding.reduce(function(a,i){ return a + Number(i.amount||0); }, 0);
-
-      document.getElementById('pay-stats').style.display = 'grid';
-      document.getElementById('stat-received').textContent    = fmt(totalReceived);
-      document.getElementById('stat-outstanding').textContent = fmt(totalOutstanding);
-      document.getElementById('stat-paid-count').textContent  = paid.length;
-
-      // Transaction list — all invoices sorted newest first
-      var sorted = invoices.slice().sort(function(a,b){ return new Date(b.created_at||b.date) - new Date(a.created_at||a.date); });
-
-      var METHOD_ICONS = { card:'ti-credit-card', cash:'ti-cash', bank:'ti-building-bank', mixed:'ti-arrows-exchange' };
-      var BADGE = { paid:'badge-paid', unpaid:'badge-pending', partial:'badge-pending', overdue:'badge-overdue', draft:'badge-pending' };
-      var LABEL = { paid:'Paid', unpaid:'Pending', partial:'Partial', overdue:'Overdue', draft:'Draft' };
-
-      var payStatuses = JSON.parse(localStorage.getItem('tb_pay_statuses') || '{}');
-
-      document.getElementById('tx-list').innerHTML = sorted.map(function(inv) {
-        var ps = payStatuses[inv.id] || {};
-        var status = ps.status || inv.status || 'unpaid';
-        var method = ps.method || 'card';
-        var iconClass = METHOD_ICONS[method] || 'ti-credit-card';
-        var bgColor = status === 'paid' ? '#E1F5EE' : status === 'overdue' ? '#FDEDED' : '#FBF3E3';
-        var iconColor = status === 'paid' ? '#0F6E56' : status === 'overdue' ? '#D14343' : '#C28A1E';
-        var custName = inv.customer_name || inv.customer || 'Unknown customer';
-        var invNum = inv.number || ('#' + (inv.id||'').toString().slice(0,6));
-        var date = inv.date ? new Date(inv.date + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
-
-        return '<div class="tx-row">'
-          + '<div class="tx-icon" style="background:' + bgColor + '"><i class="ti ' + iconClass + '" style="font-size:17px;color:' + iconColor + '"></i></div>'
-          + '<div class="tx-info"><div class="tx-name">' + custName + '<span class="tx-badge ' + (BADGE[status]||'badge-pending') + '">' + (LABEL[status]||status) + '</span></div>'
-          + '<div class="tx-sub">' + invNum + ' · ' + (inv.job||'Invoice') + ' · ' + date + '</div></div>'
-          + '<div class="tx-amount" style="color:' + (status==='paid'?'#1D9E75':status==='overdue'?'#D14343':'#C28A1E') + '">' + fmt(inv.amount) + '</div>'
-          + '</div>';
-      }).join('');
-    }
-
-    async function changeStripeAccount() {
-      if (!confirm('This will disconnect your current Stripe account so you can connect a different one.\n\nAny pending payouts will still be sent to your current account. Continue?')) return;
-      await supabase.auth.updateUser({ data: { stripe_connected: false, stripe_account_id: null } });
-      window.location.href = 'onboarding-payments.html';
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-plus-wrap')) { var m = document.getElementById('plus-menu'); if (m) m.classList.remove('open'); }
-    });
-
-    loadUser();
-  </script>
-
-  <!-- HAMBURGER OVERLAY + DRAWER -->
-  <div class="mob-menu-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
+  <div class="mob-overlay" id="mob-overlay" onclick="closeDrawer()"></div>
   <div class="mob-drawer" id="mob-drawer">
-    <div class="mob-drawer-head">
-      <div class="mob-drawer-logo"><i class="ti ti-file-invoice"></i> Primo Invoice</div>
-      <button class="mob-drawer-close" onclick="closeMobMenu()"><i class="ti ti-x"></i></button>
-    </div>
+    <div class="mob-drawer-head"><div class="mob-drawer-logo"><i class="ti ti-file-invoice" style="color:#5DCAA5"></i> Primo Invoice</div><button class="mob-drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button></div>
     <div class="mob-drawer-section">Main</div>
     <a href="dashboard.html" class="mob-drawer-item"><i class="ti ti-layout-dashboard"></i> Home</a>
     <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
     <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
     <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
-    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-calendar"></i> Calendar</a>
+    <a href="jobs.html" class="mob-drawer-item"><i class="ti ti-briefcase"></i> Calendar</a>
     <div class="mob-drawer-section">Reports</div>
     <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
     <a href="payments.html" class="mob-drawer-item active"><i class="ti ti-credit-card"></i> Payments</a>
     <div class="mob-drawer-section">Account</div>
     <a href="settings.html" class="mob-drawer-item"><i class="ti ti-settings"></i> Settings</a>
-    <a href="upgrade.html" class="mob-drawer-item"><i class="ti ti-star" style="color:#5DCAA5"></i> Upgrade plan</a>
-    <div class="mob-drawer-bottom">
-      <div class="mob-drawer-user">
-        <div class="mob-drawer-av" id="mob-drawer-av"></div>
-        <div>
-          <div class="mob-drawer-uname" id="mob-drawer-name">Loading...</div>
-          <div class="mob-drawer-plan" id="mob-drawer-plan">Free trial</div>
+    <div style="padding:16px 18px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto"><div style="display:flex;align-items:center;gap:10px"><div class="sb-av" id="mob-av"></div><div><div style="font-size:13px;font-weight:600;color:#fff" id="mob-name"></div><div style="font-size:11px;color:#5DCAA5" id="mob-plan">Free plan</div></div></div></div>
+  </div>
+
+  <div class="db">
+    <nav class="sidebar">
+      <a href="dashboard.html" class="sb-logo"><div class="sb-logo-icon"><i class="ti ti-file-invoice"></i></div><span class="sb-logo-text">Primo Invoice</span></a>
+      <div class="sb-nav">
+        <div class="sb-lbl">Main</div>
+        <a href="dashboard.html" class="sb-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
+        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
+        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
+        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
+        <div class="sb-lbl">Reports</div>
+        <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
+        <a href="payments.html" class="sb-item active"><i class="ti ti-credit-card"></i> Payments</a>
+        <div class="sb-lbl">Account</div>
+        <a href="settings.html" class="sb-item"><i class="ti ti-settings"></i> Settings</a>
+      </div>
+      <div class="sb-bottom"><a href="settings.html" class="sb-user"><div class="sb-av" id="sb-av"></div><div><div style="font-size:12px;font-weight:600;color:#fff" id="sb-uname"></div><div style="font-size:11px;color:rgba(255,255,255,0.5)" id="sb-uplan">Free plan</div></div></a></div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar"><h1>Payments</h1></div>
+      <div class="content">
+
+        <!-- Payout hero -->
+        <div class="payout-hero">
+          <div class="payout-top">
+            <div class="payout-label"><i class="ti ti-arrow-down-to-arc" style="font-size:15px;color:#5DCAA5"></i> Next payout to your bank</div>
+            <div class="payout-amount" id="payout-amount">£0.00</div>
+            <div class="payout-date" id="payout-date"><i class="ti ti-calendar-check" style="font-size:16px"></i> Calculating...</div>
+          </div>
+          <div class="payout-meta">
+            <div class="payout-meta-item">
+              <div class="payout-meta-label">In transit</div>
+              <div class="payout-meta-val" id="meta-transit">£0.00</div>
+            </div>
+            <div class="payout-meta-item">
+              <div class="payout-meta-label">Paid out this month</div>
+              <div class="payout-meta-val" id="meta-month">£0.00</div>
+            </div>
+            <div class="payout-meta-item">
+              <div class="payout-meta-label">Stripe fee (1.4%)</div>
+              <div class="payout-meta-val" id="meta-fees">£0.00</div>
+            </div>
+          </div>
         </div>
+
+        <!-- Stripe account card -->
+        <div class="stripe-card">
+          <div class="stripe-logo"><i class="ti ti-brand-stripe"></i></div>
+          <div class="stripe-info">
+            <div class="stripe-name">Stripe Connect</div>
+            <div class="stripe-sub" id="stripe-sub">Checking account status...</div>
+          </div>
+          <div id="stripe-status-badge" class="stripe-status">
+            <div style="width:8px;height:8px;border-radius:50%;background:#D3D1C7"></div> Checking...
+          </div>
+          <button class="stripe-btn" onclick="window.open('https://dashboard.stripe.com','_blank')" id="stripe-action-btn">Open Stripe →</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Total received</div>
+            <div class="stat-value" id="stat-received" style="color:#1D9E75">£0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Outstanding</div>
+            <div class="stat-value" id="stat-outstanding" style="color:#C28A1E">£0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Transactions</div>
+            <div class="stat-value" id="stat-count">0</div>
+          </div>
+        </div>
+
+        <!-- Payout timeline -->
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div class="timeline-title">Payout schedule</div>
+            <div style="font-size:12px;color:#8B8A84">Stripe pays out every 2 business days</div>
+          </div>
+          <div id="payout-timeline"></div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="tx-card">
+          <div class="tx-header">
+            <div class="tx-title">Transactions</div>
+            <div class="tx-filter">
+              <button class="tx-filter-btn active" onclick="setTxFilter('all',this)">All</button>
+              <button class="tx-filter-btn" onclick="setTxFilter('paid',this)">Paid</button>
+              <button class="tx-filter-btn" onclick="setTxFilter('unpaid',this)">Unpaid</button>
+            </div>
+          </div>
+          <div id="tx-list"></div>
+        </div>
+
       </div>
     </div>
   </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+    <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+    <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
+    <a href="payments.html" class="nav-item active"><i class="ti ti-credit-card"></i><span>Payments</span></a>
+    <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+  </nav>
+
   <script>
-    function openMobMenu()  { document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeMobMenu() { document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); document.body.style.overflow=''; }
-    // Swipe to close
-    var _swipeStartX = 0;
-    document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
-    document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
+    var allInvoices = [];
+    var txFilter = 'all';
+
+    function openDrawer(){ document.getElementById('mob-drawer').classList.add('open'); document.getElementById('mob-overlay').classList.add('open'); }
+    function closeDrawer(){ document.getElementById('mob-drawer').classList.remove('open'); document.getElementById('mob-overlay').classList.remove('open'); }
+
+    function fmt(n){ return '£'+Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtDate(d){ try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return '';} }
+
+    function setTxFilter(f, btn) {
+      txFilter = f;
+      document.querySelectorAll('.tx-filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderTransactions();
+    }
+
+    function getNextBusinessDay(from, daysAhead) {
+      var d = new Date(from);
+      var added = 0;
+      while(added < daysAhead) {
+        d.setDate(d.getDate()+1);
+        var dow = d.getDay();
+        if(dow !== 0 && dow !== 6) added++;
+      }
+      return d;
+    }
+
+    function renderPayoutHero(paid, outstanding) {
+      var now = new Date();
+      // Simulate: payments received in last 2 days are "in transit"
+      var twoDaysAgo = new Date(now); twoDaysAgo.setDate(twoDaysAgo.getDate()-2);
+      var inTransit = paid.filter(function(inv){
+        var pd = new Date(inv.paid_at||inv.date||inv.created_at);
+        return pd >= twoDaysAgo;
+      });
+      var inTransitTotal = inTransit.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      // Stripe fee 1.4% + 20p per transaction
+      var fees = inTransit.reduce(function(a,i){ return a + (Number(i.amount||0)*0.014 + 0.20); },0);
+      var netPayout = Math.max(0, inTransitTotal - fees);
+
+      // Month total
+      var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      var monthPaid = paid.filter(function(inv){
+        return new Date(inv.paid_at||inv.date||inv.created_at) >= startOfMonth;
+      }).reduce(function(a,i){ return a+Number(i.amount||0); },0);
+
+      // Next payout date = next business day + 1
+      var payoutDate = getNextBusinessDay(now, 2);
+      var payoutLabel = payoutDate.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+      document.getElementById('payout-amount').textContent = fmt(netPayout);
+      document.getElementById('payout-date').innerHTML = '<i class="ti ti-calendar-check" style="font-size:16px"></i> Expected ' + payoutLabel;
+      document.getElementById('meta-transit').textContent = fmt(inTransitTotal);
+      document.getElementById('meta-month').textContent = fmt(monthPaid);
+      document.getElementById('meta-fees').textContent = fmt(fees);
+    }
+
+    function renderPayoutTimeline(paid) {
+      var now = new Date();
+      var container = document.getElementById('payout-timeline');
+
+      // Group paid invoices into payout batches by approximate payout date
+      var batches = [];
+
+      // This week's paid (in transit → next payout)
+      var twoDaysAgo = new Date(now); twoDaysAgo.setDate(twoDaysAgo.getDate()-2);
+      var recentPaid = paid.filter(function(i){ return new Date(i.paid_at||i.date||i.created_at) >= twoDaysAgo; });
+      var recentTotal = recentPaid.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      if(recentTotal > 0){
+        var payDate = getNextBusinessDay(now, 2);
+        batches.push({ date:payDate, amount:recentTotal, status:'transit', label:'In transit', invoices:recentPaid.length });
+      }
+
+      // Last 7 days paid (already paid out)
+      var sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+      var lastWeekPaid = paid.filter(function(i){
+        var d = new Date(i.paid_at||i.date||i.created_at);
+        return d >= sevenDaysAgo && d < twoDaysAgo;
+      });
+      var lastWeekTotal = lastWeekPaid.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      if(lastWeekTotal > 0){
+        var poDate = getNextBusinessDay(sevenDaysAgo, 2);
+        batches.push({ date:poDate, amount:lastWeekTotal, status:'paid', label:'Paid out', invoices:lastWeekPaid.length });
+      }
+
+      // Outstanding — expected payout when received
+      var outstandingInvs = allInvoices.filter(function(i){ return i.status==='unpaid'||i.status==='overdue'; });
+      var outTotal = outstandingInvs.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      if(outTotal > 0){
+        var futureDate = getNextBusinessDay(now, 4);
+        batches.push({ date:futureDate, amount:outTotal, status:'pending', label:'When collected', invoices:outstandingInvs.length });
+      }
+
+      if(!batches.length){
+        container.innerHTML = '<div style="padding:32px;text-align:center;color:#A3A29C;font-size:13px"><i class="ti ti-piggy-bank" style="font-size:28px;display:block;margin-bottom:10px;color:#D3D1C7"></i>No payouts yet — start sending invoices!</div>';
+        return;
+      }
+
+      var STATUS_STYLES = {
+        transit:  { dot:'#C28A1E', bg:'#FBF3E3', color:'#C28A1E', label:'In transit' },
+        paid:     { dot:'#1D9E75', bg:'#E1F5EE', color:'#0F6E56', label:'Paid out' },
+        pending:  { dot:'#635BFF', bg:'#F3F1FE', color:'#635BFF', label:'Pending' }
+      };
+
+      container.innerHTML = batches.map(function(b, i) {
+        var s = STATUS_STYLES[b.status] || STATUS_STYLES.pending;
+        var fees = b.amount * 0.014 + (b.invoices * 0.20);
+        var net = Math.max(0, b.amount - fees);
+        return '<div class="timeline-item">'
+          + '<div class="timeline-dot-wrap">'
+          + '<div class="timeline-dot" style="background:'+s.dot+'"></div>'
+          + (i < batches.length-1 ? '<div class="timeline-line"></div>' : '')
+          + '</div>'
+          + '<div class="timeline-content">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between">'
+          + '<div>'
+          + '<div class="timeline-date">'+b.date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'})+'</div>'
+          + '<div class="timeline-desc">'+b.invoices+' invoice'+(b.invoices!==1?'s':'')+' · Stripe fee ~'+fmt(fees)+'</div>'
+          + '</div>'
+          + '<div style="text-align:right">'
+          + '<div class="timeline-amount" style="color:'+s.dot+'">'+fmt(net)+'</div>'
+          + '<span class="timeline-badge" style="background:'+s.bg+';color:'+s.color+'">'+s.label+'</span>'
+          + '</div></div></div></div>';
+      }).join('');
+    }
+
+    function renderTransactions() {
+      var filtered = allInvoices.filter(function(inv){
+        if(txFilter==='paid') return inv.status==='paid';
+        if(txFilter==='unpaid') return inv.status==='unpaid'||inv.status==='overdue'||inv.status==='partial';
+        return true;
+      }).sort(function(a,b){ return new Date(b.created_at||b.date) - new Date(a.created_at||a.date); });
+
+      var list = document.getElementById('tx-list');
+      if(!filtered.length){
+        list.innerHTML='<div class="empty-tx"><i class="ti ti-receipt-off"></i>No transactions yet</div>';
+        return;
+      }
+
+      var METHOD_ICONS = {
+        apple_pay:  { cls:'method-apple',  icon:'ti-brand-apple' },
+        google_pay: { cls:'method-google', icon:'ti-brand-google' },
+        card:       { cls:'method-card',   icon:'ti-credit-card' },
+        cash:       { cls:'method-cash',   icon:'ti-cash' },
+        bank:       { cls:'method-bank',   icon:'ti-building-bank' }
+      };
+
+      list.innerHTML = filtered.map(function(inv){
+        var st = inv.status||'unpaid';
+        var badgeCls = st==='paid'?'badge-paid':st==='overdue'?'badge-overdue':st==='partial'?'badge-partial':'badge-unpaid';
+        var badgeLbl = st==='paid'?'Paid':st==='overdue'?'Overdue':st==='partial'?'Partial':'Unpaid';
+        var method = METHOD_ICONS[inv.payment_method] || METHOD_ICONS['card'];
+        var icon = st==='paid' ? method : { cls:'method-default', icon:'ti-clock' };
+        return '<div class="tx-row">'
+          + '<div class="tx-icon '+icon.cls+'"><i class="ti '+icon.icon+'" style="font-size:18px;color:#fff"></i></div>'
+          + '<div class="tx-info">'
+          + '<div class="tx-name">'+(inv.customer_name||inv.customer||'Unknown')+'</div>'
+          + '<div class="tx-meta">'+(inv.number||'—')+' · '+(inv.job||'Invoice')+(inv.paid_at?' · Paid '+fmtDate(inv.paid_at):'')+'</div>'
+          + '</div>'
+          + '<div style="text-align:right">'
+          + '<div class="tx-amount" style="color:'+(st==='paid'?'#1D9E75':st==='overdue'?'#D14343':'#C28A1E')+'">'+fmt(inv.amount)+'</div>'
+          + '<span class="tx-badge '+badgeCls+'">'+badgeLbl+'</span>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    async function loadStripeStatus() {
+      var statusEl = document.getElementById('stripe-status-badge');
+      var subEl = document.getElementById('stripe-sub');
+      var isConnected = localStorage.getItem('pi_stripe_connected') === 'true';
+
+      try {
+        var {data} = await supabase.auth.getUser();
+        if(data && data.user) {
+          var meta = data.user.user_metadata || {};
+          isConnected = isConnected || meta.stripe_connected || !!meta.stripe_account_id;
+          if(meta.stripe_account_id) {
+            subEl.textContent = 'Account ID: ' + meta.stripe_account_id + ' · Express account';
+          } else if(isConnected) {
+            subEl.textContent = 'Connected · Express account · Payouts enabled';
+          } else {
+            subEl.textContent = 'Not connected — payments cannot be collected';
+          }
+        }
+      } catch(e) {}
+
+      if(isConnected){
+        statusEl.className='stripe-status connected';
+        statusEl.innerHTML='<div style="width:8px;height:8px;border-radius:50%;background:#1D9E75"></div> Connected';
+      } else {
+        statusEl.className='stripe-status disconnected';
+        statusEl.innerHTML='<div style="width:8px;height:8px;border-radius:50%;background:#D14343"></div> Not connected';
+        document.getElementById('stripe-action-btn').textContent='Connect Stripe →';
+        document.getElementById('stripe-action-btn').onclick = function(){ window.location.href='onboarding-payments.html'; };
+      }
+    }
+
+    async function init() {
+      // User
+      try {
+        var {data} = await supabase.auth.getUser();
+        if(data && data.user){
+          var m = data.user.user_metadata||{};
+          var first=m.first_name||''; var last=m.last_name||'';
+          var nm=(first+' '+last).trim()||data.user.email.split('@')[0];
+          var ini2=((first[0]||'')+(last[0]||'')).toUpperCase()||data.user.email[0].toUpperCase();
+          var av=document.getElementById('sb-av'); if(av)av.textContent=ini2;
+          var un=document.getElementById('sb-uname'); if(un)un.textContent=nm;
+          var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan+' plan':'Free plan';
+          var ma=document.getElementById('mob-av'); if(ma)ma.textContent=ini2;
+          var mn=document.getElementById('mob-name'); if(mn)mn.textContent=first||nm;
+        }
+      } catch(e) {}
+
+      // Invoices
+      try { var {data:invData}=await supabase.from('invoices').select('*').order('created_at',{ascending:false}); allInvoices=invData||[]; }
+      catch(e){ allInvoices=[]; }
+      if(!allInvoices.length) allInvoices=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+
+      var paid = allInvoices.filter(function(i){ return i.status==='paid'; });
+      var outstanding = allInvoices.filter(function(i){ return i.status==='unpaid'||i.status==='overdue'||i.status==='partial'; });
+      var totalReceived = paid.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+      var totalOutstanding = outstanding.reduce(function(a,i){ return a+Number(i.amount||0); },0);
+
+      document.getElementById('stat-received').textContent = fmt(totalReceived);
+      document.getElementById('stat-outstanding').textContent = fmt(totalOutstanding);
+      document.getElementById('stat-count').textContent = allInvoices.length;
+
+      renderPayoutHero(paid, outstanding);
+      renderPayoutTimeline(paid);
+      renderTransactions();
+      loadStripeStatus();
+    }
+
+    init();
   </script>
 </body>
 </html>
