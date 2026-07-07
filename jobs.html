@@ -4,12 +4,12 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jobs — Primo Invoice</title>
+  <title>Calendar — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -204,7 +204,7 @@
   <a href="invoices.html" class="mob-drawer-item"><i class="ti ti-file-invoice"></i> Invoices</a>
   <a href="customers.html" class="mob-drawer-item"><i class="ti ti-users"></i> Customers</a>
   <a href="quotes.html" class="mob-drawer-item"><i class="ti ti-file-text"></i> Quotes</a>
-  <a href="jobs.html" class="mob-drawer-item active"><i class="ti ti-briefcase"></i> Jobs</a>
+  <a href="jobs.html" class="mob-drawer-item active"><i class="ti ti-calendar"></i> Calendar</a>
   <div class="mob-drawer-section">Reports</div>
   <a href="earnings.html" class="mob-drawer-item"><i class="ti ti-chart-bar"></i> Earnings</a>
   <a href="payments.html" class="mob-drawer-item"><i class="ti ti-credit-card"></i> Payments</a>
@@ -222,7 +222,7 @@
       <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
       <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
       <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-      <a href="jobs.html" class="sb-item active"><i class="ti ti-briefcase"></i> Jobs</a>
+      <a href="jobs.html" class="sb-item active"><i class="ti ti-calendar"></i> Calendar</a>
       <div class="sb-lbl">Reports</div>
       <a href="earnings.html" class="sb-item"><i class="ti ti-chart-bar"></i> Earnings</a>
       <a href="payments.html" class="sb-item"><i class="ti ti-credit-card"></i> Payments</a>
@@ -234,7 +234,7 @@
 
   <div class="main">
     <div class="topbar">
-      <h1>Jobs</h1>
+      <h1>Calendar</h1>
       <div class="topbar-right">
         <div class="view-toggle">
           <button class="view-btn active" id="btn-cal" onclick="setView('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
@@ -317,7 +317,12 @@
     </div>
     <div class="modal-body">
       <div class="field"><label>Job title *</label><input id="jm-title" type="text" placeholder="e.g. Boiler service, bathroom refit..." /></div>
-      <div class="field"><label>Customer name</label><input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" /></div>
+      <div class="field"><label>Customer name</label>
+        <div style="position:relative">
+          <input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="custAutocomplete(this.value)" />
+          <div id="cust-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E3DC;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:160px;overflow-y:auto;margin-top:4px"></div>
+        </div>
+      </div>
       <div class="field-row">
         <div class="field"><label>Phone</label><input id="jm-phone" type="tel" placeholder="07700 900123" /></div>
         <div class="field"><label>Email</label><input id="jm-email" type="email" placeholder="customer@email.com" /></div>
@@ -348,7 +353,7 @@
       <div class="field"><label>Notes</label><textarea id="jm-notes" rows="3" placeholder="Access details, materials needed, parking info..."></textarea></div>
       <!-- Reminder -->
       <div style="display:flex;align-items:center;justify-content:space-between;background:#F8F7F3;border-radius:10px;padding:12px 14px;margin-bottom:16px">
-        <div><div style="font-size:13px;font-weight:600;color:#061A30">Morning reminder</div><div style="font-size:11px;color:#8B8A84">Notification at 8am on the day</div></div>
+        <div><div style="font-size:13px;font-weight:600;color:#061A30">Morning reminder</div><div style="font-size:11px;color:#8B8A84">Notification at 6am on the day</div></div>
         <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
           <input type="checkbox" id="jm-reminder" checked style="opacity:0;width:0;height:0">
           <span id="jm-toggle-bg" style="position:absolute;inset:0;background:#5DCAA5;border-radius:24px;transition:0.2s"></span>
@@ -702,7 +707,7 @@
     var end=date+'T'+endHr+endMin+'00';
     var details=[j.customer_name?'Customer: '+j.customer_name:'',j.phone?'Phone: '+j.phone:'',j.notes?'Notes: '+j.notes:''].filter(Boolean).join('\n');
     var gcal='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(j.title||'Job')+'&dates='+start+'/'+end+'&details='+encodeURIComponent(details)+(j.address?'&location='+encodeURIComponent(j.address):'');
-    var ical='data:text/calendar;charset=utf-8,'+encodeURIComponent('BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:'+start+'\nDTEND:'+end+'\nSUMMARY:'+(j.title||'Job')+'\n'+(j.address?'LOCATION:'+j.address+'\n':'')+('DESCRIPTION:'+details.replace(/\n/g,'\\n')+'\n')+'BEGIN:VALARM\nTRIGGER:-PT8H\nACTION:DISPLAY\nDESCRIPTION:Job reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR');
+    var ical='data:text/calendar;charset=utf-8,'+encodeURIComponent('BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:'+start+'\nDTEND:'+end+'\nSUMMARY:'+(j.title||'Job')+'\n'+(j.address?'LOCATION:'+j.address+'\n':'')+('DESCRIPTION:'+details.replace(/\n/g,'\\n')+'\n')+'BEGIN:VALARM\nTRIGGER:-PT2H\nACTION:DISPLAY\nDESCRIPTION:Job reminder at 6am\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR');
     var overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:700;display:flex;align-items:flex-end;justify-content:center;padding:16px';
     overlay.innerHTML='<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;padding:16px;display:flex;flex-direction:column;gap:10px">'
@@ -745,6 +750,27 @@
         document.getElementById('jm-duration').value=j.duration||120;
         document.getElementById('jm-status').value=j.status||'scheduled';
         document.getElementById('jm-notes').value=j.notes||'';
+
+        // Enrich missing fields from customers/invoices
+        var custName = (j.customer_name||'').toLowerCase();
+        if(custName && (!j.phone || !j.email || !j.address)){
+          var custs = JSON.parse(localStorage.getItem('tb_customers')||'[]');
+          var match = custs.find(function(c){ return (c.name||'').toLowerCase()===custName; });
+          if(match){
+            if(!j.phone && match.phone) document.getElementById('jm-phone').value=match.phone;
+            if(!j.email && match.email) document.getElementById('jm-email').value=match.email;
+            if(!j.address && match.address) document.getElementById('jm-address').value=match.address;
+          }
+          // Also check invoices for contact info
+          if(!match || (!match.phone && !match.email)){
+            var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+            var inv = invs.find(function(i){ return (i.customer_name||i.customer||'').toLowerCase()===custName; });
+            if(inv){
+              if(!document.getElementById('jm-phone').value && inv.phone) document.getElementById('jm-phone').value=inv.phone;
+              if(!document.getElementById('jm-email').value && inv.email) document.getElementById('jm-email').value=inv.email;
+            }
+          }
+        }
       }
     } else {
       document.getElementById('jm-title').value='';
@@ -807,7 +833,7 @@
     if(job.reminder&&job.date&&'Notification' in window){
       Notification.requestPermission().then(function(p){
         if(p==='granted'){
-          var t=new Date(job.date+'T08:00:00').getTime()-Date.now();
+          var t=new Date(job.date+'T06:00:00').getTime()-Date.now();
           if(t>0&&t<7*24*3600*1000) setTimeout(function(){ new Notification('Job today — '+job.title,{body:(job.customer_name||'')+(job.address?'\n'+job.address:''),icon:'/favicon.svg'}); },t);
         }
       });
@@ -829,7 +855,49 @@
     setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
   }
 
-  // Reminder toggle
+  function custAutocomplete(val){
+    var box=document.getElementById('cust-suggestions');
+    if(!val||val.length<2){ box.style.display='none'; return; }
+    var q=val.toLowerCase();
+    // Gather from customers + invoices
+    var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+    var invs=JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+    var seen=new Set();
+    var results=[];
+    custs.forEach(function(c){
+      if((c.name||'').toLowerCase().includes(q)&&!seen.has(c.name)){
+        seen.add(c.name); results.push({name:c.name,phone:c.phone||'',email:c.email||'',address:c.address||''});
+      }
+    });
+    invs.forEach(function(i){
+      var n=i.customer_name||i.customer||'';
+      if(n.toLowerCase().includes(q)&&!seen.has(n)){
+        seen.add(n); results.push({name:n,phone:i.phone||'',email:i.email||'',address:i.address||''});
+      }
+    });
+    if(!results.length){ box.style.display='none'; return; }
+    box.innerHTML=results.slice(0,5).map(function(r){
+      return '<div onclick="selectCust(\''+encodeURIComponent(JSON.stringify(r))+'\')" style="padding:10px 13px;cursor:pointer;border-bottom:1px solid #F8F7F3;font-size:13px;font-weight:600;color:#061A30" onmouseenter="this.style.background=\'#F8F7F3\'" onmouseleave="this.style.background=\'#fff\'">'
+        +r.name+'<div style="font-size:11px;color:#8B8A84;font-weight:400;margin-top:1px">'+(r.phone||r.email||'No contact saved')+'</div></div>';
+    }).join('');
+    box.style.display='block';
+  }
+
+  function selectCust(encoded){
+    var r=JSON.parse(decodeURIComponent(encoded));
+    document.getElementById('jm-customer').value=r.name;
+    if(r.phone) document.getElementById('jm-phone').value=r.phone;
+    if(r.email) document.getElementById('jm-email').value=r.email;
+    if(r.address) document.getElementById('jm-address').value=r.address;
+    document.getElementById('cust-suggestions').style.display='none';
+    showToast('Details loaded for '+r.name.split(' ')[0]);
+  }
+
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#jm-customer')&&!e.target.closest('#cust-suggestions')){
+      var box=document.getElementById('cust-suggestions'); if(box) box.style.display='none';
+    }
+  });
   document.getElementById('jm-reminder').addEventListener('change',function(){
     document.getElementById('jm-knob').style.transform=this.checked?'translateX(20px)':'translateX(0)';
     document.getElementById('jm-toggle-bg').style.background=this.checked?'#5DCAA5':'#D3D1C7';
