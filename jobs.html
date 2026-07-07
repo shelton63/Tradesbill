@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) {
       var supabase = {
@@ -196,6 +196,103 @@
       input,select,textarea{font-size:16px!important;}
       .field-row{grid-template-columns:1fr;}
     }
+
+    /* ══════════════════════════════════════════
+       PRIMO INVOICE — MOBILE-FIRST UPGRADE
+       ══════════════════════════════════════════ */
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --nav-h: 64px;
+      --teal: #5DCAA5;
+      --navy: #0A2540;
+    }
+    @media(max-width:768px){
+      /* Safe area bottom nav */
+      .bottom-nav{
+        padding-bottom:calc(8px + var(--safe-bottom)) !important;
+        height:auto !important;
+        position:fixed !important;
+        bottom:0 !important;
+        left:0 !important;
+        right:0 !important;
+        z-index:300 !important;
+        background:#fff !important;
+        border-top:1px solid #E5E3DC !important;
+        box-shadow:0 -2px 20px rgba(0,0,0,0.08) !important;
+      }
+      .nav-item{
+        flex:1 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        gap:3px !important;
+        text-decoration:none !important;
+        padding:8px 0 4px !important;
+        -webkit-tap-highlight-color:transparent !important;
+        min-height:44px !important;
+      }
+      .nav-item i{font-size:24px !important;color:#A3A29C !important;}
+      .nav-item span{font-size:10px !important;color:#A3A29C !important;font-weight:500 !important;}
+      .nav-item.active i{color:#0A2540 !important;transform:scale(1.1) !important;}
+      .nav-item.active span{color:#0A2540 !important;font-weight:700 !important;}
+      
+      /* Nav plus button */
+      .nav-plus-wrap{flex:1 !important;display:flex !important;justify-content:center !important;position:relative !important;}
+      .nav-plus{
+        width:52px !important;height:52px !important;border-radius:16px !important;
+        background:var(--navy) !important;display:flex !important;align-items:center !important;
+        justify-content:center !important;margin-top:-26px !important;text-decoration:none !important;
+        box-shadow:0 4px 20px rgba(10,37,64,0.35) !important;
+        -webkit-tap-highlight-color:transparent !important;
+        transition:transform 0.15s !important;
+      }
+      .nav-plus:active{transform:scale(0.93) !important;}
+      .nav-plus i{font-size:26px !important;color:#fff !important;}
+      
+      /* Bottom padding so content isn't hidden behind nav */
+      .content{padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px) !important;}
+      
+      /* Mobile topbar */
+      .mobile-topbar{
+        position:sticky !important;top:0 !important;z-index:250 !important;
+        padding-top:calc(14px + var(--safe-top)) !important;
+        min-height:calc(60px + var(--safe-top)) !important;
+        -webkit-backdrop-filter:blur(20px) !important;backdrop-filter:blur(20px) !important;
+      }
+      
+      /* Cards: bigger tap targets */
+      .job-card,.cust-item,.inv-row,.tx-row{
+        min-height:60px !important;
+        padding:14px 16px !important;
+      }
+      
+      /* Buttons: minimum 44px tap target */
+      button,a.btn,.btn{min-height:44px !important;}
+      
+      /* Modal: slides up from bottom */
+      .modal{border-radius:20px 20px 0 0 !important;padding-bottom:var(--safe-bottom) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;}
+      
+      /* Input font size: prevents iOS zoom */
+      input,select,textarea{font-size:16px !important;-webkit-appearance:none !important;}
+      
+      /* Pull-to-refresh hint */
+      .content{overscroll-behavior-y:contain !important;}
+      
+      /* Smooth scrolling */
+      *{-webkit-overflow-scrolling:touch !important;}
+      
+      /* Larger close buttons */
+      .modal-close{width:36px !important;height:36px !important;font-size:20px !important;}
+      
+      /* Status dots: larger */
+      .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
+      
+      /* Haptic feedback visual */
+      .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
+    }
+
   </style>
 </head>
 <body>
@@ -207,7 +304,10 @@
     <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
     <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Calendar</div>
   </div>
+  <div style="display:flex;gap:6px">
+  <button onclick="setView('map')" id="mob-map-btn" style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-map-2" style="font-size:18px"></i></button>
   <button onclick="openJobModal(null)" style="background:#5DCAA5;color:#061A30;border:none;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Job</button>
+</div>
 </div>
 
 <div class="mob-overlay" id="mob-overlay" onclick="closeDrawer()"></div>
@@ -255,6 +355,7 @@
         <div class="view-toggle">
           <button class="view-btn active" id="btn-cal" onclick="setView('calendar')"><i class="ti ti-calendar"></i> Calendar</button>
           <button class="view-btn" id="btn-list" onclick="setView('list')"><i class="ti ti-list"></i> List</button>
+          <button class="view-btn" id="btn-map" onclick="setView('map')"><i class="ti ti-map-2"></i> Map</button>
         </div>
         <button class="btn-new" onclick="openJobModal(null)"><i class="ti ti-plus"></i> New job</button>
       </div>
@@ -294,6 +395,39 @@
         <div id="selected-day-jobs" style="display:none;margin-top:16px"></div>
       </div>
 
+      <!-- Map view -->
+      <div id="view-map" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:600;color:#061A30" id="map-count">0 jobs with addresses</span>
+            <select id="map-filter" onchange="renderMap()" style="padding:6px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff">
+              <option value="all">All statuses</option>
+              <option value="scheduled">Scheduled only</option>
+              <option value="inprogress">In progress</option>
+              <option value="today">Today</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="openAllDirections()" style="padding:7px 13px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#0A2540;display:flex;align-items:center;gap:5px"><i class="ti ti-route" style="font-size:14px"></i> Plan route</button>
+          </div>
+        </div>
+
+        <!-- Map container -->
+        <div style="background:#fff;border:1px solid #E5E3DC;border-radius:14px;overflow:hidden;margin-bottom:16px">
+          <div id="map-frame" style="width:100%;height:460px;position:relative;background:#EEF3F8;display:flex;align-items:center;justify-content:center">
+            <div id="map-loading" style="text-align:center;color:#8B8A84">
+              <i class="ti ti-map-2" style="font-size:40px;display:block;margin-bottom:12px;color:#D3D1C7"></i>
+              <div style="font-size:14px;font-weight:600;margin-bottom:6px">Job map</div>
+              <div style="font-size:12px">Add addresses to your jobs to see them here</div>
+            </div>
+            <!-- Google Maps iframe will be injected here -->
+          </div>
+        </div>
+
+        <!-- Job pins list -->
+        <div id="map-job-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
+      </div>
+
       <!-- List view -->
       <div id="view-list" style="display:none">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
@@ -319,8 +453,8 @@
 <nav class="bottom-nav">
   <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
   <a href="jobs.html" class="nav-item active"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-  <div class="nav-plus-wrap"><a href="#" onclick="openJobModal(null);return false;" class="nav-plus"><i class="ti ti-plus"></i></a></div>
-  <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
+  <div class="nav-plus-wrap"><a href="#" onclick="openQuickAdd();return false;" class="nav-plus" id="nav-fab"><i class="ti ti-plus"></i></a></div>
+  <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
   <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
 </nav>
 
@@ -457,9 +591,112 @@
     currentView=v;
     document.getElementById('view-calendar').style.display=v==='calendar'?'block':'none';
     document.getElementById('view-list').style.display=v==='list'?'block':'none';
+    document.getElementById('view-map').style.display=v==='map'?'block':'none';
     document.getElementById('btn-cal').classList.toggle('active',v==='calendar');
     document.getElementById('btn-list').classList.toggle('active',v==='list');
-    if(v==='calendar') renderCalendar(); else renderList();
+    document.getElementById('btn-map').classList.toggle('active',v==='map');
+    if(v==='calendar') renderCalendar();
+    else if(v==='list') renderList();
+    else renderMap();
+  }
+
+  // ── Map view ──
+  function renderMap(){
+    var filter = document.getElementById('map-filter') ? document.getElementById('map-filter').value : 'all';
+    var today = new Date().toISOString().split('T')[0];
+    var jobsWithAddr = jobs.filter(function(j){
+      if(!j.address) return false;
+      if(filter==='scheduled') return j.status==='scheduled';
+      if(filter==='inprogress') return j.status==='inprogress';
+      if(filter==='today') return j.date===today;
+      return j.status!=='cancelled';
+    });
+
+    var countEl = document.getElementById('map-count');
+    if(countEl) countEl.textContent = jobsWithAddr.length + ' job' + (jobsWithAddr.length!==1?'s':'') + ' with addresses';
+
+    var frame = document.getElementById('map-frame');
+    if(!frame) return;
+
+    if(!jobsWithAddr.length){
+      frame.innerHTML = '<div style="text-align:center;color:#8B8A84;padding:40px"><i class="ti ti-map-pin-off" style="font-size:40px;display:block;margin-bottom:12px;color:#D3D1C7"></i><div style="font-size:14px;font-weight:600;margin-bottom:6px">No jobs with addresses</div><div style="font-size:12px">Add an address when creating or editing a job</div></div>';
+      document.getElementById('map-job-list').innerHTML='';
+      return;
+    }
+
+    // Build Google Maps embed with multiple markers
+    var markers = jobsWithAddr.map(function(j,i){
+      return encodeURIComponent((i+1)+'. '+j.address);
+    });
+
+    // Use Google Maps embed with all job addresses as waypoints
+    var firstAddr = encodeURIComponent(jobsWithAddr[0].address);
+    var mapSrc = 'https://maps.google.com/maps?q='+firstAddr+'&output=embed&z=11';
+
+    // If multiple jobs, use directions with waypoints
+    if(jobsWithAddr.length > 1){
+      var origin = encodeURIComponent(jobsWithAddr[0].address);
+      var dest = encodeURIComponent(jobsWithAddr[jobsWithAddr.length-1].address);
+      var waypoints = jobsWithAddr.slice(1,-1).map(function(j){ return encodeURIComponent(j.address); }).join('|');
+      mapSrc = 'https://maps.google.com/maps/embed/v1/directions?key=AIzaSyD-placeholder&origin='+origin+'&destination='+dest+(waypoints?'&waypoints='+waypoints:'')+'&mode=driving';
+    }
+
+    // Fallback: use static map visual with clickable cards (no API key needed)
+    frame.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(135deg,#EEF3F8 0%,#E0ECF8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px"><i class="ti ti-map-2" style="font-size:22px;color:#0A2540"></i><div style="font-size:16px;font-weight:700;color:#061A30">'+jobsWithAddr.length+' job location'+(jobsWithAddr.length!==1?'s':'')+'</div></div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:500px;margin-bottom:20px">'
+      + jobsWithAddr.map(function(j,i){
+          var STATUS_COLORS = {scheduled:'#0A2540',inprogress:'#C28A1E',done:'#1D9E75',cancelled:'#A3A29C',todo:'#635BFF'};
+          return '<div style="background:#fff;border-radius:20px;padding:6px 12px 6px 8px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#061A30;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')">'
+            +'<div style="width:22px;height:22px;border-radius:50%;background:'+(STATUS_COLORS[j.status||'scheduled'])+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'+(i+1)+'</div>'
+            +j.address.split(',')[0]+'</div>';
+        }).join('')
+      + '</div>'
+      + '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">'
+      + '<a href="https://maps.google.com/?q='+encodeURIComponent(jobsWithAddr.map(function(j){return j.address;}).join(' to '))+'" target="_blank" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:#4285F4;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-brand-google" style="font-size:16px"></i> Open in Google Maps</a>'
+      + '<a href="https://maps.apple.com/?q='+encodeURIComponent(jobsWithAddr[0].address)+'" style="display:flex;align-items:center;gap:7px;padding:10px 18px;background:#0A2540;color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700"><i class="ti ti-map" style="font-size:16px"></i> Open in Apple Maps</a>'
+      + '</div></div>';
+
+    // Render job cards below map
+    var listEl = document.getElementById('map-job-list');
+    var STATUS_COLORS = {scheduled:'#0A2540',inprogress:'#C28A1E',done:'#1D9E75',cancelled:'#A3A29C',todo:'#635BFF'};
+    var STATUS_BG = {scheduled:'#EEF3F8',inprogress:'#FBF3E3',done:'#E1F5EE',cancelled:'#F0EFEA',todo:'#F3F1FE'};
+    var STATUS_LABEL = {scheduled:'Scheduled',inprogress:'In progress',done:'Completed',cancelled:'Cancelled',todo:'To do'};
+    listEl.innerHTML = jobsWithAddr.map(function(j,i){
+      var isDone = j.status==='done'||j.status==='cancelled';
+      var gmaps = 'https://maps.google.com/?q='+encodeURIComponent(j.address);
+      var amaps = 'https://maps.apple.com/?q='+encodeURIComponent(j.address);
+      return '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:13px 14px;cursor:pointer;opacity:'+(isDone?'0.6':'1')+'" onclick="openDetail(\''+j.id+'\')">'
+        + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">'
+        + '<div style="width:26px;height:26px;border-radius:50%;background:'+(STATUS_COLORS[j.status||'scheduled'])+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">'+(i+1)+'</div>'
+        + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#061A30;'+(isDone?'text-decoration:line-through;':'')+'">'+j.title+'</div>'
+        + '<div style="font-size:11px;color:#8B8A84;margin-top:2px">'+(j.customer_name||'')+(j.date?' · '+new Date(j.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}):'')+(j.time?' at '+j.time:'')+'</div></div>'
+        + '<span style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;background:'+(STATUS_BG[j.status||'scheduled'])+';color:'+(STATUS_COLORS[j.status||'scheduled'])+';flex-shrink:0">'+(STATUS_LABEL[j.status||'scheduled'])+'</span>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:6px;background:#F8F7F3;border-radius:8px;padding:8px 10px;margin-bottom:10px">'
+        + '<i class="ti ti-map-pin" style="font-size:14px;color:#8B8A84;flex-shrink:0"></i>'
+        + '<span style="font-size:12px;color:#6B6A65;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+j.address+'</span>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px">'
+        + '<a href="'+gmaps+'" target="_blank" onclick="event.stopPropagation()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;background:#EEF3F8;color:#0A2540;text-decoration:none;border-radius:8px;font-size:11px;font-weight:700"><i class="ti ti-brand-google" style="font-size:13px"></i> Google</a>'
+        + '<a href="'+amaps+'" onclick="event.stopPropagation()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;background:#EEF3F8;color:#0A2540;text-decoration:none;border-radius:8px;font-size:11px;font-weight:700"><i class="ti ti-map" style="font-size:13px"></i> Apple</a>'
+        + (j.phone?'<a href="tel:'+j.phone+'" onclick="event.stopPropagation()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;background:#E1F5EE;color:#0F6E56;text-decoration:none;border-radius:8px;font-size:11px;font-weight:700"><i class="ti ti-phone" style="font-size:13px"></i> Call</a>':'')
+        + '</div></div>';
+    }).join('');
+  }
+
+  function openAllDirections(){
+    var jobsWithAddr = jobs.filter(function(j){ return j.address && j.status!=='cancelled'; });
+    if(!jobsWithAddr.length){ showToast('No jobs with addresses to route'); return; }
+    if(jobsWithAddr.length===1){
+      window.open('https://maps.google.com/?q='+encodeURIComponent(jobsWithAddr[0].address),'_blank'); return;
+    }
+    // Build Google Maps directions with all stops
+    var origin = encodeURIComponent(jobsWithAddr[0].address);
+    var dest = encodeURIComponent(jobsWithAddr[jobsWithAddr.length-1].address);
+    var waypoints = jobsWithAddr.slice(1,-1).map(function(j){ return encodeURIComponent(j.address); }).join('/');
+    var url = 'https://www.google.com/maps/dir/'+origin+(waypoints?'/'+waypoints:'')+'/'+dest;
+    window.open(url,'_blank');
   }
 
   function filterByStatus(s){
@@ -574,22 +811,83 @@
     var panel=document.getElementById('selected-day-jobs');
     panel.style.display='block';
     var d=new Date(date+'T12:00:00');
-    var label=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+    var isToday=date===new Date().toISOString().split('T')[0];
+    var label=isToday?'Today — '+d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}):d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
     if(!dayJobs.length){
-      panel.innerHTML='<div style="text-align:center;padding:24px;color:#A3A29C;font-size:13px"><i class="ti ti-calendar-off" style="font-size:24px;display:block;margin-bottom:8px"></i>No jobs on '+label+'</div>'
-        +'<div style="text-align:center;padding:0 20px 20px"><button onclick="openJobModal(null,\''+date+'\')" style="padding:10px 22px;background:#0A2540;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Add job for this day</button></div>';
+      panel.innerHTML='<div style="text-align:center;padding:28px 20px;background:#fff;border-radius:14px;border:1px solid #E5E3DC">'
+        +'<i class="ti ti-calendar-plus" style="font-size:32px;color:#D3D1C7;display:block;margin-bottom:10px"></i>'
+        +'<div style="font-size:14px;font-weight:600;color:#061A30;margin-bottom:4px">Nothing booked for '+d.toLocaleDateString('en-GB',{weekday:'long'})+'</div>'
+        +'<div style="font-size:12px;color:#8B8A84;margin-bottom:16px">Tap to add a job for this day</div>'
+        +'<button onclick="openJobModal(null,\''+date+'\')" style="padding:11px 24px;background:#0A2540;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">+ Add job</button></div>';
       return;
     }
-    panel.innerHTML='<div style="font-size:13px;font-weight:700;color:#061A30;margin-bottom:10px;padding:0 2px">'+label+'</div>'
-      +dayJobs.map(function(j){
-        var isDoneJ = j.status === 'done' || j.status === 'cancelled';
-        return '<div onclick="openDetail(\''+j.id+'\')" style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;opacity:'+(isDoneJ?'0.55':'1')+'">'
-          +'<div style="width:8px;height:8px;border-radius:50%;background:'+(isDoneJ?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+';flex-shrink:0"></div>'
-          +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#061A30;'+(isDoneJ?'text-decoration:line-through;color:#8B8A84;':'')+'">'+j.title+'</div>'
-          +'<div style="font-size:11px;color:#8B8A84;margin-top:2px">'+(j.time||'')+(j.customer_name?' · '+j.customer_name:'')+'</div></div>'
-          +'<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:'+(isDoneJ?'#F0EFEA':STATUS_BG[j.status||'scheduled'])+';color:'+(isDoneJ?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+'">'+(isDoneJ?'✓ Done':STATUS_LABEL[j.status||'scheduled'])+'</span>'
-          +'</div>';
-      }).join('');
+    var active=dayJobs.filter(function(j){return j.status!=='done'&&j.status!=='cancelled';});
+    var done=dayJobs.filter(function(j){return j.status==='done'||j.status==='cancelled';});
+    var headerHtml='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px">'
+      +'<div style="font-size:13px;font-weight:700;color:#061A30">'+label+'</div>'
+      +(active.length?'<div style="font-size:11px;font-weight:700;background:#EEF3F8;color:#0A2540;padding:3px 9px;border-radius:10px">'+active.length+' active</div>':'')
+      +'</div>';
+
+    function jobCard(j){
+      var isDone=j.status==='done'||j.status==='cancelled';
+      var waNum=j.phone?j.phone.replace(/\s+/g,'').replace(/^0/,'44'):'';
+      return '<div style="background:#fff;border:1px solid '+(isDone?'#F0EFEA':'#E5E3DC')+';border-radius:14px;margin-bottom:10px;overflow:hidden;opacity:'+(isDone?'0.6':'1')+'">'
+        // Main tap area
+        +'<div onclick="openDetail(\''+j.id+'\')" style="padding:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:flex-start;gap:12px">'
+        +'<div style="margin-top:2px;width:10px;height:10px;border-radius:50%;background:'+(isDone?'#A3A29C':STATUS_COLORS[j.status||'scheduled'])+';flex-shrink:0"></div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:15px;font-weight:700;color:'+(isDone?'#8B8A84':'#061A30')+';'+(isDone?'text-decoration:line-through;':'')+'">'+j.title+'</div>'
+        +(j.customer_name?'<div style="font-size:13px;color:#6B6A65;margin-top:2px"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+j.customer_name+'</div>':'')
+        +(j.address?'<div style="font-size:12px;color:#8B8A84;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><i class="ti ti-map-pin" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>'+j.address.split(',')[0]+'</div>':'')
+        +'</div>'
+        +(j.time?'<div style="font-size:13px;font-weight:700;color:#061A30;flex-shrink:0">'+j.time+'</div>':'')
+        +'</div>'
+        // Action bar at bottom
+        +(!isDone?'<div style="display:flex;border-top:1px solid #F8F7F3">'
+          +(j.phone?'<a href="tel:'+j.phone+'" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:11px 6px;color:#1D9E75;text-decoration:none;font-size:12px;font-weight:700;border-right:1px solid #F8F7F3;-webkit-tap-highlight-color:transparent"><i class="ti ti-phone" style="font-size:16px"></i>Call</a>':'')
+          +(j.phone?'<a href="https://wa.me/'+waNum+'" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:11px 6px;color:#25D366;text-decoration:none;font-size:12px;font-weight:700;border-right:1px solid #F8F7F3;-webkit-tap-highlight-color:transparent"><i class="ti ti-brand-whatsapp" style="font-size:16px"></i>WhatsApp</a>':'')
+          +(j.address?'<a href="#" onclick="openMapsChoice(event,\''+encodeURIComponent(j.address)+'\')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:11px 6px;color:#1565C0;text-decoration:none;font-size:12px;font-weight:700;border-right:1px solid #F8F7F3;-webkit-tap-highlight-color:transparent"><i class="ti ti-map-2" style="font-size:16px"></i>Map</a>':'')
+          +'<button onclick="quickComplete(\''+j.id+'\')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:11px 6px;color:#1D9E75;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent"><i class="ti ti-circle-check" style="font-size:16px"></i>Done</button>'
+          +'</div>':'')
+        +'</div>';
+    }
+
+    panel.innerHTML=headerHtml+active.map(jobCard).join('')
+      +(done.length?'<div style="font-size:11px;font-weight:700;color:#A3A29C;text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 8px">Completed</div>'+done.map(jobCard).join(''):'')
+      +'<button onclick="openJobModal(null,\''+date+'\')" style="width:100%;padding:11px;border-radius:10px;border:1.5px dashed #D3D1C7;background:transparent;color:#8B8A84;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;-webkit-tap-highlight-color:transparent">+ Add another job</button>';
+  }
+
+  async function quickComplete(id){
+    var j=jobs.find(function(x){return x.id===id;});
+    if(!j)return;
+    j.status='done';
+    var prevDetailId=detailJobId;
+    saveJobsLocal();
+    try{await supabase.from('jobs').update({status:'done'}).eq('id',id);}catch(e){}
+    // Auto-create customer
+    if(j.customer_name){
+      var custs=JSON.parse(localStorage.getItem('tb_customers')||'[]');
+      var exists=custs.find(function(c){return(c.name||'').toLowerCase()===j.customer_name.toLowerCase();});
+      if(!exists){custs.unshift({id:'c_job_'+Date.now(),name:j.customer_name,phone:j.phone||null,email:j.email||null,address:j.address||null,created_at:new Date().toISOString()});localStorage.setItem('tb_customers',JSON.stringify(custs));}
+    }
+    renderCalendar(); updateStats();
+    showToast('✓ Job complete!','#1D9E75');
+    // Quick invoice prompt
+    setTimeout(function(){
+      var overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:rgba(10,37,64,0.5);z-index:700;display:flex;align-items:flex-end;justify-content:center';
+      overlay.innerHTML='<div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px))">'
+        +'<div style="text-align:center;margin-bottom:16px"><div style="font-size:32px;margin-bottom:8px">✅</div>'
+        +'<div style="font-size:17px;font-weight:700;color:#061A30">Job complete!</div>'
+        +'<div style="font-size:13px;color:#8B8A84;margin-top:4px">Ready to invoice '+(j.customer_name?j.customer_name.split(' ')[0]:'the customer')+'?</div></div>'
+        +'<a href="create-invoice.html" onclick="sessionStorage.setItem(\'prefill_invoice\',JSON.stringify({name:\''+(j.customer_name||'')+'\',phone:\''+(j.phone||'')+'\',email:\''+(j.email||'')+'\',job:\''+(j.title||'')+'\',address:\''+(j.address||'').replace(/'/g,'')+'\'}))" '
+        +'style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:#0A2540;color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;margin-bottom:10px;-webkit-tap-highlight-color:transparent">'
+        +'<i class="ti ti-file-invoice" style="font-size:20px"></i> Create invoice now</a>'
+        +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Later</button>'
+        +'</div>';
+      overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+      document.body.appendChild(overlay);
+    },600);
   }
 
   function calNav(dir){
@@ -1171,5 +1469,51 @@
   }
   init();
 </script>
+
+<!-- QUICK ADD ACTION SHEET -->
+<div class="mob-qa-overlay" id="qa-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,0.5);z-index:800;align-items:flex-end" onclick="if(event.target===this)closeQuickAdd()">
+  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)">
+    <div style="width:36px;height:4px;border-radius:2px;background:#E5E3DC;margin:12px auto 4px"></div>
+    <div style="padding:8px 20px 16px">
+      <div style="font-size:12px;font-weight:700;color:#A3A29C;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Quick add</div>
+      <a href="create-invoice.html" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-invoice" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">New invoice</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Create and send an invoice</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="jobs.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-calendar-plus" style="font-size:22px;color:#1D9E75"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Book a job</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Schedule work on the calendar</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="quotes.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="font-size:22px;color:#635BFF"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Send a quote</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Price up a job for a customer</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="customers.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#FBF3E3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-user-plus" style="font-size:22px;color:#C28A1E"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Add customer</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Save a new customer record</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="tools.html?tool=photos" style="display:flex;align-items:center;gap:14px;padding:13px 0;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-camera" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Take job photo</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Before/after photos as proof</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  function openQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='flex';}
+  }
+  function closeQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='none';}
+  }
+</script>
+
 </body>
 </html>

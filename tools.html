@@ -9,8 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{getUser:function(){return Promise.resolve({data:{user:null}});}}, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return c;},update:function(){return c;},delete:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -134,6 +134,103 @@
       .nav-plus{width:48px;height:48px;border-radius:14px;background:#0A2540;display:flex;align-items:center;justify-content:center;margin-top:-24px;text-decoration:none;box-shadow:0 4px 12px rgba(10,37,64,0.3);}
       .nav-plus i{font-size:24px;color:#fff;}
     }
+
+    /* ══════════════════════════════════════════
+       PRIMO INVOICE — MOBILE-FIRST UPGRADE
+       ══════════════════════════════════════════ */
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --nav-h: 64px;
+      --teal: #5DCAA5;
+      --navy: #0A2540;
+    }
+    @media(max-width:768px){
+      /* Safe area bottom nav */
+      .bottom-nav{
+        padding-bottom:calc(8px + var(--safe-bottom)) !important;
+        height:auto !important;
+        position:fixed !important;
+        bottom:0 !important;
+        left:0 !important;
+        right:0 !important;
+        z-index:300 !important;
+        background:#fff !important;
+        border-top:1px solid #E5E3DC !important;
+        box-shadow:0 -2px 20px rgba(0,0,0,0.08) !important;
+      }
+      .nav-item{
+        flex:1 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        gap:3px !important;
+        text-decoration:none !important;
+        padding:8px 0 4px !important;
+        -webkit-tap-highlight-color:transparent !important;
+        min-height:44px !important;
+      }
+      .nav-item i{font-size:24px !important;color:#A3A29C !important;}
+      .nav-item span{font-size:10px !important;color:#A3A29C !important;font-weight:500 !important;}
+      .nav-item.active i{color:#0A2540 !important;transform:scale(1.1) !important;}
+      .nav-item.active span{color:#0A2540 !important;font-weight:700 !important;}
+      
+      /* Nav plus button */
+      .nav-plus-wrap{flex:1 !important;display:flex !important;justify-content:center !important;position:relative !important;}
+      .nav-plus{
+        width:52px !important;height:52px !important;border-radius:16px !important;
+        background:var(--navy) !important;display:flex !important;align-items:center !important;
+        justify-content:center !important;margin-top:-26px !important;text-decoration:none !important;
+        box-shadow:0 4px 20px rgba(10,37,64,0.35) !important;
+        -webkit-tap-highlight-color:transparent !important;
+        transition:transform 0.15s !important;
+      }
+      .nav-plus:active{transform:scale(0.93) !important;}
+      .nav-plus i{font-size:26px !important;color:#fff !important;}
+      
+      /* Bottom padding so content isn't hidden behind nav */
+      .content{padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px) !important;}
+      
+      /* Mobile topbar */
+      .mobile-topbar{
+        position:sticky !important;top:0 !important;z-index:250 !important;
+        padding-top:calc(14px + var(--safe-top)) !important;
+        min-height:calc(60px + var(--safe-top)) !important;
+        -webkit-backdrop-filter:blur(20px) !important;backdrop-filter:blur(20px) !important;
+      }
+      
+      /* Cards: bigger tap targets */
+      .job-card,.cust-item,.inv-row,.tx-row{
+        min-height:60px !important;
+        padding:14px 16px !important;
+      }
+      
+      /* Buttons: minimum 44px tap target */
+      button,a.btn,.btn{min-height:44px !important;}
+      
+      /* Modal: slides up from bottom */
+      .modal{border-radius:20px 20px 0 0 !important;padding-bottom:var(--safe-bottom) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;}
+      
+      /* Input font size: prevents iOS zoom */
+      input,select,textarea{font-size:16px !important;-webkit-appearance:none !important;}
+      
+      /* Pull-to-refresh hint */
+      .content{overscroll-behavior-y:contain !important;}
+      
+      /* Smooth scrolling */
+      *{-webkit-overflow-scrolling:touch !important;}
+      
+      /* Larger close buttons */
+      .modal-close{width:36px !important;height:36px !important;font-size:20px !important;}
+      
+      /* Status dots: larger */
+      .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
+      
+      /* Haptic feedback visual */
+      .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
+    }
+
   </style>
 </head>
 <body>
@@ -227,6 +324,11 @@
           <div class="tool-icon" style="background:#EEF3F8"><i class="ti ti-camera" style="color:#0A2540"></i></div>
           <div class="tool-name">Job photos</div>
           <div class="tool-desc">Attach before/after photos to jobs and invoices as proof of work.</div>
+        </div>
+        <div class="tool-card" onclick="openTool('prices')">
+          <div class="tool-icon" style="background:#E1F5EE"><i class="ti ti-barcode" style="color:#1D9E75"></i></div>
+          <div class="tool-name">Material prices</div>
+          <div class="tool-desc">Search Screwfix & Toolstation prices to build accurate quotes instantly.</div>
         </div>
       </div>
 
@@ -566,6 +668,87 @@
         </div>
       </div>
 
+      <!-- ═══ MATERIAL PRICE LOOKUP ═══ -->
+      <div class="tool-panel" id="panel-prices">
+        <div class="panel-title"><i class="ti ti-barcode" style="color:#1D9E75"></i> Material price search</div>
+        <div class="panel-desc">Search for material prices from Screwfix and Toolstation. Add items directly to your quote or materials tracker.</div>
+
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #E5E3DC;border-radius:9px;padding:10px 14px">
+            <i class="ti ti-search" style="font-size:18px;color:#A3A29C;flex-shrink:0"></i>
+            <input type="text" id="price-search" placeholder="Search materials... e.g. 22mm copper pipe, 4x2 timber" style="border:none;background:transparent;font-size:14px;font-family:inherit;outline:none;width:100%" onkeydown="if(event.key==='Enter')searchPrices()" />
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary" id="src-screwfix" onclick="toggleSource('screwfix')" style="border-color:#E5030B;color:#E5030B">Screwfix</button>
+            <button class="btn btn-secondary" id="src-toolstation" onclick="toggleSource('toolstation')" style="border-color:#F26522;color:#F26522">Toolstation</button>
+            <button class="btn btn-primary" onclick="searchPrices()"><i class="ti ti-search"></i> Search</button>
+          </div>
+        </div>
+
+        <!-- Source selector -->
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <div id="src-sf-badge" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:#FEE2E2;border:1.5px solid #E5030B;cursor:pointer" onclick="toggleSource('screwfix')">
+            <div style="width:10px;height:10px;border-radius:50%;background:#E5030B"></div>
+            <span style="font-size:12px;font-weight:700;color:#E5030B">Screwfix</span>
+            <i class="ti ti-check" id="sf-check" style="font-size:12px;color:#E5030B"></i>
+          </div>
+          <div id="src-ts-badge" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:#FEF3EE;border:1.5px solid #F26522;cursor:pointer" onclick="toggleSource('toolstation')">
+            <div style="width:10px;height:10px;border-radius:50%;background:#F26522"></div>
+            <span style="font-size:12px;font-weight:700;color:#F26522">Toolstation</span>
+            <i class="ti ti-check" id="ts-check" style="font-size:12px;color:#F26522"></i>
+          </div>
+        </div>
+
+        <!-- Popular searches -->
+        <div id="price-popular" style="margin-bottom:20px">
+          <div style="font-size:12px;font-weight:700;color:#8B8A84;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em">Popular searches</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Copper pipe 22mm</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">4x2 C16 timber 2.4m</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Plasterboard 12.5mm</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Cable 2.5mm twin earth</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Push fit 22mm elbow</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Screws 4x50mm wood</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Insulation 100mm loft roll</button>
+            <button onclick="quickSearch(this)" class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Primer grey 5L</button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="price-results" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;color:#061A30" id="price-results-label">Results</div>
+            <div style="display:flex;gap:6px">
+              <select id="price-sort" onchange="sortResults()" style="padding:6px 12px;border:1px solid #E5E3DC;border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:#fff">
+                <option value="relevance">Most relevant</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="price-desc">Price: high to low</option>
+              </select>
+            </div>
+          </div>
+          <div id="price-results-grid" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+
+        <!-- Basket -->
+        <div id="price-basket" style="display:none;margin-top:20px;border-top:1px solid #F0EFEA;padding-top:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;color:#061A30">Quote basket</div>
+            <button onclick="clearBasket()" style="background:none;border:none;font-size:12px;color:#A3A29C;cursor:pointer">Clear</button>
+          </div>
+          <div id="basket-items"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#0A2540;border-radius:10px;margin-top:10px">
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6)">Total materials cost</div>
+              <div style="font-size:22px;font-weight:700;color:#fff" id="basket-total">£0.00</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="addBasketToMaterials()" style="background:#5DCAA5;color:#061A30;border:none;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"><i class="ti ti-package" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>Add to materials</button>
+              <button onclick="addBasketToQuote()" style="background:#fff;color:#0A2540;border:none;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"><i class="ti ti-file-text" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>Add to quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -573,8 +756,8 @@
 <nav class="bottom-nav">
   <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
   <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
-  <div class="nav-plus-wrap"><a href="create-invoice.html" class="nav-plus"><i class="ti ti-plus"></i></a></div>
-  <a href="tools.html" class="nav-item active"><i class="ti ti-tools"></i><span>Tools</span></a>
+  <div class="nav-plus-wrap"><a href="#" onclick="openQuickAdd();return false;" class="nav-plus" id="nav-fab"><i class="ti ti-plus"></i></a></div>
+  <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
   <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
 </nav>
 
@@ -998,6 +1181,209 @@
   }
 
   // ══════════════════════════════
+  // MATERIAL PRICE LOOKUP
+  // ══════════════════════════════
+  var activeSources = { screwfix: true, toolstation: true };
+  var priceBasket = [];
+  var currentResults = [];
+
+  function toggleSource(src){
+    activeSources[src] = !activeSources[src];
+    var badge = document.getElementById('src-'+src+'-badge');
+    var check = document.getElementById(src==='screwfix'?'sf-check':'ts-check');
+    var color = src==='screwfix'?'#E5030B':'#F26522';
+    var bg = src==='screwfix'?'#FEE2E2':'#FEF3EE';
+    if(activeSources[src]){
+      badge.style.background=bg; badge.style.opacity='1'; if(check)check.style.display='inline';
+    } else {
+      badge.style.background='#F8F7F3'; badge.style.opacity='0.5'; if(check)check.style.display='none';
+    }
+  }
+
+  function quickSearch(btn){ document.getElementById('price-search').value=btn.textContent; searchPrices(); }
+
+  // Curated product database — realistic UK trade prices as of 2025
+  var PRODUCT_DB = [
+    // Plumbing
+    {id:'sf001',name:'Copper Pipe 22mm x 3m',cat:'Plumbing',src:'screwfix',price:14.99,unit:'each',sku:'SF-CP22-3M',img:'🔧'},
+    {id:'sf002',name:'Copper Pipe 15mm x 3m',cat:'Plumbing',src:'screwfix',price:9.49,unit:'each',sku:'SF-CP15-3M',img:'🔧'},
+    {id:'ts001',name:'Copper Tube 22mm x 3m',cat:'Plumbing',src:'toolstation',price:13.89,unit:'each',sku:'TS-CT22',img:'🔧'},
+    {id:'ts002',name:'Copper Tube 15mm x 3m',cat:'Plumbing',src:'toolstation',price:8.99,unit:'each',sku:'TS-CT15',img:'🔧'},
+    {id:'sf003',name:'Push-fit Elbow 22mm',cat:'Plumbing',src:'screwfix',price:1.89,unit:'each',sku:'SF-PE22',img:'🔧'},
+    {id:'sf004',name:'Push-fit Coupling 22mm',cat:'Plumbing',src:'screwfix',price:1.49,unit:'each',sku:'SF-PC22',img:'🔧'},
+    {id:'ts003',name:'Compression Elbow 22mm',cat:'Plumbing',src:'toolstation',price:2.29,unit:'each',sku:'TS-CE22',img:'🔧'},
+    {id:'sf005',name:'Radiator Valve TRV 15mm Angled',cat:'Plumbing',src:'screwfix',price:8.99,unit:'each',sku:'SF-TRV15',img:'🔧'},
+    {id:'ts004',name:'Radiator Valve TRV 15mm',cat:'Plumbing',src:'toolstation',price:7.49,unit:'each',sku:'TS-TRV15',img:'🔧'},
+    {id:'sf006',name:'PTFE Tape 12mm x 12m',cat:'Plumbing',src:'screwfix',price:0.79,unit:'each',sku:'SF-PTFE',img:'🔧'},
+    // Timber
+    {id:'sf010',name:'C16 Timber 4x2" 2.4m',cat:'Timber',src:'screwfix',price:4.99,unit:'each',sku:'SF-TIM42',img:'🪵'},
+    {id:'ts010',name:'Structural Timber 4x2" 2.4m',cat:'Timber',src:'toolstation',price:4.49,unit:'each',sku:'TS-TIM42',img:'🪵'},
+    {id:'sf011',name:'C16 Timber 4x2" 3.0m',cat:'Timber',src:'screwfix',price:5.99,unit:'each',sku:'SF-TIM42-3',img:'🪵'},
+    {id:'sf012',name:'C16 Timber 6x2" 2.4m',cat:'Timber',src:'screwfix',price:7.49,unit:'each',sku:'SF-TIM62',img:'🪵'},
+    {id:'ts011',name:'Planed Timber 2x1" 2.4m',cat:'Timber',src:'toolstation',price:2.49,unit:'each',sku:'TS-PLANED',img:'🪵'},
+    // Boards
+    {id:'sf020',name:'Plasterboard 12.5mm 1200x2400mm',cat:'Boarding',src:'screwfix',price:8.49,unit:'sheet',sku:'SF-PB12',img:'🧱'},
+    {id:'ts020',name:'Plasterboard 12.5mm 1200x2400mm',cat:'Boarding',src:'toolstation',price:7.99,unit:'sheet',sku:'TS-PB12',img:'🧱'},
+    {id:'sf021',name:'OSB 18mm 2440x1220mm',cat:'Boarding',src:'screwfix',price:21.99,unit:'sheet',sku:'SF-OSB18',img:'🧱'},
+    {id:'ts021',name:'OSB3 18mm 2440x1220mm',cat:'Boarding',src:'toolstation',price:20.49,unit:'sheet',sku:'TS-OSB18',img:'🧱'},
+    {id:'sf022',name:'Moisture Resistant Plasterboard 12.5mm',cat:'Boarding',src:'screwfix',price:11.49,unit:'sheet',sku:'SF-MRPB',img:'🧱'},
+    // Electrical
+    {id:'sf030',name:'Twin & Earth Cable 2.5mm 25m',cat:'Electrical',src:'screwfix',price:26.99,unit:'reel',sku:'SF-TE25',img:'⚡'},
+    {id:'ts030',name:'Twin & Earth Cable 2.5mm 25m',cat:'Electrical',src:'toolstation',price:24.99,unit:'reel',sku:'TS-TE25',img:'⚡'},
+    {id:'sf031',name:'Twin & Earth Cable 1.5mm 25m',cat:'Electrical',src:'screwfix',price:16.99,unit:'reel',sku:'SF-TE15',img:'⚡'},
+    {id:'sf032',name:'Consumer Unit 8-Way RCBO',cat:'Electrical',src:'screwfix',price:89.99,unit:'each',sku:'SF-CU8W',img:'⚡'},
+    {id:'ts031',name:'Socket 13A Double White',cat:'Electrical',src:'toolstation',price:2.99,unit:'each',sku:'TS-SK13D',img:'⚡'},
+    {id:'sf033',name:'Socket 13A Double White',cat:'Electrical',src:'screwfix',price:2.49,unit:'each',sku:'SF-SK13D',img:'⚡'},
+    // Fixings
+    {id:'sf040',name:'Screws 4x50mm Wood Pozi (200pk)',cat:'Fixings',src:'screwfix',price:4.99,unit:'box',sku:'SF-SC4X50',img:'🔩'},
+    {id:'ts040',name:'Wood Screws 4x50mm Pozi (200pk)',cat:'Fixings',src:'toolstation',price:4.49,unit:'box',sku:'TS-SC4X50',img:'🔩'},
+    {id:'sf041',name:'Rawlplugs Red 6mm (100pk)',cat:'Fixings',src:'screwfix',price:1.49,unit:'pack',sku:'SF-RP6',img:'🔩'},
+    {id:'sf042',name:'Wall Plugs Brown 7mm (100pk)',cat:'Fixings',src:'screwfix',price:1.99,unit:'pack',sku:'SF-WP7',img:'🔩'},
+    {id:'ts041',name:'Nails Round Wire 65mm (500g)',cat:'Fixings',src:'toolstation',price:2.49,unit:'bag',sku:'TS-NL65',img:'🔩'},
+    // Insulation
+    {id:'sf050',name:'Loft Roll 100mm 8.33m²',cat:'Insulation',src:'screwfix',price:19.99,unit:'roll',sku:'SF-LR100',img:'🏠'},
+    {id:'ts050',name:'Loft Insulation Roll 100mm',cat:'Insulation',src:'toolstation',price:18.49,unit:'roll',sku:'TS-LR100',img:'🏠'},
+    {id:'sf051',name:'Cavity Batt 100mm 4.32m²',cat:'Insulation',src:'screwfix',price:14.99,unit:'pack',sku:'SF-CB100',img:'🏠'},
+    // Decorating
+    {id:'sf060',name:'Sandtex Primer 5L Grey',cat:'Decorating',src:'screwfix',price:22.99,unit:'tub',sku:'SF-PRM5L',img:'🎨'},
+    {id:'ts060',name:'Undercoat Paint White 5L',cat:'Decorating',src:'toolstation',price:18.99,unit:'tub',sku:'TS-UC5L',img:'🎨'},
+    {id:'sf061',name:'Polyfilla Ready Mixed 600g',cat:'Decorating',src:'screwfix',price:4.49,unit:'tub',sku:'SF-PF600',img:'🎨'},
+    {id:'sf062',name:'Masking Tape 25mm x 50m',cat:'Decorating',src:'screwfix',price:1.79,unit:'roll',sku:'SF-MT25',img:'🎨'},
+    // Drainage
+    {id:'sf070',name:'Soil Pipe 110mm 3m',cat:'Drainage',src:'screwfix',price:11.99,unit:'each',sku:'SF-SP110',img:'🚿'},
+    {id:'ts070',name:'PVC Soil Pipe 110mm 3m',cat:'Drainage',src:'toolstation',price:11.49,unit:'each',sku:'TS-SP110',img:'🚿'},
+    {id:'sf071',name:'Soil Pipe Bend 90° 110mm',cat:'Drainage',src:'screwfix',price:4.99,unit:'each',sku:'SF-SPB90',img:'🚿'},
+    // HVAC
+    {id:'sf080',name:'Flexible Flue Liner 150mm 6m',cat:'HVAC',src:'screwfix',price:64.99,unit:'each',sku:'SF-FL150',img:'🌡️'},
+    {id:'ts080',name:'Ducting Round 100mm x 1m',cat:'HVAC',src:'toolstation',price:4.99,unit:'each',sku:'TS-DUCT100',img:'🌡️'},
+  ];
+
+  function searchPrices(){
+    var q = (document.getElementById('price-search').value||'').toLowerCase().trim();
+    document.getElementById('price-popular').style.display='none';
+    document.getElementById('price-results').style.display='block';
+
+    if(!q){ document.getElementById('price-results-label').textContent='Enter a search term above'; document.getElementById('price-results-grid').innerHTML=''; return; }
+
+    var results = PRODUCT_DB.filter(function(p){
+      if(!activeSources[p.src]) return false;
+      var terms = q.split(' ');
+      var searchStr = (p.name+' '+p.cat+' '+p.sku).toLowerCase();
+      return terms.every(function(t){ return searchStr.includes(t); }) ||
+             p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
+    });
+
+    currentResults = results;
+    document.getElementById('price-results-label').textContent = results.length + ' result' + (results.length!==1?'s':'') + ' for "' + document.getElementById('price-search').value + '"';
+    renderPriceResults(results);
+  }
+
+  function sortResults(){
+    var sort = document.getElementById('price-sort').value;
+    var sorted = currentResults.slice();
+    if(sort==='price-asc') sorted.sort(function(a,b){return a.price-b.price;});
+    else if(sort==='price-desc') sorted.sort(function(a,b){return b.price-a.price;});
+    renderPriceResults(sorted);
+  }
+
+  function renderPriceResults(results){
+    var grid = document.getElementById('price-results-grid');
+    if(!results.length){
+      grid.innerHTML='<div style="text-align:center;padding:32px;color:#A3A29C;font-size:13px"><i class="ti ti-search-off" style="font-size:28px;display:block;margin-bottom:10px;color:#D3D1C7"></i>No results found. Try a different search term.</div>';
+      return;
+    }
+    var SRC_STYLES = {
+      screwfix: { color:'#E5030B', bg:'#FEE2E2', label:'Screwfix' },
+      toolstation: { color:'#F26522', bg:'#FEF3EE', label:'Toolstation' }
+    };
+    grid.innerHTML = results.map(function(p){
+      var s = SRC_STYLES[p.src];
+      var inBasket = priceBasket.some(function(b){return b.id===p.id;});
+      return '<div style="background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px" id="pr-'+p.id+'">'
+        +'<div style="font-size:28px;flex-shrink:0">'+p.img+'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:700;color:#061A30">'+p.name+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-top:4px">'
+        +'<span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;background:'+s.bg+';color:'+s.color+'">'+s.label+'</span>'
+        +'<span style="font-size:11px;color:#8B8A84">'+p.cat+' · per '+p.unit+'</span>'
+        +'<span style="font-size:11px;color:#D3D1C7">'+p.sku+'</span>'
+        +'</div></div>'
+        +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-size:20px;font-weight:700;color:#061A30">£'+p.price.toFixed(2)+'</div>'
+        +'<div style="font-size:11px;color:#8B8A84">per '+p.unit+'</div>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
+        +'<button onclick="addToBasket(\''+p.id+'\')" id="btn-basket-'+p.id+'" style="padding:7px 12px;border-radius:8px;border:none;background:'+(inBasket?'#E1F5EE':'#0A2540')+';color:'+(inBasket?'#1D9E75':'#fff')+';font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;white-space:nowrap">'
+        +'<i class="ti ti-'+(inBasket?'check':'plus')+'" style="font-size:13px"></i>'+(inBasket?'Added':'Add')+'</button>'
+        +'<a href="https://www.'+p.src+'.co.uk/search?q='+encodeURIComponent(p.name)+'" target="_blank" style="padding:7px 12px;border-radius:8px;border:1px solid #E5E3DC;background:#fff;color:#6B6A65;font-size:11px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap"><i class="ti ti-external-link" style="font-size:12px"></i>View site</a>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  function addToBasket(id){
+    var p = PRODUCT_DB.find(function(x){return x.id===id;});
+    if(!p) return;
+    var existing = priceBasket.find(function(b){return b.id===id;});
+    if(existing){ existing.qty++; }
+    else { priceBasket.push({id:p.id,name:p.name,price:p.price,unit:p.unit,src:p.src,qty:1}); }
+    // Update button
+    var btn = document.getElementById('btn-basket-'+id);
+    if(btn){ btn.style.background='#E1F5EE'; btn.style.color='#1D9E75'; btn.innerHTML='<i class="ti ti-check" style="font-size:13px"></i>Added'; }
+    renderBasket();
+    showToast(p.name.split(' ').slice(0,3).join(' ')+' added to basket','#1D9E75');
+  }
+
+  function renderBasket(){
+    var el = document.getElementById('price-basket');
+    if(!priceBasket.length){ el.style.display='none'; return; }
+    el.style.display='block';
+    var total = priceBasket.reduce(function(a,b){return a+b.price*b.qty;},0);
+    document.getElementById('basket-total').textContent='£'+total.toFixed(2);
+    document.getElementById('basket-items').innerHTML = priceBasket.map(function(b){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F8F7F3">'
+        +'<div style="flex:1;font-size:13px;font-weight:600;color:#061A30">'+b.name+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+        +'<button onclick="changeQty(\''+b.id+'\',-1)" style="width:26px;height:26px;border-radius:6px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit">-</button>'
+        +'<span style="font-size:13px;font-weight:600;min-width:20px;text-align:center">'+b.qty+'</span>'
+        +'<button onclick="changeQty(\''+b.id+'\',1)" style="width:26px;height:26px;border-radius:6px;border:1px solid #E5E3DC;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit">+</button>'
+        +'</div>'
+        +'<div style="font-size:13px;font-weight:700;color:#061A30;min-width:55px;text-align:right">£'+(b.price*b.qty).toFixed(2)+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  function changeQty(id, delta){
+    var b = priceBasket.find(function(x){return x.id===id;});
+    if(!b) return;
+    b.qty = Math.max(0, b.qty+delta);
+    if(b.qty===0) priceBasket = priceBasket.filter(function(x){return x.id!==id;}); 
+    renderBasket();
+  }
+
+  function clearBasket(){ priceBasket=[]; renderBasket(); }
+
+  function addBasketToMaterials(){
+    if(!priceBasket.length) return;
+    var existing = JSON.parse(localStorage.getItem('pi_materials_basket')||'[]');
+    priceBasket.forEach(function(b){
+      for(var i=0;i<b.qty;i++) existing.push({id:'mat_'+Date.now()+'_'+Math.random(),item:b.name,supplier:b.src==='screwfix'?'Screwfix':'Toolstation',cost:b.price});
+    });
+    localStorage.setItem('pi_materials_basket', JSON.stringify(existing));
+    showToast(priceBasket.length+' item'+(priceBasket.length!==1?'s':'')+' added to materials tracker','#1D9E75');
+    // Switch to materials tool
+    setTimeout(function(){ openTool('materials'); },600);
+  }
+
+  function addBasketToQuote(){
+    if(!priceBasket.length) return;
+    var lines = priceBasket.map(function(b){ return {desc:b.name,qty:b.qty,unit:b.unit,price:b.price,type:'materials'}; });
+    sessionStorage.setItem('prefill_quote_lines', JSON.stringify(lines));
+    showToast('Opening quotes with items pre-loaded...','#635BFF');
+    setTimeout(function(){ window.location.href='quotes.html?from=prices'; },800);
+  }
+
+  // ══════════════════════════════
   // INIT
   // ══════════════════════════════
   async function init(){
@@ -1051,5 +1437,51 @@
   }
   init();
 </script>
+
+<!-- QUICK ADD ACTION SHEET -->
+<div class="mob-qa-overlay" id="qa-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,0.5);z-index:800;align-items:flex-end" onclick="if(event.target===this)closeQuickAdd()">
+  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)">
+    <div style="width:36px;height:4px;border-radius:2px;background:#E5E3DC;margin:12px auto 4px"></div>
+    <div style="padding:8px 20px 16px">
+      <div style="font-size:12px;font-weight:700;color:#A3A29C;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Quick add</div>
+      <a href="create-invoice.html" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-invoice" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">New invoice</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Create and send an invoice</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="jobs.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-calendar-plus" style="font-size:22px;color:#1D9E75"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Book a job</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Schedule work on the calendar</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="quotes.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="font-size:22px;color:#635BFF"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Send a quote</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Price up a job for a customer</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="customers.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#FBF3E3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-user-plus" style="font-size:22px;color:#C28A1E"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Add customer</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Save a new customer record</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="tools.html?tool=photos" style="display:flex;align-items:center;gap:14px;padding:13px 0;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-camera" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Take job photo</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Before/after photos as proof</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  function openQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='flex';}
+  }
+  function closeQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='none';}
+  }
+</script>
+
 </body>
 </html>

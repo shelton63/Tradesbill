@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -198,6 +198,103 @@
     .mob-drawer-plan { font-size: 11px; color: #5DCAA5; }
     .mob-burger { background: none; border: none; cursor: pointer; padding: 2px; display: flex; flex-direction: column; gap: 5px; }
     .mob-burger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
+
+    /* ══════════════════════════════════════════
+       PRIMO INVOICE — MOBILE-FIRST UPGRADE
+       ══════════════════════════════════════════ */
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --nav-h: 64px;
+      --teal: #5DCAA5;
+      --navy: #0A2540;
+    }
+    @media(max-width:768px){
+      /* Safe area bottom nav */
+      .bottom-nav{
+        padding-bottom:calc(8px + var(--safe-bottom)) !important;
+        height:auto !important;
+        position:fixed !important;
+        bottom:0 !important;
+        left:0 !important;
+        right:0 !important;
+        z-index:300 !important;
+        background:#fff !important;
+        border-top:1px solid #E5E3DC !important;
+        box-shadow:0 -2px 20px rgba(0,0,0,0.08) !important;
+      }
+      .nav-item{
+        flex:1 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        gap:3px !important;
+        text-decoration:none !important;
+        padding:8px 0 4px !important;
+        -webkit-tap-highlight-color:transparent !important;
+        min-height:44px !important;
+      }
+      .nav-item i{font-size:24px !important;color:#A3A29C !important;}
+      .nav-item span{font-size:10px !important;color:#A3A29C !important;font-weight:500 !important;}
+      .nav-item.active i{color:#0A2540 !important;transform:scale(1.1) !important;}
+      .nav-item.active span{color:#0A2540 !important;font-weight:700 !important;}
+      
+      /* Nav plus button */
+      .nav-plus-wrap{flex:1 !important;display:flex !important;justify-content:center !important;position:relative !important;}
+      .nav-plus{
+        width:52px !important;height:52px !important;border-radius:16px !important;
+        background:var(--navy) !important;display:flex !important;align-items:center !important;
+        justify-content:center !important;margin-top:-26px !important;text-decoration:none !important;
+        box-shadow:0 4px 20px rgba(10,37,64,0.35) !important;
+        -webkit-tap-highlight-color:transparent !important;
+        transition:transform 0.15s !important;
+      }
+      .nav-plus:active{transform:scale(0.93) !important;}
+      .nav-plus i{font-size:26px !important;color:#fff !important;}
+      
+      /* Bottom padding so content isn't hidden behind nav */
+      .content{padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px) !important;}
+      
+      /* Mobile topbar */
+      .mobile-topbar{
+        position:sticky !important;top:0 !important;z-index:250 !important;
+        padding-top:calc(14px + var(--safe-top)) !important;
+        min-height:calc(60px + var(--safe-top)) !important;
+        -webkit-backdrop-filter:blur(20px) !important;backdrop-filter:blur(20px) !important;
+      }
+      
+      /* Cards: bigger tap targets */
+      .job-card,.cust-item,.inv-row,.tx-row{
+        min-height:60px !important;
+        padding:14px 16px !important;
+      }
+      
+      /* Buttons: minimum 44px tap target */
+      button,a.btn,.btn{min-height:44px !important;}
+      
+      /* Modal: slides up from bottom */
+      .modal{border-radius:20px 20px 0 0 !important;padding-bottom:var(--safe-bottom) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;}
+      
+      /* Input font size: prevents iOS zoom */
+      input,select,textarea{font-size:16px !important;-webkit-appearance:none !important;}
+      
+      /* Pull-to-refresh hint */
+      .content{overscroll-behavior-y:contain !important;}
+      
+      /* Smooth scrolling */
+      *{-webkit-overflow-scrolling:touch !important;}
+      
+      /* Larger close buttons */
+      .modal-close{width:36px !important;height:36px !important;font-size:20px !important;}
+      
+      /* Status dots: larger */
+      .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
+      
+      /* Haptic feedback visual */
+      .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
+    }
+
   </style>
   <script>
     if (typeof DB === 'undefined') {
@@ -278,6 +375,32 @@
   <div class="hero-bar" id="mob-hero" style="display:none">
     <div class="hero-greet" id="hero-greet">Good morning,</div>
     <div class="hero-name" id="hero-name"></div>
+
+    <!-- Today's jobs strip -->
+    <div id="mob-today-strip" style="margin-top:14px;display:none">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Today's jobs</div>
+      <div id="mob-today-jobs" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
+    </div>
+
+    <!-- Quick action chips -->
+    <div style="display:flex;gap:8px;margin-top:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none">
+      <a href="create-invoice.html" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 13px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0">
+        <i class="ti ti-file-invoice" style="font-size:15px;color:#5DCAA5"></i>
+        <span style="font-size:13px;font-weight:600;color:#fff">New invoice</span>
+      </a>
+      <a href="jobs.html?new=true" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 13px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0">
+        <i class="ti ti-calendar-plus" style="font-size:15px;color:#5DCAA5"></i>
+        <span style="font-size:13px;font-weight:600;color:#fff">Book job</span>
+      </a>
+      <a href="quotes.html?new=true" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 13px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0">
+        <i class="ti ti-file-text" style="font-size:15px;color:#5DCAA5"></i>
+        <span style="font-size:13px;font-weight:600;color:#fff">Send quote</span>
+      </a>
+      <a href="tools.html?tool=mileage" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 13px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0">
+        <i class="ti ti-car" style="font-size:15px;color:#5DCAA5"></i>
+        <span style="font-size:13px;font-weight:600;color:#fff">Log mileage</span>
+      </a>
+    </div>
   </div>
 
   <div class="db">
@@ -345,22 +468,12 @@
 
       <!-- MOBILE BOTTOM NAV -->
       <nav class="bottom-nav">
-        <a href="dashboard.html" class="sb-item active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-        <a href="customers.html" class="sb-item"><i class="ti ti-users"></i> Customers</a>
-        <a href="jobs.html" class="sb-item"><i class="ti ti-briefcase"></i> Calendar</a>
-        <a href="quotes.html" class="sb-item"><i class="ti ti-file-text"></i> Quotes</a>
-        <a href="invoices.html" class="sb-item"><i class="ti ti-file-invoice"></i> Invoices</a>
-        <div class="sb-item" onclick="toggleCalc()" style="cursor:pointer"><i class="ti ti-calculator"></i> Calculator</div>
-        <div class="nav-plus-wrap">
-          <a href="#" class="nav-plus" onclick="document.getElementById('plus-menu').classList.toggle('open'); return false;"><i class="ti ti-plus"></i></a>
-          <div class="plus-menu" id="plus-menu">
-            <a href="create-invoice.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-file-plus"></i></div><span class="plus-menu-text">New invoice</span></a>
-            <a href="jobs.html" class="plus-menu-item"><div class="plus-menu-icon"><i class="ti ti-briefcase"></i></div><span class="plus-menu-text">New job</span></a>
-          </div>
-        </div>
-        <a href="payments.html" class="nav-item"><i class="ti ti-credit-card"></i><span>Payments</span></a>
-        <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
-      </nav>
+  <a href="dashboard.html" class="nav-item"><i class="ti ti-home"></i><span>Home</span></a>
+  <a href="jobs.html" class="nav-item"><i class="ti ti-calendar"></i><span>Calendar</span></a>
+  <div class="nav-plus-wrap"><a href="#" onclick="openQuickAdd();return false;" class="nav-plus" id="nav-fab"><i class="ti ti-plus"></i></a></div>
+  <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
+  <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
+</nav>
     </div>
   </div>
 
@@ -805,6 +918,28 @@
         var mobHero = document.getElementById('mob-hero');
         if (mobHero && window.innerWidth <= 768) mobHero.style.display = 'block';
 
+        // ── Load today's jobs for mobile hero ──
+        if(window.innerWidth <= 768){
+          try{
+            var todayStr = new Date().toISOString().split('T')[0];
+            var todayJobs = JSON.parse(localStorage.getItem('tb_jobs')||'[]').filter(function(j){ return j.date===todayStr && j.status!=='cancelled'; });
+            var strip = document.getElementById('mob-today-strip');
+            var jobsEl = document.getElementById('mob-today-jobs');
+            if(strip && jobsEl && todayJobs.length){
+              strip.style.display='block';
+              var STATUS_COLORS={scheduled:'#0A2540',inprogress:'#C28A1E',done:'#1D9E75',todo:'#635BFF'};
+              jobsEl.innerHTML = todayJobs.map(function(j){
+                var color = STATUS_COLORS[j.status||'scheduled'];
+                return '<a href="jobs.html" style="flex-shrink:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 12px;text-decoration:none;min-width:130px;-webkit-tap-highlight-color:transparent">'
+                  +'<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:4px">'+(j.time||'All day')+'</div>'
+                  +'<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+j.title+'</div>'
+                  +(j.customer_name?'<div style="font-size:11px;color:rgba(255,255,255,0.6)">'+j.customer_name+'</div>':'')
+                  +'</a>';
+              }).join('');
+            }
+          }catch(e){}
+        }
+
         // ── Trial countdown ──
         var plan = meta.plan || 'free';
         var trialStart = meta.trial_start ? new Date(meta.trial_start) : new Date(user.created_at || Date.now());
@@ -1173,5 +1308,51 @@
     document.getElementById('mob-drawer').addEventListener('touchstart', function(e){ _swipeStartX = e.touches[0].clientX; }, {passive:true});
     document.getElementById('mob-drawer').addEventListener('touchend', function(e){ if (e.changedTouches[0].clientX - _swipeStartX < -60) closeMobMenu(); }, {passive:true});
   </script>
+
+<!-- QUICK ADD ACTION SHEET -->
+<div class="mob-qa-overlay" id="qa-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,37,64,0.5);z-index:800;align-items:flex-end" onclick="if(event.target===this)closeQuickAdd()">
+  <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)">
+    <div style="width:36px;height:4px;border-radius:2px;background:#E5E3DC;margin:12px auto 4px"></div>
+    <div style="padding:8px 20px 16px">
+      <div style="font-size:12px;font-weight:700;color:#A3A29C;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Quick add</div>
+      <a href="create-invoice.html" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-invoice" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">New invoice</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Create and send an invoice</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="jobs.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-calendar-plus" style="font-size:22px;color:#1D9E75"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Book a job</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Schedule work on the calendar</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="quotes.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#F3F1FE;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="font-size:22px;color:#635BFF"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Send a quote</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Price up a job for a customer</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="customers.html?new=true" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #F8F7F3;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#FBF3E3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-user-plus" style="font-size:22px;color:#C28A1E"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Add customer</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Save a new customer record</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+      <a href="tools.html?tool=photos" style="display:flex;align-items:center;gap:14px;padding:13px 0;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <div style="width:46px;height:46px;border-radius:13px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-camera" style="font-size:22px;color:#0A2540"></i></div>
+        <div><div style="font-size:16px;font-weight:600;color:#061A30">Take job photo</div><div style="font-size:12px;color:#8B8A84;margin-top:1px">Before/after photos as proof</div></div>
+        <i class="ti ti-chevron-right" style="font-size:16px;color:#D3D1C7;margin-left:auto"></i>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  function openQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='flex';}
+  }
+  function closeQuickAdd(){
+    var o=document.getElementById('qa-overlay');
+    if(o){o.style.display='none';}
+  }
+</script>
+
 </body>
 </html>
