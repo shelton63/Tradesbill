@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -238,10 +238,11 @@
             </div>
           </div>
           <div class="filter-tabs">
-            <button class="filter-tab active" onclick="setFilter('all',this)">All</button>
+            <button class="filter-tab active" onclick="setFilter('all',this)">Active</button>
             <button class="filter-tab" onclick="setFilter('new',this)">New</button>
             <button class="filter-tab" onclick="setFilter('repeat',this)">Repeat</button>
             <button class="filter-tab" onclick="setFilter('outstanding',this)">Owes money</button>
+            <button class="filter-tab" onclick="setFilter('archived',this)" id="archived-tab">Archived <span id="archived-count" style="background:#E5E3DC;color:#6B6A65;font-size:10px;padding:1px 5px;border-radius:4px;margin-left:3px">0</span></button>
           </div>
           <div class="cust-list" id="cust-list"></div>
         </div>
@@ -286,7 +287,17 @@
 
     function renderList() {
       var q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+
+      // Update archived count badge
+      var archivedCount = customers.filter(function(c){ return c.archived; }).length;
+      var countEl = document.getElementById('archived-count');
+      if(countEl) countEl.textContent = archivedCount;
+
       var filtered = customers.filter(function(c) {
+        // Archived filter — show only archived
+        if (activeFilter === 'archived') return !!c.archived;
+        // All other filters — exclude archived
+        if (c.archived) return false;
         if (activeFilter === 'new' && (c.invoiceCount||0) > 1) return false;
         if (activeFilter === 'repeat' && (c.invoiceCount||0) <= 1) return false;
         if (activeFilter === 'outstanding' && !c.hasOutstanding) return false;
@@ -304,7 +315,11 @@
 
       var list = document.getElementById('cust-list');
       if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty-list"><i class="ti ti-user-off"></i>' + (q ? 'No results for "' + q + '"' : 'No customers yet — create your first invoice') + '</div>';
+        list.innerHTML = '<div class="empty-list"><i class="ti ti-' + (activeFilter==='archived'?'archive':'user-off') + '"></i>'
+          + (activeFilter === 'archived'
+            ? 'No archived customers yet'
+            : q ? 'No results for "' + q + '"' : 'No customers yet — create your first invoice')
+          + '</div>';
         return;
       }
 
@@ -339,10 +354,10 @@
           badgeCls = 'badge-new';
         }
 
-        return '<div class="cust-item' + selected + '" onclick="selectCustomer(\'' + c.id + '\')">'
-          + '<div class="cust-av" style="background:' + bg + ';color:' + fg + '">' + ini(c.name) + '</div>'
+        return '<div class="cust-item' + selected + '" onclick="selectCustomer(\'' + c.id + '\')" style="' + (c.archived?'opacity:0.6;':'') + '">'
+          + '<div class="cust-av" style="background:' + (c.archived?'#F0EFEA':''+bg) + ';color:' + (c.archived?'#A3A29C':''+fg) + '">' + ini(c.name) + '</div>'
           + '<div class="cust-info">'
-          + '<div class="cust-name">' + (c.name||'Unknown') + '</div>'
+          + '<div class="cust-name">' + (c.name||'Unknown') + (c.archived?'<span style="font-size:9px;background:#F0EFEA;color:#8B8A84;padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:600">ARCHIVED</span>':'') + '</div>'
           + '<div class="cust-meta">' + (c.invoiceCount||0) + ' invoice' + ((c.invoiceCount||0)!==1?'s':'') + ' · ' + fmt(c.totalSpent||0) + ' spent</div>'
           + '</div>'
           + '<span class="cust-badge ' + badgeCls + '">' + badge + '</span>'
@@ -386,8 +401,11 @@
         + '</div>'
         + '</div>'
         + '<div class="detail-actions">'
-        + '<button class="btn-detail btn-detail-primary" onclick="newInvoiceFor(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-file-plus"></i> New invoice</button>'
-        + '<button class="btn-detail btn-detail-outline" onclick="openBookJobModal(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-calendar-plus"></i> Book job</button>'
+        + (c.archived
+          ? '<button class="btn-detail" onclick="unarchiveCustomer(\'' + c.id + '\')" style="background:#5DCAA5;color:#061A30;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px"><i class="ti ti-archive-off"></i> Unarchive</button>'
+          : '<button class="btn-detail btn-detail-primary" onclick="newInvoiceFor(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-file-plus"></i> New invoice</button>'
+          + '<button class="btn-detail btn-detail-outline" onclick="openBookJobModal(\'' + encodeURIComponent(c.name) + '\',\'' + encodeURIComponent(c.email||'') + '\',\'' + encodeURIComponent(c.phone||'') + '\')"><i class="ti ti-calendar-plus"></i> Book job</button>'
+          )
         + '<button class="btn-detail btn-detail-outline" onclick="openActionsModal(\'' + c.id + '\',\'' + encodeURIComponent(c.name) + '\')"><i class="ti ti-dots"></i></button>'
         + '</div>'
         + '</div>'
@@ -1176,16 +1194,31 @@
 
     function archiveCustomer(custId) {
       document.getElementById('cust-actions-modal').style.display = 'none';
-      if (!confirm('Archive this customer? They will be hidden from the active list.')) return;
+      if (!confirm('Archive this customer? They will be hidden from the active list. You can unarchive them anytime.')) return;
       var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
       var c = custs.find(function(x){ return x.id === custId; });
       if (c) { c.archived = true; }
       localStorage.setItem('tb_customers', JSON.stringify(custs));
       supabase.from('customers').update({ archived: true }).eq('id', custId).catch(function(){});
-      customers = customers.filter(function(x){ return x.id !== custId; });
-      document.getElementById('detail-panel').innerHTML = '<div class="detail-empty"><i class="ti ti-user-search"></i><span>Select a customer to view their profile</span></div>';
+      var lc = customers.find(function(x){ return x.id === custId; });
+      if(lc) lc.archived = true;
+      document.getElementById('detail-panel').innerHTML = '<div class="detail-empty"><i class="ti ti-archive"></i><span>Customer archived — find them in the Archived tab</span></div>';
+      selectedId = null;
       renderList();
       showToast('Customer archived');
+    }
+
+    async function unarchiveCustomer(custId) {
+      var custs = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+      var c = custs.find(function(x){ return x.id === custId; });
+      if (c) { c.archived = false; }
+      localStorage.setItem('tb_customers', JSON.stringify(custs));
+      try { await supabase.from('customers').update({ archived: false }).eq('id', custId); } catch(e){}
+      var lc = customers.find(function(x){ return x.id === custId; });
+      if(lc) lc.archived = false;
+      renderList();
+      renderDetail(lc);
+      showToast('Customer restored to active list');
     }
 
     function showToast(msg) {
