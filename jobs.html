@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -319,7 +319,7 @@
       <div class="field"><label>Job title *</label><input id="jm-title" type="text" placeholder="e.g. Boiler service, bathroom refit..." /></div>
       <div class="field"><label>Customer name</label>
         <div style="position:relative">
-          <input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="custAutocomplete(this.value)" />
+          <input id="jm-customer" type="text" placeholder="e.g. Mark Taylor" autocomplete="off" oninput="custAutocomplete(this.value)" onblur="setTimeout(function(){ autoFillCust(document.getElementById('jm-customer').value); },200)" />
           <div id="cust-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E3DC;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:160px;overflow-y:auto;margin-top:4px"></div>
         </div>
       </div>
@@ -754,6 +754,7 @@
         // Enrich missing fields from customers/invoices
         var custName = (j.customer_name||'').toLowerCase();
         if(custName && (!j.phone || !j.email || !j.address)){
+          // Check localStorage first (instant)
           var custs = JSON.parse(localStorage.getItem('tb_customers')||'[]');
           var match = custs.find(function(c){ return (c.name||'').toLowerCase()===custName; });
           if(match){
@@ -761,15 +762,29 @@
             if(!j.email && match.email) document.getElementById('jm-email').value=match.email;
             if(!j.address && match.address) document.getElementById('jm-address').value=match.address;
           }
-          // Also check invoices for contact info
-          if(!match || (!match.phone && !match.email)){
-            var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
-            var inv = invs.find(function(i){ return (i.customer_name||i.customer||'').toLowerCase()===custName; });
-            if(inv){
-              if(!document.getElementById('jm-phone').value && inv.phone) document.getElementById('jm-phone').value=inv.phone;
-              if(!document.getElementById('jm-email').value && inv.email) document.getElementById('jm-email').value=inv.email;
-            }
+          // Check invoices localStorage
+          var invs = JSON.parse(localStorage.getItem('tb_invoices')||'[]');
+          var inv = invs.find(function(i){ return (i.customer_name||i.customer||'').toLowerCase()===custName; });
+          if(inv){
+            if(!document.getElementById('jm-phone').value && inv.phone) document.getElementById('jm-phone').value=inv.phone;
+            if(!document.getElementById('jm-email').value && inv.email) document.getElementById('jm-email').value=inv.email;
           }
+          // Check quotes localStorage
+          var qts = JSON.parse(localStorage.getItem('tb_quotes')||'[]');
+          var qt = qts.find(function(q){ return (q.customer_name||'').toLowerCase()===custName; });
+          if(qt){
+            if(!document.getElementById('jm-phone').value && qt.phone) document.getElementById('jm-phone').value=qt.phone;
+            if(!document.getElementById('jm-email').value && qt.email) document.getElementById('jm-email').value=qt.email;
+          }
+          // Also check Supabase in background
+          supabase.from('customers').select('phone,email,address').ilike('name', j.customer_name).limit(1).then(function(r){
+            if(r.data && r.data.length > 0){
+              var c = r.data[0];
+              if(!document.getElementById('jm-phone').value && c.phone) document.getElementById('jm-phone').value=c.phone;
+              if(!document.getElementById('jm-email').value && c.email) document.getElementById('jm-email').value=c.email;
+              if(!document.getElementById('jm-address').value && c.address) document.getElementById('jm-address').value=c.address;
+            }
+          }).catch(function(){});
         }
       }
     } else {
@@ -853,6 +868,44 @@
     t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0A2540;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap';
     t.textContent=msg; document.body.appendChild(t);
     setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ t.remove(); },400); },2500);
+  }
+
+  function autoFillCust(name){
+    if(!name || name.length < 2) return;
+    var q = name.toLowerCase();
+    // Check all sources
+    var sources = [
+      JSON.parse(localStorage.getItem('tb_customers')||'[]').map(function(c){ return {name:c.name,phone:c.phone,email:c.email,address:c.address}; }),
+      JSON.parse(localStorage.getItem('tb_invoices')||'[]').map(function(i){ return {name:i.customer_name||i.customer,phone:i.phone,email:i.email,address:i.address}; }),
+      JSON.parse(localStorage.getItem('tb_quotes')||'[]').map(function(q){ return {name:q.customer_name,phone:q.phone,email:q.email,address:''}; })
+    ];
+    var found = null;
+    sources.forEach(function(arr){
+      if(!found) found = arr.find(function(r){ return r.name && r.name.toLowerCase()===q && (r.phone||r.email); });
+    });
+    if(!found) sources.forEach(function(arr){
+      if(!found) found = arr.find(function(r){ return r.name && r.name.toLowerCase().startsWith(q.split(' ')[0]) && (r.phone||r.email); });
+    });
+    if(found){
+      var ph = document.getElementById('jm-phone'); var em = document.getElementById('jm-email'); var ad = document.getElementById('jm-address');
+      var filled = [];
+      if(!ph.value && found.phone){ ph.value=found.phone; filled.push('phone'); }
+      if(!em.value && found.email){ em.value=found.email; filled.push('email'); }
+      if(!ad.value && found.address){ ad.value=found.address; filled.push('address'); }
+      if(filled.length) showToast('Details loaded for '+found.name.split(' ')[0]);
+    }
+    // Supabase background lookup
+    supabase.from('customers').select('phone,email,address,name').ilike('name','%'+name+'%').limit(1).then(function(r){
+      if(r.data&&r.data[0]){
+        var c=r.data[0];
+        var ph=document.getElementById('jm-phone'); var em=document.getElementById('jm-email'); var ad=document.getElementById('jm-address');
+        var filled=[];
+        if(!ph.value&&c.phone){ph.value=c.phone;filled.push('phone');}
+        if(!em.value&&c.email){em.value=c.email;filled.push('email');}
+        if(!ad.value&&c.address){ad.value=c.address;filled.push('address');}
+        if(filled.length&&!found) showToast('Details loaded for '+c.name.split(' ')[0]);
+      }
+    }).catch(function(){});
   }
 
   function custAutocomplete(val){
