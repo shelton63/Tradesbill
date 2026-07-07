@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -325,6 +325,12 @@
         } else if ((c.invoiceCount||0) > 0) {
           badge = 'Sent';
           badgeCls = 'badge-sent';
+        } else if (c.hasDoneJob) {
+          badge = 'Job done';
+          badgeCls = 'badge-unpaid';
+        } else if (c.hasScheduledJob) {
+          badge = 'Scheduled';
+          badgeCls = 'badge-sent';
         } else if (isRepeat) {
           badge = 'Repeat';
           badgeCls = 'badge-repeat';
@@ -415,7 +421,9 @@
         + '<div class="detail-card">'
         + '<div class="detail-card-header"><div class="detail-card-title">Invoice history</div><a href="invoices.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">View all</a></div>'
         + (invoiceList.length === 0
-          ? '<div style="padding:16px;font-size:13px;color:#A3A29C">No invoices yet</div>'
+          ? '<div style="padding:16px;font-size:13px;color:#A3A29C">No invoices yet'
+            + (c.hasDoneJob ? ' — <a href="create-invoice.html" style="color:#0A2540;font-weight:600;text-decoration:none">create one for the completed job</a>' : '')
+            + '</div>'
           : invoiceList.slice(0,5).map(function(inv) {
               var st = inv.status || 'unpaid';
               var cls = st === 'paid' ? 'inv-paid' : st === 'overdue' ? 'inv-overdue' : 'inv-unpaid';
@@ -429,6 +437,27 @@
             }).join('')
           )
         + '</div>'
+
+        // Job history
+        + ((c.jobs && c.jobs.length > 0)
+          ? '<div class="detail-card">'
+            + '<div class="detail-card-header"><div class="detail-card-title">Job history</div><a href="jobs.html" style="font-size:12px;color:#0A2540;font-weight:600;text-decoration:none">View calendar</a></div>'
+            + c.jobs.slice(0,5).map(function(j) {
+                var STATUS_COLORS = { scheduled:'#0A2540', inprogress:'#C28A1E', done:'#1D9E75', cancelled:'#A3A29C', todo:'#635BFF' };
+                var STATUS_BG = { scheduled:'#EEF3F8', inprogress:'#FBF3E3', done:'#E1F5EE', cancelled:'#F0EFEA', todo:'#F3F1FE' };
+                var STATUS_LABEL = { scheduled:'Scheduled', inprogress:'In progress', done:'Completed', cancelled:'Cancelled', todo:'To do' };
+                var st = j.status || 'scheduled';
+                return '<div class="inv-row" style="align-items:center">'
+                  + '<div style="width:8px;height:8px;border-radius:50%;background:' + (STATUS_COLORS[st]||'#0A2540') + ';flex-shrink:0;margin-right:4px"></div>'
+                  + '<div style="flex:1;font-size:12px;color:#061A30;font-weight:600;padding:0 8px">' + j.title + '</div>'
+                  + '<div style="font-size:11px;color:#8B8A84;margin-right:8px">' + (j.date ? new Date(j.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—') + '</div>'
+                  + '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:' + (STATUS_BG[st]||'#EEF3F8') + ';color:' + (STATUS_COLORS[st]||'#0A2540') + '">' + (STATUS_LABEL[st]||st) + '</span>'
+                  + '</div>';
+              }).join('')
+            + '</div>'
+          : '')
+
+
 
         // Notes
         + '<div class="detail-card">'
@@ -630,6 +659,11 @@
         customers = JSON.parse(localStorage.getItem('tb_customers') || '[]');
       }
 
+      // Load jobs for enrichment
+      var allJobs = [];
+      try { var {data:jbData} = await supabase.from('jobs').select('*'); allJobs = jbData||[]; } catch(e) {}
+      if(!allJobs.length) allJobs = JSON.parse(localStorage.getItem('tb_jobs')||'[]');
+
       // Enrich customers with invoice data
       var custMap = {};
       customers.forEach(function(c){ custMap[c.name.toLowerCase()] = c; });
@@ -657,6 +691,14 @@
         c.invoiceCount = invs.length;
         c.totalSpent = invs.filter(function(i){ return i.status==='paid'; }).reduce(function(a,i){ return a+Number(i.amount||0); }, 0);
         c.hasOutstanding = invs.some(function(i){ return i.status==='unpaid'||i.status==='overdue'||i.status==='partial'; });
+
+        // Link jobs for this customer
+        var custJobs = allJobs.filter(function(j){
+          return (j.customer_name||'').toLowerCase() === (c.name||'').toLowerCase();
+        });
+        c.jobs = custJobs;
+        c.hasDoneJob = custJobs.some(function(j){ return j.status==='done'; });
+        c.hasScheduledJob = custJobs.some(function(j){ return j.status==='scheduled'||j.status==='inprogress'; });
       });
 
       // Sort by most recent invoice
