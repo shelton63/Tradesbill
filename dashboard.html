@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ✏️ PASTE YOUR TWO SUPABASE KEYS HERE
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   </script>
   <style>
@@ -291,6 +291,44 @@
       /* Status dots: larger */
       .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
       
+
+      /* Dashboard mobile layout improvements */
+      .stats{grid-template-columns:1fr 1fr !important;gap:10px !important;}
+      .stat-card{padding:14px !important;border-radius:13px !important;}
+      .stat-label{font-size:11px !important;margin-bottom:5px !important;}
+      .stat-value{font-size:26px !important;font-weight:700 !important;letter-spacing:-0.02em !important;}
+      .section-card{border-radius:14px !important;margin-bottom:12px !important;}
+      .section-header{padding:14px 16px !important;}
+      .section-title{font-size:14px !important;font-weight:700 !important;}
+      .inv-row-dash{padding:13px 16px !important;min-height:56px !important;}
+      .inv-name{font-size:14px !important;font-weight:600 !important;}
+      .inv-meta{font-size:12px !important;margin-top:3px !important;}
+      .inv-amount{font-size:14px !important;font-weight:700 !important;}
+      /* Hero bar */
+      .hero-bar{padding:20px 16px 24px !important;}
+      .hero-greet{font-size:13px !important;margin-bottom:3px !important;}
+      .hero-name{font-size:22px !important;font-weight:700 !important;margin-bottom:0 !important;}
+
+
+      /* ── Global typography & spacing improvements ── */
+      body{-webkit-font-smoothing:antialiased !important;}
+      .empty-state,.empty-list{padding:48px 24px !important;text-align:center !important;}
+      .empty-state i,.empty-list i{font-size:44px !important;color:#D3D1C7 !important;display:block !important;margin-bottom:14px !important;}
+      .empty-state h3{font-size:17px !important;font-weight:700 !important;color:#061A30 !important;margin-bottom:8px !important;}
+      .empty-state p{font-size:14px !important;color:#8B8A84 !important;line-height:1.6 !important;max-width:280px !important;margin:0 auto 20px !important;}
+      .modal-overlay{align-items:flex-end !important;padding:0 !important;}
+      .modal{border-radius:20px 20px 0 0 !important;max-height:92vh !important;padding-bottom:env(safe-area-inset-bottom,0px) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;padding:18px 20px !important;}
+      .modal-title{font-size:17px !important;font-weight:700 !important;}
+      .modal-body{padding:20px !important;}
+      .field{margin-bottom:18px !important;}
+      .field label{font-size:11px !important;font-weight:700 !important;letter-spacing:0.06em !important;margin-bottom:7px !important;}
+      .field input,.field select,.field textarea{padding:13px 14px !important;border-radius:10px !important;font-size:16px !important;}
+      .btn-save,.btn-primary,.btn-new{padding:14px 20px !important;font-size:15px !important;font-weight:700 !important;border-radius:12px !important;min-height:50px !important;}
+      .card,.panel-card{border-radius:14px !important;}
+      .mobile-topbar{min-height:58px !important;}
+      .section-title,.card-title{font-size:14px !important;font-weight:700 !important;}
+
       /* Haptic feedback visual */
       .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
     }
@@ -357,13 +395,12 @@
     <button class="mob-burger" onclick="openMobMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div>
-      <div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <i class="ti ti-file-invoice" style="font-size:18px;color:#5DCAA5"></i>
+      <span style="font-size:16px;font-weight:700;color:#fff">Primo Invoice</span>
     </div>
     <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">+ Invoice</a>
   </div>
-      <div style="font-size:17px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div>
     </div>
     <div class="mob-right">
       <i class="ti ti-bell mob-bell"></i>
@@ -474,8 +511,6 @@
   <a href="customers.html" class="nav-item"><i class="ti ti-users"></i><span>Customers</span></a>
   <a href="settings.html" class="nav-item"><i class="ti ti-user-circle"></i><span>Profile</span></a>
 </nav>
-    </div>
-  </div>
 
   <script>
     function initials(first, last, email) {
@@ -872,13 +907,6 @@
       return '?';
     }
 
-    function greeting() {
-      var h = parseInt(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' }).format(new Date()));
-      if (h < 12) return 'Good morning,';
-      if (h < 18) return 'Good afternoon,';
-      return 'Good evening,';
-    }
-
     function toggleNotifs() {
       document.getElementById('notif-dropdown').classList.toggle('open');
     }
@@ -992,7 +1020,14 @@
           : JSON.parse(localStorage.getItem('tb_invoices') || '[]');
         var jobs        = jobsRes.data || [];
 
-        var hasData = invoices.length > 0;
+        // Check localStorage as fallback for data detection
+        var localInvs = JSON.parse(localStorage.getItem('tb_invoices') || '[]');
+        var localJobs = JSON.parse(localStorage.getItem('tb_jobs') || '[]');
+        var localCusts = JSON.parse(localStorage.getItem('tb_customers') || '[]');
+        if (invoices.length === 0 && localInvs.length > 0) invoices = localInvs;
+        if (jobs.length === 0 && localJobs.length > 0) jobs = localJobs;
+
+        var hasData = invoices.length > 0 || localCusts.length > 0 || localJobs.length > 0;
 
         if (hasData) {
           renderDataDashboard(first || fullName, meta, invoices, jobs);

@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try { var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
     catch(e) { var supabase = { auth:{ getUser:async function(){return{data:{user:null}};}, updateUser:async function(){return{};} }, from:function(){ var q={data:[],error:null}; var c={select:function(){return c;},insert:function(){return{select:function(){return{single:function(){return Promise.resolve(q);}}}};},update:function(){return c;},delete:function(){return c;},upsert:function(){return c;},eq:function(){return c;},order:function(){return c;},limit:function(){return c;},then:function(cb){cb(q);return c;}}; return c; } }; }
   </script>
@@ -256,6 +256,40 @@
       /* Status dots: larger */
       .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
       
+
+      /* Quotes mobile fixes */
+      .modal{width:100% !important;max-width:100% !important;border-radius:20px 20px 0 0 !important;}
+      .modal-overlay{align-items:flex-end !important;padding:0 !important;}
+      .line-item{grid-template-columns:1fr !important;gap:8px !important;}
+      .line-item input{width:100% !important;box-sizing:border-box !important;}
+      .table-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch !important;}
+      table{min-width:500px !important;}
+      .field-row{grid-template-columns:1fr !important;gap:10px !important;}
+      .qm-totals{grid-template-columns:1fr !important;}
+      .filter-tabs{display:flex !important;overflow-x:auto !important;gap:6px !important;padding-bottom:4px !important;scrollbar-width:none !important;flex-wrap:nowrap !important;}
+      .filter-tab{white-space:nowrap !important;flex-shrink:0 !important;}
+      .content{overflow-x:hidden !important;}
+
+
+      /* ── Global typography & spacing improvements ── */
+      body{-webkit-font-smoothing:antialiased !important;}
+      .empty-state,.empty-list{padding:48px 24px !important;text-align:center !important;}
+      .empty-state i,.empty-list i{font-size:44px !important;color:#D3D1C7 !important;display:block !important;margin-bottom:14px !important;}
+      .empty-state h3{font-size:17px !important;font-weight:700 !important;color:#061A30 !important;margin-bottom:8px !important;}
+      .empty-state p{font-size:14px !important;color:#8B8A84 !important;line-height:1.6 !important;max-width:280px !important;margin:0 auto 20px !important;}
+      .modal-overlay{align-items:flex-end !important;padding:0 !important;}
+      .modal{border-radius:20px 20px 0 0 !important;max-height:92vh !important;padding-bottom:env(safe-area-inset-bottom,0px) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;padding:18px 20px !important;}
+      .modal-title{font-size:17px !important;font-weight:700 !important;}
+      .modal-body{padding:20px !important;}
+      .field{margin-bottom:18px !important;}
+      .field label{font-size:11px !important;font-weight:700 !important;letter-spacing:0.06em !important;margin-bottom:7px !important;}
+      .field input,.field select,.field textarea{padding:13px 14px !important;border-radius:10px !important;font-size:16px !important;}
+      .btn-save,.btn-primary,.btn-new{padding:14px 20px !important;font-size:15px !important;font-weight:700 !important;border-radius:12px !important;min-height:50px !important;}
+      .card,.panel-card{border-radius:14px !important;}
+      .mobile-topbar{min-height:58px !important;}
+      .section-title,.card-title{font-size:14px !important;font-weight:700 !important;}
+
       /* Haptic feedback visual */
       .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
     }
@@ -266,7 +300,7 @@
   <!-- Mobile topbar -->
   <div class="mobile-topbar">
     <button class="mob-burger" onclick="openMobMenu()"><span></span><span></span><span></span></button>
-    <div style="text-align:center"><div style="font-size:11px;color:rgba(255,255,255,0.6)" id="mob-greet-time">Good morning</div><div style="font-size:16px;font-weight:700;color:#fff" id="mob-greet-name">Loading...</div></div>
+    <div style="font-size:17px;font-weight:700;color:#fff">Quotes</div>
     <a href="create-invoice.html" style="background:#5DCAA5;color:#061A30;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none">+ Invoice</a>
   </div>
 
@@ -895,10 +929,7 @@
         var pl=document.getElementById('sb-uplan'); if(pl)pl.textContent=m.plan?m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan':'Free plan';
         // Mobile greeting
         var h=new Date().getHours();
-        var gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
-        var gt=document.getElementById('mob-greet-time'); if(gt)gt.textContent=gr;
-        var gn=document.getElementById('mob-greet-name'); if(gn)gn.textContent=first||fullName;
-        var da=document.getElementById('mob-drawer-av'); if(da)da.textContent=ini2;
+                var da=document.getElementById('mob-drawer-av'); if(da)da.textContent=ini2;
         var dn=document.getElementById('mob-drawer-name'); if(dn)dn.textContent=fullName;
         var dp=document.getElementById('mob-drawer-plan'); if(dp)dp.textContent=m.plan?m.plan.charAt(0).toUpperCase()+m.plan.slice(1)+' plan':'Free plan';
         // Business name for preview
