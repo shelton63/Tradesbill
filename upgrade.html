@@ -4,13 +4,26 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.svg" />
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Primo Invoice" />
+  <meta name="application-name" content="Primo Invoice" />
+  <meta name="msapplication-TileColor" content="#0A2540" />
+  <meta name="theme-color" content="#0A2540" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0A2540" media="(prefers-color-scheme: dark)" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Upgrade — Primo Invoice</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    var SUPABASE_URL = 'https://xkjqcojufqypbpserltl.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhranFjb2p1ZnF5cGJwc2VybHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDcxNzQsImV4cCI6MjA5ODA4MzE3NH0.39yk25pGqGbH_mcMCuVpfbKLj00KdPeHOArQKU9uPrE';
+    var SUPABASE_URL = 'YOUR_PROJECT_URL_HERE';
+    var SUPABASE_KEY = 'YOUR_ANON_KEY_HERE';
     try {
       var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
@@ -114,6 +127,103 @@
       .plans { grid-template-columns: 1fr; }
       .plan.popular { order: -1; }
     }
+
+    /* ══════════════════════════════════════════
+       PRIMO INVOICE — MOBILE-FIRST UPGRADE
+       ══════════════════════════════════════════ */
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --nav-h: 64px;
+      --teal: #5DCAA5;
+      --navy: #0A2540;
+    }
+    @media(max-width:768px){
+      /* Safe area bottom nav */
+      .bottom-nav{
+        padding-bottom:calc(8px + var(--safe-bottom)) !important;
+        height:auto !important;
+        position:fixed !important;
+        bottom:0 !important;
+        left:0 !important;
+        right:0 !important;
+        z-index:300 !important;
+        background:#fff !important;
+        border-top:1px solid #E5E3DC !important;
+        box-shadow:0 -2px 20px rgba(0,0,0,0.08) !important;
+      }
+      .nav-item{
+        flex:1 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        gap:3px !important;
+        text-decoration:none !important;
+        padding:8px 0 4px !important;
+        -webkit-tap-highlight-color:transparent !important;
+        min-height:44px !important;
+      }
+      .nav-item i{font-size:24px !important;color:#A3A29C !important;}
+      .nav-item span{font-size:10px !important;color:#A3A29C !important;font-weight:500 !important;}
+      .nav-item.active i{color:#0A2540 !important;transform:scale(1.1) !important;}
+      .nav-item.active span{color:#0A2540 !important;font-weight:700 !important;}
+      
+      /* Nav plus button */
+      .nav-plus-wrap{flex:1 !important;display:flex !important;justify-content:center !important;position:relative !important;}
+      .nav-plus{
+        width:52px !important;height:52px !important;border-radius:16px !important;
+        background:var(--navy) !important;display:flex !important;align-items:center !important;
+        justify-content:center !important;margin-top:-26px !important;text-decoration:none !important;
+        box-shadow:0 4px 20px rgba(10,37,64,0.35) !important;
+        -webkit-tap-highlight-color:transparent !important;
+        transition:transform 0.15s !important;
+      }
+      .nav-plus:active{transform:scale(0.93) !important;}
+      .nav-plus i{font-size:26px !important;color:#fff !important;}
+      
+      /* Bottom padding so content isn't hidden behind nav */
+      .content{padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px) !important;}
+      
+      /* Mobile topbar */
+      .mobile-topbar{
+        position:sticky !important;top:0 !important;z-index:250 !important;
+        padding-top:calc(14px + var(--safe-top)) !important;
+        min-height:calc(60px + var(--safe-top)) !important;
+        -webkit-backdrop-filter:blur(20px) !important;backdrop-filter:blur(20px) !important;
+      }
+      
+      /* Cards: bigger tap targets */
+      .job-card,.cust-item,.inv-row,.tx-row{
+        min-height:60px !important;
+        padding:14px 16px !important;
+      }
+      
+      /* Buttons: minimum 44px tap target */
+      button,a.btn,.btn{min-height:44px !important;}
+      
+      /* Modal: slides up from bottom */
+      .modal{border-radius:20px 20px 0 0 !important;padding-bottom:var(--safe-bottom) !important;}
+      .modal-header{border-radius:20px 20px 0 0 !important;}
+      
+      /* Input font size: prevents iOS zoom */
+      input,select,textarea{font-size:16px !important;-webkit-appearance:none !important;}
+      
+      /* Pull-to-refresh hint */
+      .content{overscroll-behavior-y:contain !important;}
+      
+      /* Smooth scrolling */
+      *{-webkit-overflow-scrolling:touch !important;}
+      
+      /* Larger close buttons */
+      .modal-close{width:36px !important;height:36px !important;font-size:20px !important;}
+      
+      /* Status dots: larger */
+      .job-status-dot,.status-dot{width:12px !important;height:12px !important;}
+      
+      /* Haptic feedback visual */
+      .btn-primary:active,.btn-save:active,.btn-green:active{transform:scale(0.97) !important;opacity:0.9 !important;}
+    }
+
   </style>
 </head>
 <body>
@@ -136,7 +246,7 @@
       <!-- STARTER -->
       <div class="plan" id="plan-starter">
         <div class="plan-name">Starter</div>
-        <div class="plan-price">£29<span>/month</span></div>
+        <div class="plan-price">£15<span>/month</span></div>
         <div class="plan-desc">Perfect for sole traders just getting started with digital invoicing.</div>
         <hr class="plan-divider" />
         <ul class="plan-features">
@@ -150,14 +260,14 @@
           <li class="muted"><i class="ti ti-x"></i> Priority support</li>
           <li class="muted"><i class="ti ti-x"></i> AI features</li>
         </ul>
-        <button class="btn-plan btn-outline" onclick="openPayModal('starter','£29/month','Starter')">Get started</button>
+        <button class="btn-plan btn-outline" onclick="openPayModal('starter','£15/month','Starter')">Get started</button>
       </div>
 
       <!-- PRO (recommended) -->
       <div class="plan popular" id="plan-pro">
         <div class="popular-badge">⭐ Most popular</div>
         <div class="plan-name">Pro</div>
-        <div class="plan-price">£49<span>/month</span></div>
+        <div class="plan-price">£29<span>/month</span></div>
         <div class="plan-desc">For busy tradespeople who want unlimited invoicing and a growing team.</div>
         <hr class="plan-divider" />
         <ul class="plan-features">
@@ -171,13 +281,13 @@
           <li class="muted"><i class="ti ti-x"></i> AI features</li>
           <li class="muted"><i class="ti ti-x"></i> Dedicated account manager</li>
         </ul>
-        <button class="btn-plan btn-primary" onclick="openPayModal('pro','£49/month','Pro')"><i class="ti ti-star"></i> Get Pro</button>
+        <button class="btn-plan btn-primary" onclick="openPayModal('pro','£29/month','Pro')"><i class="ti ti-star"></i> Get Pro</button>
       </div>
 
       <!-- BUSINESS -->
       <div class="plan" id="plan-business">
         <div class="plan-name">Business</div>
-        <div class="plan-price">£79<span>/month</span></div>
+        <div class="plan-price">£49<span>/month</span></div>
         <div class="plan-desc">For established trade businesses with multiple staff and high volume.</div>
         <hr class="plan-divider" />
         <ul class="plan-features">
@@ -191,7 +301,7 @@
           <li><i class="ti ti-check"></i> Future AI features</li>
           <li><i class="ti ti-check"></i> Dedicated account manager</li>
         </ul>
-        <button class="btn-plan btn-outline" onclick="openPayModal('business','£79/month','Business')">Get Business</button>
+        <button class="btn-plan btn-outline" onclick="openPayModal('business','£49/month','Business')">Get Business</button>
       </div>
 
     </div>
@@ -202,9 +312,9 @@
         <thead>
           <tr>
             <th style="width:40%">Feature</th>
-            <th>Starter <div style="font-weight:700;color:#061A30">£29/mo</div></th>
-            <th style="background:#FAFAF8">Pro <div style="font-weight:700;color:#061A30">£49/mo</div></th>
-            <th>Business <div style="font-weight:700;color:#061A30">£79/mo</div></th>
+            <th>Starter <div style="font-weight:700;color:#061A30">£15/mo</div></th>
+            <th style="background:#FAFAF8">Pro <div style="font-weight:700;color:#061A30">£29/mo</div></th>
+            <th>Business <div style="font-weight:700;color:#061A30">£49/mo</div></th>
           </tr>
         </thead>
         <tbody>
@@ -253,7 +363,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="modal-plan-name" id="modal-plan-name">Pro plan</div>
-        <div class="modal-plan-price" id="modal-plan-price">£49</div>
+        <div class="modal-plan-price" id="modal-plan-price">£29</div>
         <div class="modal-plan-sub">per month · cancel anytime</div>
       </div>
       <div class="modal-body">
@@ -291,7 +401,7 @@
         <h3 style="font-size:18px;font-weight:700;color:#061A30;margin-bottom:8px">Before you go...</h3>
         <p style="font-size:13px;color:#6B6A65;margin-bottom:20px;line-height:1.5">We'd hate to see you leave. As a thank you for giving Primo Invoice a try, here's an exclusive offer:</p>
         <div class="discount-badge">30% off for 2 months</div>
-        <div class="discount-sub">That's <strong id="discount-price">£34.30/month</strong> instead of <span id="original-price">£49/month</span><br>for your first 2 months — then normal price.</div>
+        <div class="discount-sub">That's <strong id="discount-price">£20.30/month</strong> instead of <span id="original-price">£29/month</span><br>for your first 2 months — then normal price.</div>
         <button class="btn-accept-discount" onclick="acceptDiscount()"><i class="ti ti-tag"></i> Yes — claim my 30% discount</button>
         <button class="btn-decline" onclick="declineDiscount()">No thanks, I still want to cancel</button>
       </div>
@@ -304,12 +414,12 @@
 
     // TODO: Replace with your real Stripe Price IDs once created in Stripe Dashboard
     var PRICE_IDS = {
-      starter:  'price_1Tp4m9CsuXSeLOJopzViH8R1',   // £29/month
-      pro:      'price_1Tp4mUCsuXSeLOJolDcmkVra',        // £49/month
-      business: 'price_1Tp4mrCsuXSeLOJop484QVNY'   // £79/month
+      starter:  'price_1TqhlGCsuXSeLOJoipwzrQmj',   // £15/month
+      pro:      'price_1TqhmyCsuXSeLOJoai0a855Z',   // £29/month
+      business: 'price_1Tqho7CsuXSeLOJogi0UPm3D'    // £49/month
     };
 
-    var PRICES = { starter: 29, pro: 79, business: 149 };
+    var PRICES = { starter: 15, pro: 29, business: 49 };
 
     function openPayModal(plan, priceLabel, planName) {
       selectedPlan = plan;
@@ -369,7 +479,7 @@
     // Retention offer
     function openRetention(plan) {
       selectedPlan = plan;
-      var price = PRICES[plan] || 79;
+      var price = PRICES[plan] || 29;
       var discounted = (price * 0.7).toFixed(2);
       document.getElementById('discount-price').textContent = '£' + discounted + '/month';
       document.getElementById('original-price').textContent = '£' + price + '/month';
@@ -411,6 +521,58 @@
       } catch(e) {}
     }
     checkPlan();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function(reg) {
+            console.log('SW registered:', reg.scope);
+            // Listen for updates
+            reg.addEventListener('updatefound', function() {
+              var newWorker = reg.installing;
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available — could show a toast
+                  console.log('New version available');
+                }
+              });
+            });
+          })
+          .catch(function(err) { console.log('SW registration failed:', err); });
+      });
+    }
+    // Install prompt for Android
+    var deferredPrompt;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show install banner if user hasn't installed
+      if (!localStorage.getItem('primo_pwa_installed')) {
+        setTimeout(function() { showInstallBanner(); }, 3000);
+      }
+    });
+    window.addEventListener('appinstalled', function() {
+      localStorage.setItem('primo_pwa_installed', '1');
+      hideInstallBanner();
+    });
+    function showInstallBanner() {
+      if (document.getElementById('pwa-banner') || localStorage.getItem('primo_pwa_dismissed')) return;
+      var banner = document.createElement('div');
+      banner.id = 'pwa-banner';
+      banner.style.cssText = 'position:fixed;bottom:70px;left:12px;right:12px;background:#0A2540;color:#fff;border-radius:14px;padding:14px 16px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      banner.innerHTML = '<div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5DCAA5" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Add to Home Screen</div><div style="font-size:11px;color:rgba(255,255,255,0.7)">Get the full app experience</div></div>'
+        + '<div style="display:flex;gap:8px">'
+        + '<button onclick="installPWA()" style="background:#5DCAA5;color:#061A30;border:none;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Install</button>'
+        + '<button onclick="dismissInstallBanner()" style="background:rgba(255,255,255,0.1);color:#fff;border:none;padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
+        + '</div>';
+      document.body.appendChild(banner);
+    }
+    function hideInstallBanner() { var b = document.getElementById('pwa-banner'); if(b) b.remove(); }
+    function dismissInstallBanner() { localStorage.setItem('primo_pwa_dismissed','1'); hideInstallBanner(); }
+    function installPWA() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(r){ if(r.outcome==='accepted') localStorage.setItem('primo_pwa_installed','1'); deferredPrompt=null; hideInstallBanner(); }); } }
   </script>
 </body>
 </html>
