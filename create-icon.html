@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="1024" height="1024"></canvas>
+<script>
+var c = document.getElementById('c');
+var ctx = c.getContext('2d');
+ctx.fillStyle = '#0A2540';
+ctx.fillRect(0, 0, 1024, 1024);
+ctx.fillStyle = '#5DCAA5';
+ctx.font = 'bold 500px Arial';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText('P', 512, 512);
+var a = document.createElement('a');
+a.download = 'icon.png';
+a.href = c.toDataURL();
+a.click();
+</script>
+</body>
+</html>
